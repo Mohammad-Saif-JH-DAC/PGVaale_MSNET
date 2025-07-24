@@ -22,7 +22,7 @@ function Chat() {
     setInput('');
   };
 
-  if (!username) return <div className="container mt-5">Login to access chat.</div>;
+  if (!username) return <div className="container mt-5">Please log in to access chat.</div>;
 
   return (
     <div className="container mt-5" style={{maxWidth: 600}}>

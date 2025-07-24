@@ -15,38 +15,63 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
-@CrossOrigin(origins = "http://localhost:3000")
+import java.util.Arrays;
+import java.util.List;
+
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+    
     @Autowired
     private AuthenticationManager authenticationManager;
+    
     @Autowired
     private UserRepository userRepository;
+    
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
     @Autowired
     private JwtUtil jwtUtil;
+    
     @Autowired
     private UserDetailsService userDetailsService;
 
+    // Define allowed roles
+    private static final List<String> ALLOWED_ROLES = Arrays.asList("user", "owner", "tiffin", "maid", "admin");
+
     @PostMapping("/register/{role}")
     public ResponseEntity<?> register(@RequestBody User user, @PathVariable String role) {
+        // Validate role
+        if (!ALLOWED_ROLES.contains(role.toLowerCase())) {
+            return ResponseEntity.badRequest().body("Invalid role. Allowed roles: " + ALLOWED_ROLES);
+        }
+
+        // Check if username exists
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
             return ResponseEntity.badRequest().body("Username already exists");
         }
+        
+        // Check if email exists
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("Email already exists");
         }
+        
+        // Encode password
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(role.toUpperCase());
+        
+        // Set enabled status based on role
         if (role.equalsIgnoreCase("TIFFIN") || role.equalsIgnoreCase("MAID")) {
             user.setEnabled(false); // Needs admin approval
         } else {
             user.setEnabled(true);
         }
-        userRepository.save(user);
-        return ResponseEntity.ok("Registration successful");
+        
+        // Save user
+        User savedUser = userRepository.save(user);
+        return ResponseEntity.ok("Registration successful for " + savedUser.getUsername());
     }
 
     @PostMapping("/login")
@@ -65,4 +90,4 @@ public class AuthController {
             return ResponseEntity.status(401).body("Invalid credentials");
         }
     }
-} 
+}

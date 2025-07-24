@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Home from './pages/Home';
-import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
@@ -10,6 +9,7 @@ import PGRooms from './pages/PGRooms';
 import RoomDetails from './pages/RoomDetails';
 import OwnerDashboard from './pages/OwnerDashboard';
 import Chat from './pages/Chat';
+import Login from './pages/Login';
 
 function App() {
   const token = localStorage.getItem('token');
@@ -24,9 +24,6 @@ function App() {
                 <Link className="nav-link" to="/pgrooms">PG Rooms</Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/login">Login</Link>
-              </li>
-              <li className="nav-item">
                 <Link className="nav-link" to="/register">Register</Link>
               </li>
               <li className="nav-item">
@@ -37,13 +34,17 @@ function App() {
                   <Link className="nav-link" to="/chat">Group Chat</Link>
                 </li>
               )}
+              {!token && (
+                <li className="nav-item">
+                  <Link className="nav-link" to="/login">Login</Link>
+                </li>
+              )}
             </ul>
           </div>
     </div>
       </nav>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
         <Route path="/register/*" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin" element={<Admin />} />
@@ -51,6 +52,7 @@ function App() {
         <Route path="/pgrooms/:id" element={<RoomDetails />} />
         <Route path="/owner-dashboard" element={<OwnerDashboard />} />
         <Route path="/chat" element={<Chat />} />
+        <Route path="/login" element={<Login />} />
       </Routes>
     </Router>
   );
