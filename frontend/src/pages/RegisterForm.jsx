@@ -1,21 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 
+const allowedRoles = ['user', 'owner', 'tiffin', 'maid'];
+
 function RegisterForm() {
   const { role } = useParams();
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({ username: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const navigate = useNavigate();
 
-  const handleChange = e => {
+  useEffect(() => {
+    if (!allowedRoles.includes(role)) {
+      navigate('/register/user'); // redirect to default role
+      return;
+    }
+    setForm({ username: '', email: '', password: '' });
+    setError('');
+    setSuccess('');
+  }, [role, navigate]);
+
+  const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(''); setSuccess('');
+    setError('');
+    setSuccess('');
     try {
       await api.post(`/auth/register/${role}`, form);
       setSuccess('Registration successful!');
@@ -26,7 +40,7 @@ function RegisterForm() {
   };
 
   return (
-    <div className="card p-4 mt-3" style={{maxWidth: 400, margin: '0 auto'}}>
+    <div className="card p-4 mt-3" style={{ maxWidth: 400, margin: '0 auto' }}>
       <h4>Register as {role.charAt(0).toUpperCase() + role.slice(1)}</h4>
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
@@ -49,4 +63,4 @@ function RegisterForm() {
   );
 }
 
-export default RegisterForm; 
+export default RegisterForm;
