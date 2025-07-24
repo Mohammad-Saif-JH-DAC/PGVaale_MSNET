@@ -27,7 +27,7 @@ function Login() {
     e.preventDefault();
     setError('');
     try {
-      const res = await api.post('/auth/login', {
+      const res = await api.post('http://localhost:8081/api/auth/login', {
         username: form.username,
         password: form.password,
       });
