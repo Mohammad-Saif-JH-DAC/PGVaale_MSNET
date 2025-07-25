@@ -17,6 +17,11 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 @Configuration
 public class SecurityConfig {
@@ -24,6 +29,12 @@ public class SecurityConfig {
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
 
+    // Note: CustomUserDetailsService was autowired but not used in the original
+    // snippets.
+    // If it's needed elsewhere or for specific configuration, ensure it's properly
+    // defined as a bean.
+    // For now, we'll rely on the default UserDetailsService setup via
+    // AuthenticationConfiguration.
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 

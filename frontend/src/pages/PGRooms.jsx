@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 function PGRooms() {
   const [rooms, setRooms] = useState([]);
   const [filters, setFilters] = useState({ region: '', state: '', gender: '', available: '' });
+  const [region, setRegion] = useState('');
 
   useEffect(() => {
     api.get('/pgrooms').then(res => setRooms(res.data));
@@ -27,15 +28,24 @@ function PGRooms() {
     setRooms(res.data);
   };
 
+  const regionOptions = [
+    'Mumbai', 'Delhi', 'Pune', 'Bangalore', 'Hyderabad'
+  ];
+  const genderOptions = [
+    'Male', 'Female', 'Both'
+  ];
+
   return (
     <div className="container mt-5">
       <h2>PG Room Listings</h2>
       <form className="row g-3 mb-4" onSubmit={handleSearch}>
-        <div className="col-md-3">
-          <input className="form-control" name="region" placeholder="Region" value={filters.region} onChange={handleChange} />
-        </div>
-        <div className="col-md-3">
-          <input className="form-control" name="state" placeholder="State" value={filters.state} onChange={handleChange} />
+        <div className="col">
+          <select className="form-select" value={region} onChange={e => setRegion(e.target.value)}>
+            <option value="">Region</option>
+            {regionOptions.map(r => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
         </div>
         <div className="col-md-2">
           <select className="form-select" name="gender" value={filters.gender} onChange={handleChange}>
@@ -61,7 +71,6 @@ function PGRooms() {
           <tr>
             <th>Title</th>
             <th>Region</th>
-            <th>State</th>
             <th>Gender</th>
             <th>Rent</th>
             <th>Available</th>
@@ -69,17 +78,18 @@ function PGRooms() {
           </tr>
         </thead>
         <tbody>
-          {rooms.map(room => (
-            <tr key={room.id}>
-              <td>{room.title}</td>
-              <td>{room.region}</td>
-              <td>{room.state}</td>
-              <td>{room.gender}</td>
-              <td>{room.rent}</td>
-              <td>{room.available ? 'Yes' : 'No'}</td>
-              <td><Link to={`/pgrooms/${room.id}`}>View</Link></td>
-            </tr>
-          ))}
+          {rooms.filter(room => !region || room.region === region)
+            .filter(room => regionOptions.includes(room.region))
+            .map(room => (
+              <tr key={room.id}>
+                <td>{room.title}</td>
+                <td>{room.region}</td>
+                <td>{room.gender}</td>
+                <td>{room.rent}</td>
+                <td>{room.available ? 'Yes' : 'No'}</td>
+                <td><Link to={`/pgrooms/${room.id}`}>View</Link></td>
+              </tr>
+            ))}
         </tbody>
       </table>
     </div>

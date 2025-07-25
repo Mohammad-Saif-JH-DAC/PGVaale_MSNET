@@ -28,14 +28,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
-        // Log the request for debugging
-        System.out.println("JWT Filter - Request: " + request.getMethod() + " " + request.getRequestURI());
-        System.out.println("Authorization Header: " + request.getHeader("Authorization"));
-
         String path = request.getRequestURI();
+
+        // Log the request for debugging
+        System.out.println("JWT Filter - Request: " + request.getMethod() + " " + path);
+        System.out.println("Authorization Header: " + request.getHeader("Authorization"));
 
         // ✅ Skip JWT check for public endpoints
         if (path.startsWith("/api/auth/login") || path.startsWith("/api/auth/register")) {
+            System.out.println("Skipping JWT filter for public auth endpoint: " + path);
             chain.doFilter(request, response);
             return;
         }
@@ -54,7 +55,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 System.err.println("Error extracting username from JWT: " + e.getMessage());
             }
         } else {
-            System.out.println("No valid Bearer token found in Authorization header");
+            System.out.println("No valid Bearer token found in Authorization header for path: " + path);
         }
 
         // If username is extracted and no authentication exists in context
@@ -63,7 +64,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
                 System.out.println("User details loaded for: " + username);
 
-                // Validate token - Pass username string (as your JwtUtil expects)
                 if (jwtUtil.validateToken(jwt, userDetails.getUsername())) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
@@ -74,14 +74,14 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     System.out.println("JWT token validation failed for user: " + username);
                 }
             } catch (Exception e) {
-                System.err.println("Error loading user details or validating token: " + e.getMessage());
-                e.printStackTrace();
+                System.err.println("Error loading user details or validating token for user: " + username + ". Error: "
+                        + e.getMessage());
             }
         } else {
-            System.out.println("No username extracted or authentication already exists");
+            System.out.println("No username extracted or authentication already exists for path: " + path);
         }
 
-        System.out.println("Continuing filter chain...");
+        System.out.println("Continuing filter chain for path: " + path);
         chain.doFilter(request, response);
     }
 }
