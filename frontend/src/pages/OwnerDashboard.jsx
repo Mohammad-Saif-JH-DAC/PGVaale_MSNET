@@ -12,11 +12,18 @@ function OwnerDashboard() {
   }
 
   const [rooms, setRooms] = useState([]);
-  const [form, setForm] = useState({ title: '', address: '', region: '', state: '', gender: '', rent: '', available: true });
+  const [form, setForm] = useState({ title: '', address: '', region: '', gender: '', rent: '', available: true });
   const [editingId, setEditingId] = useState(null);
   const [interestCounts, setInterestCounts] = useState({});
   const [showInterests, setShowInterests] = useState(null);
   const [interests, setInterests] = useState([]);
+
+  const regionOptions = [
+    'Mumbai', 'Delhi', 'Pune', 'Bangalore', 'Hyderabad'
+  ];
+  const genderOptions = [
+    'Male', 'Female', 'Both'
+  ];
 
   useEffect(() => {
     if (username) {
@@ -46,7 +53,7 @@ function OwnerDashboard() {
       await api.post('/pgrooms', data);
     }
     api.get(`/pgrooms/owner/${username}`).then(res => setRooms(res.data));
-    setForm({ title: '', address: '', region: '', state: '', gender: '', rent: '', available: true });
+    setForm({ title: '', address: '', region: '', gender: '', rent: '', available: true });
   };
 
   const handleEdit = room => {
@@ -82,23 +89,25 @@ function OwnerDashboard() {
           <input className="form-control" name="address" placeholder="Address" value={form.address} onChange={handleChange} required />
         </div>
         <div className="col-md-4">
-          <input className="form-control" name="region" placeholder="Region" value={form.region} onChange={handleChange} required />
+          <select className="form-select" name="region" value={form.region} onChange={handleChange} required>
+            <option value="">Select Region</option>
+            {regionOptions.map(region => (
+              <option key={region} value={region}>{region}</option>
+            ))}
+          </select>
         </div>
         <div className="col-md-4">
-          <input className="form-control" name="state" placeholder="State" value={form.state} onChange={handleChange} required />
-        </div>
-        <div className="col-md-2">
           <select className="form-select" name="gender" value={form.gender} onChange={handleChange} required>
-            <option value="">Gender</option>
-            <option value="Male">Male</option>
-            <option value="Female">Female</option>
-            <option value="Other">Other</option>
+            <option value="">Gender Preference</option>
+            {genderOptions.map(gender => (
+              <option key={gender} value={gender}>{gender}</option>
+            ))}
           </select>
         </div>
         <div className="col-md-2">
           <input className="form-control" name="rent" placeholder="Rent" type="number" value={form.rent} onChange={handleChange} required />
         </div>
-        <div className="col-md-3">
+        <div className="col-md-2">
           <select className="form-select" name="available" value={form.available} onChange={handleChange} required>
             <option value={true}>Available</option>
             <option value={false}>Occupied</option>
@@ -113,7 +122,6 @@ function OwnerDashboard() {
           <tr>
             <th>Title</th>
             <th>Region</th>
-            <th>State</th>
             <th>Gender</th>
             <th>Rent</th>
             <th>Available</th>
@@ -126,7 +134,6 @@ function OwnerDashboard() {
             <tr key={room.id}>
               <td>{room.title}</td>
               <td>{room.region}</td>
-              <td>{room.state}</td>
               <td>{room.gender}</td>
               <td>{room.rent}</td>
               <td>
