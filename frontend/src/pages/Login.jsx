@@ -44,6 +44,11 @@ function Login() {
       const token = res.data.token;
       if (token) {
         localStorage.setItem('token', token);
+        setTimeout(() => {
+          // Clear token after 1 hour
+          localStorage.removeItem('token');
+          console.log('Token cleared after 1 hour');
+        }, 60*60*1000);
 
         // Decode JWT to get role
         const payload = JSON.parse(atob(token.split('.')[1]));
