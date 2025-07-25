@@ -48,6 +48,7 @@ function Login() {
           // Clear token after 1 hour
           localStorage.removeItem('token');
           console.log('Token cleared after 1 hour');
+           window.location.href = "/login";
         }, 60*60*1000);
 
         // Decode JWT to get role
