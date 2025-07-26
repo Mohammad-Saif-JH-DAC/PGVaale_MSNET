@@ -13,12 +13,26 @@ function RegisterForm() {
     username: '',
     email: '',
     password: '',
+    name: '',
+    aadhaar: '',
+    mobileNumber: '',
+    age: '',
+    gender: '',
     address: '',
     contactNumber: '',
     serviceArea: '',
     experience: '',
     availability: '',
     roomDetails: '',
+    // Role-specific fields
+    region: '',
+    phoneNumber: '',
+    services: '',
+    monthlySalary: '',
+    timing: '',
+    price: '',
+    foodCategory: '',
+    maidAddress: '',
   });
 
   const [error, setError] = useState('');
@@ -35,12 +49,25 @@ function RegisterForm() {
       username: '',
       email: '',
       password: '',
+      name: '',
+      aadhaar: '',
+      mobileNumber: '',
+      age: '',
+      gender: '',
       address: '',
       contactNumber: '',
       serviceArea: '',
       experience: '',
       availability: '',
       roomDetails: '',
+      region: '',
+      phoneNumber: '',
+      services: '',
+      monthlySalary: '',
+      timing: '',
+      price: '',
+      foodCategory: '',
+      maidAddress: '',
     });
     setError('');
     setSuccess('');
@@ -67,9 +94,9 @@ function RegisterForm() {
       console.log('Submitting registration for role:', role);
       console.log('Form data being sent:', form);
       
-      // Use the authApi instance that never sends auth tokens
-      const response = await api.post(`/auth/register/${role}`, form);
-      console.log('Registration response:', response.data); // Now we're using the response
+      // Use role-specific endpoint
+      const response = await api.post(`/${role}/register`, form);
+      console.log('Registration response:', response.data);
       
       setSuccess('Registration successful!');
       setTimeout(() => navigate('/login'), 2000);
@@ -109,6 +136,20 @@ function RegisterForm() {
             <div className="card-body">
               <form onSubmit={handleSubmit}>
                 {/* Common fields */}
+                <div className="mb-3">
+                  <label className="form-label">Name *</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    name="name" 
+                    value={form.name} 
+                    onChange={handleChange} 
+                    required 
+                    disabled={loading}
+                    placeholder="Enter full name"
+                  />
+                </div>
+
                 <div className="mb-3">
                   <label className="form-label">Username *</label>
                   <input 
@@ -151,96 +192,294 @@ function RegisterForm() {
                     minLength="6"
                   />
                 </div>
-                
+
                 <div className="mb-3">
-                  <label className="form-label">Contact Number *</label>
+                  <label className="form-label">Aadhaar Number *</label>
                   <input 
-                    type="tel" 
+                    type="text" 
                     className="form-control" 
-                    name="contactNumber" 
-                    value={form.contactNumber} 
+                    name="aadhaar" 
+                    value={form.aadhaar} 
                     onChange={handleChange} 
                     required 
                     disabled={loading}
-                    placeholder="Enter contact number"
+                    placeholder="Enter 12-digit Aadhaar number"
+                    pattern="[0-9]{12}"
+                    maxLength="12"
                   />
                 </div>
 
                 {/* Role-specific fields */}
                 {role === 'user' && (
-                  <div className="mb-3">
-                    <label className="form-label">Address *</label>
-                    <input 
-                      type="text" 
-                      className="form-control" 
-                      name="address" 
-                      value={form.address} 
-                      onChange={handleChange} 
-                      required 
-                      disabled={loading}
-                      placeholder="Enter your address"
-                    />
-                  </div>
-                )}
-
-                {role === 'owner' && (
-                  <div className="mb-3">
-                    <label className="form-label">Room Details *</label>
-                    <textarea 
-                      className="form-control" 
-                      name="roomDetails" 
-                      value={form.roomDetails} 
-                      onChange={handleChange} 
-                      rows="4" 
-                      required 
-                      disabled={loading}
-                      placeholder="Describe your room facilities, location, pricing, etc."
-                    />
-                  </div>
-                )}
-
-                {['tiffin', 'maid'].includes(role) && (
                   <>
                     <div className="mb-3">
-                      <label className="form-label">Service Area *</label>
+                      <label className="form-label">Mobile Number *</label>
                       <input 
-                        type="text" 
+                        type="tel" 
                         className="form-control" 
-                        name="serviceArea" 
-                        value={form.serviceArea} 
+                        name="mobileNumber" 
+                        value={form.mobileNumber} 
                         onChange={handleChange} 
                         required 
                         disabled={loading}
-                        placeholder="Enter service area (e.g., City Name, Locality)"
+                        placeholder="Enter 10-digit mobile number"
+                        pattern="[0-9]{10}"
+                        maxLength="10"
                       />
                     </div>
-                    
+
                     <div className="mb-3">
-                      <label className="form-label">Experience (Years) *</label>
+                      <label className="form-label">Age *</label>
                       <input 
                         type="number" 
                         className="form-control" 
-                        name="experience" 
-                        value={form.experience} 
+                        name="age" 
+                        value={form.age} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={loading}
+                        min="18"
+                        max="100"
+                        placeholder="Enter age"
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Gender *</label>
+                      <select 
+                        className="form-select" 
+                        name="gender" 
+                        value={form.gender} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={loading}
+                      >
+                        <option value="">Select gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  </>
+                )}
+
+                {role === 'owner' && (
+                  <>
+                    <div className="mb-3">
+                      <label className="form-label">Mobile Number *</label>
+                      <input 
+                        type="tel" 
+                        className="form-control" 
+                        name="mobileNumber" 
+                        value={form.mobileNumber} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={loading}
+                        placeholder="Enter 10-digit mobile number"
+                        pattern="[0-9]{10}"
+                        maxLength="10"
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Age *</label>
+                      <input 
+                        type="number" 
+                        className="form-control" 
+                        name="age" 
+                        value={form.age} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={loading}
+                        min="18"
+                        max="100"
+                        placeholder="Enter age"
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Region *</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        name="region" 
+                        value={form.region} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={loading}
+                        placeholder="Enter region/city"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {role === 'maid' && (
+                  <>
+                    <div className="mb-3">
+                      <label className="form-label">Phone Number *</label>
+                      <input 
+                        type="tel" 
+                        className="form-control" 
+                        name="phoneNumber" 
+                        value={form.phoneNumber} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={loading}
+                        placeholder="Enter 10-digit phone number"
+                        pattern="[0-9]{10}"
+                        maxLength="10"
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Services *</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        name="services" 
+                        value={form.services} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={loading}
+                        placeholder="E.g., Mopping, Cooking, Cleaning"
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Monthly Salary *</label>
+                      <input 
+                        type="number" 
+                        className="form-control" 
+                        name="monthlySalary" 
+                        value={form.monthlySalary} 
                         onChange={handleChange} 
                         required 
                         disabled={loading}
                         min="0"
-                        placeholder="Enter years of experience"
+                        placeholder="Enter monthly salary"
                       />
                     </div>
-                    
+
                     <div className="mb-3">
-                      <label className="form-label">Availability *</label>
-                      <input 
-                        type="text" 
-                        className="form-control" 
-                        name="availability" 
-                        value={form.availability} 
+                      <label className="form-label">Gender *</label>
+                      <select 
+                        className="form-select" 
+                        name="gender" 
+                        value={form.gender} 
                         onChange={handleChange} 
                         required 
                         disabled={loading}
-                        placeholder="E.g., Mon-Fri, 9 AM - 6 PM"
+                      >
+                        <option value="">Select gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Working Timing *</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        name="timing" 
+                        value={form.timing} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={loading}
+                        placeholder="E.g., 9 AM - 6 PM"
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Region *</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        name="region" 
+                        value={form.region} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={loading}
+                        placeholder="Enter region/city"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {role === 'tiffin' && (
+                  <>
+                    <div className="mb-3">
+                      <label className="form-label">Phone Number *</label>
+                      <input 
+                        type="tel" 
+                        className="form-control" 
+                        name="phoneNumber" 
+                        value={form.phoneNumber} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={loading}
+                        placeholder="Enter 10-digit phone number"
+                        pattern="[0-9]{10}"
+                        maxLength="10"
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Price *</label>
+                      <input 
+                        type="number" 
+                        className="form-control" 
+                        name="price" 
+                        value={form.price} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={loading}
+                        min="0"
+                        placeholder="Enter price per meal"
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Food Category *</label>
+                      <select 
+                        className="form-select" 
+                        name="foodCategory" 
+                        value={form.foodCategory} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={loading}
+                      >
+                        <option value="">Select food category</option>
+                        <option value="Veg">Vegetarian</option>
+                        <option value="Non-Veg">Non-Vegetarian</option>
+                      </select>
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Region *</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        name="region" 
+                        value={form.region} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={loading}
+                        placeholder="Enter region/city"
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label">Maid's Address</label>
+                      <input 
+                        type="text" 
+                        className="form-control" 
+                        name="maidAddress" 
+                        value={form.maidAddress} 
+                        onChange={handleChange} 
+                        disabled={loading}
+                        placeholder="Enter maid's address (optional)"
                       />
                     </div>
                   </>

@@ -34,6 +34,10 @@ dependencies {
     // Use the specific version you know works, or let Spring Boot manage it
     runtimeOnly 'com.mysql:mysql-connector-j'
 
+    // Lombok for reducing boilerplate code
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'

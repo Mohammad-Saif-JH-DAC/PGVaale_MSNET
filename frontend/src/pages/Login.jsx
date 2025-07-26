@@ -32,11 +32,13 @@ function Login() {
       // Log the request payload
       console.log('Sending login request:', form);
 
-      // Send the login request to the correct backend URL
-      const res = await axios.post('http://localhost:8081/api/auth/login', {
+      // Determine the correct endpoint based on role
+      const endpoint = `http://localhost:8081/api/${form.role}/login`;
+
+      // Send the login request to the role-specific endpoint
+      const res = await axios.post(endpoint, {
         username: form.username,
-        password: form.password,
-        role: form.role
+        password: form.password
       });
 
       console.log('Login response:', res.data);
@@ -44,11 +46,12 @@ function Login() {
       const token = res.data.token;
       if (token) {
         localStorage.setItem('token', token);
+        localStorage.setItem('userRole', form.role); // Store role for future use
         setTimeout(() => {
           // Clear token after 1 hour
           localStorage.removeItem('token');
+          localStorage.removeItem('userRole');
           console.log('Token cleared after 1 hour');
-           window.location.href = "/login";
         }, 60*60*1000);
 
         // Decode JWT to get role
