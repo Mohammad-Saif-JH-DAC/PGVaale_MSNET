@@ -51,7 +51,7 @@ function App() {
                 <Link className="nav-link" to="/register">Register</Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link" to="/contact">ContactUs</Link>
+                <Link className="nav-link" to="/contactUs">ContactUs</Link>
               </li>
               <li className="nav-item">
                 <Link className="nav-link" to="/owner-dashboard">Owner Dashboard</Link>
@@ -70,7 +70,7 @@ function App() {
       </nav>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/contactUs" element={<ContactUs />} />
         <Route path="/register/*" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin" element={<Admin />} />
