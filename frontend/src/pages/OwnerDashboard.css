@@ -1,0 +1,75 @@
+/* Background Image */
+.owner-dashboard {
+  background: url('https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed;
+  background-size: cover;
+  min-height: 100vh;
+  padding-top: 2rem;
+}
+
+.dashboard-overlay {
+  background-color: rgba(236, 240, 241, 0.9); /* Light Gray with opacity */
+  min-height: 100%;
+  padding-bottom: 3rem;
+}
+
+/* Colors */
+.bg-teal {
+  background-color: #1ABC9C !important;
+}
+.text-teal {
+  color: #1ABC9C !important;
+}
+.btn-teal {
+  background-color: #1ABC9C;
+  border-color: #1ABC9C;
+  color: white;
+}
+.btn-teal:hover {
+  background-color: #16a085;
+  border-color: #16a085;
+}
+
+/* Table Styling */
+.table-dark th {
+  background-color: #2C3E50;
+  color: white;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .table-responsive {
+    font-size: 0.9rem;
+  }
+}
+/* Add this to your OwnerDashboard.css */
+.bg-pink {
+  background-color: #ff6b81 !important;
+  color: white !important;
+}
+
+.btn-outline-primary, .btn-outline-danger {
+  transition: all 0.2s ease;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0d6efd;
+  color: white;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  color: white;
+}
+
+.table td, .table th {
+  vertical-align: middle;
+  padding: 12px;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(13, 110, 253, 0.05);
+}
