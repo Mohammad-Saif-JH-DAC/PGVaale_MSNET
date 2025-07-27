@@ -4,18 +4,22 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
-/** USER ENTITY */
+/** OWNER ENTITY */
 @Entity
-@Table(name = "users")
+@Table(name = "owners")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User extends BaseEntity {
+public class Owner extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "owner_seq")
+    @SequenceGenerator(name = "owner_seq", sequenceName = "owner_sequence", initialValue = 1000, allocationSize = 1)
     private Long id;
+
+    @Min(0)
+    private int age;
 
     @NotBlank
     @Size(min = 12, max = 12)
@@ -25,12 +29,6 @@ public class User extends BaseEntity {
     @Size(min = 10, max = 10)
     private String mobileNumber;
 
-    @Min(0)
-    private int age;
-
     @NotBlank
-    private String gender;
-
-    @NotBlank
-    private String uniqueId;
-}
+    private String region;
+} 

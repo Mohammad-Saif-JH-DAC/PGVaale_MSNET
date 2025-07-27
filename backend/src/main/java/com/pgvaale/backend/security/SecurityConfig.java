@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -17,30 +19,28 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.Arrays;
 
 @Configuration
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
 
-    // Note: CustomUserDetailsService was autowired but not used in the original
-    // snippets.
-    // If it's needed elsewhere or for specific configuration, ensure it's properly
-    // defined as a bean.
-    // For now, we'll rely on the default UserDetailsService setup via
-    // AuthenticationConfiguration.
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(customUserDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return authProvider;
     }
 
     @Bean
@@ -68,8 +68,22 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
+                .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
+                        // Public endpoints
                         .requestMatchers(
+                                "/api/user/register",
+                                "/api/user/login",
+                                "/api/admin/register",
+                                "/api/admin/login",
+                                "/api/admin/test",
+                                "/api/admin/test-password",
+                                "/api/owner/register",
+                                "/api/owner/login",
+                                "/api/maid/register",
+                                "/api/maid/login",
+                                "/api/tiffin/register",
+                                "/api/tiffin/login",
                                 "/api/auth/register/**",
                                 "/api/auth/login",
                                 "/api/public/**",
@@ -78,6 +92,13 @@ public class SecurityConfig {
                                 "/api/feedback/**")
                         .permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                        // Role-based endpoints
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/owner/**").hasRole("OWNER")
+                        .requestMatchers("/api/user/**").hasRole("USER")
+                        .requestMatchers("/api/maid/**").hasRole("MAID")
+                        .requestMatchers("/api/tiffin/**").hasRole("TIFFIN")
+                        .requestMatchers("/api/pg/**").hasAnyRole("OWNER", "USER", "ADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
