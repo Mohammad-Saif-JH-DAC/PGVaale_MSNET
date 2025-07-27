@@ -3,6 +3,8 @@ package com.pgvaale.backend.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 /** PG ENTITY */
 @Entity
 @Table(name = "pgs")
@@ -12,6 +14,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class PG {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "pg_seq")
     @SequenceGenerator(name = "pg_seq", sequenceName = "pg_sequence", initialValue = 9000, allocationSize = 1)
@@ -25,15 +28,20 @@ public class PG {
     @JoinColumn(name = "user_id")
     private User registeredUser;
 
-    private String imageUrl; // Cloudinary or Blob storage URL
+    // ✅ List of image paths (max 5 should be handled via validation in controller
+    // or frontend)
+    @ElementCollection
+    @CollectionTable(name = "pg_images", joinColumns = @JoinColumn(name = "pg_id"))
+    @Column(name = "image_path")
+    private List<String> imagePaths;
 
     private double latitude;
     private double longitude;
 
-    private String amenities; // CSV or JSON ("AC,Gas,Fridge,Table,Bed")
-    private String nearbyResources; // CSV or JSON ("Hospital,Gym,Garden")
+    private String amenities; // e.g., "AC,Gas,Fridge"
+    private String nearbyResources; // e.g., "Hospital,Gym,Garden"
 
     private double rent;
 
     private String generalPreference;
-} 
+}
