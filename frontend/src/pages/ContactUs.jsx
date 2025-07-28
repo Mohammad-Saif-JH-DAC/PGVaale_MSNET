@@ -135,13 +135,12 @@ function ContactUs() {
         </div>
       )}
 
-      <button type="submit" className="btn btn-primary w-100">
-        🚀 Submit Your Message
-      </button>
-    </form>
-  </div>
-);
-
+        <button type="submit" className="btn btn-primary w-100">
+          Submit ContactUs
+        </button>
+      </form>
+    </div>
+  );
 }
 
 export default ContactUs;

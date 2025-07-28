@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -11,10 +11,38 @@ const roles = [
 ];
 
 function Login() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({ username: '', password: '', role: 'user' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+
+  // ✅ Redirect to appropriate dashboard if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        let userRole = '';
+        if (payload.role) {
+          userRole = payload.role.replace('ROLE_', '').toLowerCase();
+        } else if (payload.authorities && payload.authorities.length > 0) {
+          userRole = payload.authorities[0].authority.replace('ROLE_', '').toLowerCase();
+        }
+
+        // Redirect to role-specific dashboard
+        if (userRole === 'admin') navigate('/admin');
+        else if (userRole === 'owner') navigate('/owner-dashboard');
+        else if (userRole === 'user') navigate('/user-dashboard');
+        else if (userRole === 'tiffin') navigate('/tiffin-dashboard');
+        else if (userRole === 'maid') navigate('/maid-dashboard');
+        else navigate('/');
+      } catch (e) {
+        console.error('Invalid token');
+        localStorage.removeItem('token');
+        localStorage.removeItem('userRole');
+      }
+    }
+  }, [navigate]);
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -26,39 +54,27 @@ function Login() {
     setLoading(true);
 
     try {
-      // Clear any existing token before login
       localStorage.removeItem('token');
 
-      // Log the request payload
-      console.log('Sending login request:', form);
-
-      // Determine the correct endpoint based on role
       const endpoint = `http://localhost:8081/api/${form.role}/login`;
-
-      // Send the login request to the role-specific endpoint
       const res = await axios.post(endpoint, {
         username: form.username,
         password: form.password
       });
 
-      console.log('Login response:', res.data);
-
       const token = res.data.token;
       if (token) {
         localStorage.setItem('token', token);
-        localStorage.setItem('userRole', form.role); // Store role for future use
+        localStorage.setItem('userRole', form.role);
+
         setTimeout(() => {
-          // Clear token after 1 hour
           localStorage.removeItem('token');
           localStorage.removeItem('userRole');
           console.log('Token cleared after 1 hour');
-        }, 60*60*1000);
+        }, 60 * 60 * 1000);
 
-        // Decode JWT to get role
         const payload = JSON.parse(atob(token.split('.')[1]));
-        console.log('JWT Payload:', payload);
 
-        // Get role from token
         let userRole = '';
         if (payload.role) {
           userRole = payload.role.replace('ROLE_', '').toLowerCase();
@@ -66,9 +82,6 @@ function Login() {
           userRole = payload.authorities[0].authority.replace('ROLE_', '').toLowerCase();
         }
 
-        console.log('User role:', userRole);
-
-        // Redirect based on role
         if (userRole === 'admin') navigate('/admin');
         else if (userRole === 'owner') navigate('/owner-dashboard');
         else if (userRole === 'user') navigate('/user-dashboard');
@@ -78,10 +91,8 @@ function Login() {
       }
     } catch (err) {
       console.error('Login error:', err);
-      console.error('Error response:', err.response);
 
       let errorMessage = 'Login failed. Please try again.';
-
       if (err.response) {
         if (err.response.status === 401) {
           errorMessage = 'Invalid username or password';
