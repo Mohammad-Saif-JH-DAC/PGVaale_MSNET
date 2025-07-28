@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
+import DashboardStats from '../components/DashboardStats'; // ✅ adjust path if needed
+
 
 function Admin() {
   const [pendingMaid, setPendingMaid] = useState([]);
