@@ -59,12 +59,19 @@ const DashboardStats = () => {
   }
 
   // Data for Pie Chart (User Types)
+  // const pieData = [
+  //   { name: 'Users', value: stats.totalUsers, color: '#8884d8' },
+  //   { name: 'Owners', value: stats.totalOwners, color: '#82ca9d' },
+  //   { name: 'Tiffin Providers', value: stats.totalTiffinProviders, color: '#ffc658' },
+  //   { name: 'Maids', value: stats.totalMaids, color: '#ff7300' }
+  // ];
   const pieData = [
-    { name: 'Users', value: stats.totalUsers, color: '#8884d8' },
-    { name: 'Owners', value: stats.totalOwners, color: '#82ca9d' },
-    { name: 'Tiffin Providers', value: stats.totalTiffinProviders, color: '#ffc658' },
-    { name: 'Maids', value: stats.totalMaids, color: '#ff7300' }
-  ];
+  ...(stats.totalUsers > 0 ? [{ name: 'Users', value: stats.totalUsers, color: '#8884d8' }] : []),
+  ...(stats.totalOwners > 0 ? [{ name: 'Owners', value: stats.totalOwners, color: '#82ca9d' }] : []),
+  ...(stats.totalTiffinProviders > 0 ? [{ name: 'Tiffin Providers', value: stats.totalTiffinProviders, color: '#ffc658' }] : []),
+  ...(stats.totalMaids > 0 ? [{ name: 'Maids', value: stats.totalMaids, color: '#ff7300' }] : []),
+];
+
 
   // Data for Bar Chart (Detailed Statistics)
   const barData = [

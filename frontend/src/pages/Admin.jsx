@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import DashboardStats from '../components/DashboardStats';
 import api from '../api';
 import DashboardStats from '../components/DashboardStats'; // ✅ adjust path if needed
 

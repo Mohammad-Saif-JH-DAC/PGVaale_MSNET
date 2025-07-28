@@ -9,7 +9,6 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 
 // Fix for default marker icons in React-Leaflet
-// Import marker images directly for robustness
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -47,11 +46,10 @@ function OwnerDashboard() {
     nearbyResources: '',
     rent: '',
     generalPreference: '',
-    region: '' // Added region field
+    region: ''
   });
   const [editingId, setEditingId] = useState(null);
   const preferenceOptions = ['Male', 'Female', 'Any'];
-  // Define region options
   const regionOptions = ['Mumbai', 'Delhi', 'Pune', 'Bangalore', 'Hyderabad'];
   const [activeTab, setActiveTab] = useState('list');
   const [lightbox, setLightbox] = useState({
@@ -128,7 +126,7 @@ function OwnerDashboard() {
       nearbyResources: form.nearbyResources,
       rent: parseFloat(form.rent),
       generalPreference: form.generalPreference,
-      region: form.region // Include region in data to send
+      region: form.region
     };
 
     try {
@@ -150,7 +148,7 @@ function OwnerDashboard() {
         nearbyResources: '',
         rent: '',
         generalPreference: '',
-        region: '' // Reset region field
+        region: ''
       });
       setActiveTab('list');
       setTimeout(() => setError(''), 3000);
@@ -170,7 +168,7 @@ function OwnerDashboard() {
       nearbyResources: pg.nearbyResources || '',
       rent: pg.rent?.toString() || '',
       generalPreference: pg.generalPreference || '',
-      region: pg.region || '' // Populate region field for editing
+      region: pg.region || ''
     });
     setEditingId(pg.id);
     setError('');
@@ -190,7 +188,6 @@ function OwnerDashboard() {
     }
   };
 
-  // Leaflet Map Component
   const MapComponent = ({ lat, lng }) => {
     const isValidCoordinates = lat && lng && !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng));
 
@@ -204,7 +201,7 @@ function OwnerDashboard() {
       <MapContainer
         center={position}
         zoom={15}
-        style={{ height: '150px', width: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid #eee' }}
+        style={{ height: '100%', width: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid #eee' }}
         dragging={false}
         zoomControl={false}
         doubleClickZoom={false}
@@ -224,8 +221,9 @@ function OwnerDashboard() {
     );
   };
 
-  // Image Gallery Component (Unchanged)
   const ImageGallery = ({ images }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+
     if (!images || images.length === 0) {
       return (
         <div className="no-images-placeholder">
@@ -234,33 +232,67 @@ function OwnerDashboard() {
         </div>
       );
     }
+
+    const nextImage = () => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+    };
+
+    const prevImage = () => {
+      setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
+    };
+
     return (
-      <div className="image-gallery">
-        {images.slice(0, 4).map((img, idx) => (
-          <div
-            key={idx}
-            className="gallery-item"
+      <div className="image-carousel">
+        <div className="carousel-image-container">
+          <img
+            src={images[currentIndex]}
+            alt={`PG Image ${currentIndex + 1}`}
+            className="carousel-image"
             onClick={() => setLightbox({
               isOpen: true,
-              currentIndex: idx,
+              currentIndex: currentIndex,
               images: images
             })}
-          >
-            <img
-              src={img}
-              alt={`PG Image ${idx + 1}`}
-              onError={e => {
-                e.target.onerror = null;
-                e.target.src = '/fallback.png';
-              }}
-            />
-            {idx === 3 && images.length > 4 && (
-              <div className="more-images-overlay">
-                +{images.length - 4}
+            onError={e => {
+              e.target.onerror = null;
+              e.target.src = '/fallback.png';
+            }}
+          />
+          {images.length > 1 && (
+            <>
+              <button 
+                className="carousel-control prev"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  prevImage();
+                }}
+              >
+                <i className="bi bi-chevron-left"></i>
+              </button>
+              <button 
+                className="carousel-control next"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  nextImage();
+                }}
+              >
+                <i className="bi bi-chevron-right"></i>
+              </button>
+              <div className="carousel-indicators">
+                {images.map((_, index) => (
+                  <span
+                    key={index}
+                    className={`indicator ${index === currentIndex ? 'active' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentIndex(index);
+                    }}
+                  ></span>
+                ))}
               </div>
-            )}
-          </div>
-        ))}
+            </>
+          )}
+        </div>
       </div>
     );
   };
@@ -303,6 +335,7 @@ function OwnerDashboard() {
           </button>
         </li>
       </ul>
+
       {activeTab === 'form' && (
         <div className="card shadow-sm mb-5">
           <div className="card-body">
@@ -350,7 +383,6 @@ function OwnerDashboard() {
                     required
                   />
                 </div>
-                {/* Region Dropdown Field */}
                 <div className="col-md-3">
                   <label className="form-label">Region *</label>
                   <select
@@ -440,7 +472,7 @@ function OwnerDashboard() {
                           nearbyResources: '',
                           rent: '',
                           generalPreference: '',
-                          region: '' // Reset region field
+                          region: ''
                         });
                       }}
                     >
@@ -456,6 +488,7 @@ function OwnerDashboard() {
           </div>
         </div>
       )}
+
       {activeTab === 'list' && (
         <div className="card shadow-sm">
           <div className="card-body">
@@ -472,23 +505,34 @@ function OwnerDashboard() {
               </button>
             </div>
             {rooms.length ? (
-              <div className="table-responsive"> {/* Added for better mobile responsiveness */}
+              <div className="table-responsive">
                 <table className="table table-striped table-hover align-middle">
                   <thead className="table-dark">
                     <tr>
-                      <th scope="col">ID</th>
-                      <th scope="col">Region</th> {/* Added Region column header */}
-                      <th scope="col">Rent</th>
-                      <th scope="col">Preference</th>
-                      <th scope="col">Amenities</th>
-                      <th scope="col">Actions</th>
+                      <th scope="col" style={{ width: '5%' }}>ID</th>
+                      <th scope="col" style={{ width: '15%' }}>Images</th>
+                      <th scope="col" style={{ width: '10%' }}>Region</th>
+                      <th scope="col" style={{ width: '20%' }}>Location</th>
+                      <th scope="col" style={{ width: '10%' }}>Rent</th>
+                      <th scope="col" style={{ width: '10%' }}>Preference</th>
+                      <th scope="col" style={{ width: '10%' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {rooms.map(pg => (
                       <tr key={pg.id}>
                         <td>#{pg.id}</td>
-                        <td>{pg.region || 'N/A'}</td> {/* Display Region */}
+                        <td>
+                          <div style={{ width: '120px', height: '80px' }}>
+                            <ImageGallery images={pg.imagePaths || []} />
+                          </div>
+                        </td>
+                        <td>{pg.region || 'N/A'}</td>
+                        <td>
+                          <div style={{ width: '200px', height: '120px' }}>
+                            <MapComponent lat={pg.latitude} lng={pg.longitude} />
+                          </div>
+                        </td>
                         <td>₹{pg.rent}/month</td>
                         <td>
                           <span className={`badge ${
@@ -497,11 +541,6 @@ function OwnerDashboard() {
                           }`}>
                             {pg.generalPreference}
                           </span>
-                        </td>
-                        <td>
-                          {pg.amenities && pg.amenities.length > 30
-                            ? `${pg.amenities.substring(0, 30)}...`
-                            : pg.amenities || 'N/A'}
                         </td>
                         <td>
                           <div className="d-flex gap-2">
@@ -544,7 +583,7 @@ function OwnerDashboard() {
           </div>
         </div>
       )}
-      {/* Custom Lightbox */}
+
       {lightbox.isOpen && (
         <div className="custom-lightbox">
           <div className="lightbox-content">
@@ -567,7 +606,7 @@ function OwnerDashboard() {
                     currentIndex: (lightbox.currentIndex - 1 + lightbox.images.length) % lightbox.images.length
                   })}
                 >
-                   {/* Corrected: Use < for < in JSX */}
+                  &lt;
                 </button>
                 <button
                   className="lightbox-nav next"
@@ -576,7 +615,7 @@ function OwnerDashboard() {
                     currentIndex: (lightbox.currentIndex + 1) % lightbox.images.length
                   })}
                 >
-                   {/* Corrected: Use > for > in JSX */}
+                  &gt;
                 </button>
               </>
             )}

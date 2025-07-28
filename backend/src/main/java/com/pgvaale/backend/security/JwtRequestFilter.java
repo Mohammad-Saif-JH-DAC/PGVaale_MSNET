@@ -2,9 +2,8 @@ package com.pgvaale.backend.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -13,7 +12,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
+import java.util.List;
 
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
@@ -21,22 +22,18 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtil jwtUtil;
 
-    @Autowired
-    private UserDetailsService userDetailsService;
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
+        String method = request.getMethod();
 
-        // Log the request for debugging
-        System.out.println("JWT Filter - Request: " + request.getMethod() + " " + path);
+        System.out.println("JWT Filter - " + method + " " + path);
         System.out.println("Authorization Header: " + request.getHeader("Authorization"));
 
-        // ✅ Skip JWT check for public endpoints
+        // Allow unauthenticated access to public auth routes
         if (path.startsWith("/api/auth/login") || path.startsWith("/api/auth/register")) {
-            System.out.println("Skipping JWT filter for public auth endpoint: " + path);
             chain.doFilter(request, response);
             return;
         }
@@ -45,43 +42,38 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String username = null;
         String jwt = null;
 
-        // Check if Authorization header exists and starts with "Bearer "
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             jwt = authHeader.substring(7);
             try {
                 username = jwtUtil.extractUsername(jwt);
-                System.out.println("Extracted username from JWT: " + username);
+                System.out.println("Extracted username: " + username);
             } catch (Exception e) {
-                System.err.println("Error extracting username from JWT: " + e.getMessage());
+                System.err.println("Error extracting username: " + e.getMessage());
             }
         } else {
-            System.out.println("No valid Bearer token found in Authorization header for path: " + path);
+            System.out.println("No valid Bearer token found.");
         }
 
-        // If username is extracted and no authentication exists in context
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-                System.out.println("User details loaded for: " + username);
+                // Extract role from token
+                String role = jwtUtil.extractClaim(jwt, claims -> (String) claims.get("role"));
+                System.out.println("Extracted role: " + role);
 
-                if (jwtUtil.validateToken(jwt, userDetails.getUsername())) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                    System.out.println("Authentication set for user: " + username);
-                } else {
-                    System.out.println("JWT token validation failed for user: " + username);
-                }
+                // Create authorities and set authentication
+                List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, null,
+                        authorities);
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("Authentication successful for user: " + username);
+
             } catch (Exception e) {
-                System.err.println("Error loading user details or validating token for user: " + username + ". Error: "
-                        + e.getMessage());
+                System.err.println("JWT validation/authentication failed: " + e.getMessage());
             }
-        } else {
-            System.out.println("No username extracted or authentication already exists for path: " + path);
         }
 
-        System.out.println("Continuing filter chain for path: " + path);
         chain.doFilter(request, response);
     }
 }
