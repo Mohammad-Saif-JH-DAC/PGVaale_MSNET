@@ -1,0 +1,91 @@
+/* ContactUs.css */
+
+/* Background and container */
+.contact-container {
+  background-color: #ECF0F1; /* Light Gray background */
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Headings */
+.contact-container h2 {
+  color: #2C3E50; /* Navy Blue */
+  font-weight: 700;
+}
+
+.contact-container .text-muted {
+  color: #7f8c8d; /* Slightly darker gray for better contrast */
+}
+
+/* Labels */
+.contact-container .form-label {
+  color: #2C3E50;
+  font-weight: 600;
+}
+
+/* Input and Textarea Focus */
+.contact-container .form-control:focus {
+  border-color: #1ABC9C; /* Soft Teal */
+  box-shadow: 0 0 0 0.2rem rgba(26, 188, 156, 0.25);
+}
+
+/* Error messages */
+.invalid-contactUs {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 2px;
+}
+
+/* Success or error alert */
+.alert-success {
+  background-color: #1ABC9C;
+  color: white;
+  border: none;
+}
+
+.alert-danger {
+  background-color: #E74C3C;
+  color: white;
+  border: none;
+}
+
+/* Submit button */
+.contact-container .btn-primary {
+  background-color: #F1C40F; /* Warm Gold */
+  border-color: #F1C40F;
+  font-weight: bold;
+  color: #2C3E50;
+  transition: background-color 0.3s ease;
+}
+
+.contact-container .btn-primary:hover {
+  background-color: #d4ac0d;
+  border-color: #d4ac0d;
+  color: white;
+}
+
+/* Emojis & Centered Text Enhancements */
+.contact-container h2 {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.contact-container .text-muted {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+/* Placeholder aesthetic (optional) */
+.contact-container input::placeholder,
+.contact-container textarea::placeholder {
+  color: #95a5a6;
+  font-style: italic;
+}
+body {
+  background-color: #ECF0F1;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(241, 196, 15, 0.06) 0%, transparent 20%),
+    radial-gradient(circle at 90% 80%, rgba(44, 62, 80, 0.03) 0%, transparent 20%);
+}

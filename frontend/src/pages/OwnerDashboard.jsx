@@ -3,21 +3,19 @@ import React, { useEffect, useState } from 'react';
 import api from '../api';
 import './OwnerDashboard.css';
 
-// --- Leaflet Imports ---
+// Import Leaflet CSS and components
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 
-// --- Import Marker Images Directly ---
+// Fix for default marker icons in React-Leaflet
+// Import marker images directly for robustness
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-// -------------------------
 
-// --- Fix Leaflet Default Icon Issue ---
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  // Use the imported image paths
   iconRetinaUrl: markerIcon2x,
   iconUrl: markerIcon,
   shadowUrl: markerShadow,
@@ -36,6 +34,7 @@ function OwnerDashboard() {
       console.error('Error decoding token:', e);
     }
   }
+
   const [rooms, setRooms] = useState([]);
   const [ownerId, setOwnerId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -47,25 +46,19 @@ function OwnerDashboard() {
     amenities: '',
     nearbyResources: '',
     rent: '',
-    generalPreference: ''
+    generalPreference: '',
+    region: '' // Added region field
   });
   const [editingId, setEditingId] = useState(null);
   const preferenceOptions = ['Male', 'Female', 'Any'];
+  // Define region options
+  const regionOptions = ['Mumbai', 'Delhi', 'Pune', 'Bangalore', 'Hyderabad'];
   const [activeTab, setActiveTab] = useState('list');
-  // Removed locationName state as geocoding is removed
-  // const [locationName, setLocationName] = useState('');
   const [lightbox, setLightbox] = useState({
     isOpen: false,
     currentIndex: 0,
     images: []
   });
-
-  // Removed Google Maps loading effect
-  // useEffect(() => {
-  //   loadGoogleMaps(() => {
-  //     setMapsLoaded(true);
-  //   });
-  // }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -91,16 +84,6 @@ function OwnerDashboard() {
     };
     fetchData();
   }, [username]);
-
-  // Removed useEffect for fetching location name based on lat/lng
-  // useEffect(() => {
-  //   if (form.latitude && form.longitude) {
-  //     fetchLocationName(form.latitude, form.longitude);
-  //   }
-  // }, [form.latitude, form.longitude]);
-
-  // Removed Google Geocoding function
-  // const fetchLocationName = async (lat, lng) => { ... }
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -131,7 +114,11 @@ function OwnerDashboard() {
       setError('Maximum of 5 image URLs allowed.');
       return;
     }
-    // Removed locationName from dataToSend
+    if (!form.region) {
+        setError('Please select a region.');
+        return;
+    }
+
     const dataToSend = {
       ownerId,
       imagePaths: validImages,
@@ -140,9 +127,10 @@ function OwnerDashboard() {
       amenities: form.amenities,
       nearbyResources: form.nearbyResources,
       rent: parseFloat(form.rent),
-      generalPreference: form.generalPreference
-      // locationName - removed
+      generalPreference: form.generalPreference,
+      region: form.region // Include region in data to send
     };
+
     try {
       if (editingId) {
         await api.put(`/pg/${editingId}`, dataToSend);
@@ -161,7 +149,8 @@ function OwnerDashboard() {
         amenities: '',
         nearbyResources: '',
         rent: '',
-        generalPreference: ''
+        generalPreference: '',
+        region: '' // Reset region field
       });
       setActiveTab('list');
       setTimeout(() => setError(''), 3000);
@@ -180,9 +169,9 @@ function OwnerDashboard() {
       amenities: pg.amenities || '',
       nearbyResources: pg.nearbyResources || '',
       rent: pg.rent?.toString() || '',
-      generalPreference: pg.generalPreference || ''
+      generalPreference: pg.generalPreference || '',
+      region: pg.region || '' // Populate region field for editing
     });
-    // setLocationName(pg.locationName || ''); // Removed
     setEditingId(pg.id);
     setError('');
     setActiveTab('form');
@@ -203,7 +192,6 @@ function OwnerDashboard() {
 
   // Leaflet Map Component
   const MapComponent = ({ lat, lng }) => {
-    // Check if lat/lng are valid numbers
     const isValidCoordinates = lat && lng && !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng));
 
     if (!isValidCoordinates) {
@@ -217,11 +205,11 @@ function OwnerDashboard() {
         center={position}
         zoom={15}
         style={{ height: '150px', width: '100%', borderRadius: '8px', overflow: 'hidden', border: '1px solid #eee' }}
-        dragging={false} // Optional: disable dragging
-        zoomControl={false} // Optional: disable zoom control
-        doubleClickZoom={false} // Optional: disable double click zoom
-        scrollWheelZoom={false} // Optional: disable scroll wheel zoom
-        touchZoom={false} // Optional: disable touch zoom
+        dragging={false}
+        zoomControl={false}
+        doubleClickZoom={false}
+        scrollWheelZoom={false}
+        touchZoom={false}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -235,7 +223,6 @@ function OwnerDashboard() {
       </MapContainer>
     );
   };
-
 
   // Image Gallery Component (Unchanged)
   const ImageGallery = ({ images }) => {
@@ -264,7 +251,7 @@ function OwnerDashboard() {
               alt={`PG Image ${idx + 1}`}
               onError={e => {
                 e.target.onerror = null;
-                e.target.src = '/fallback.png'; // Ensure you have a fallback image
+                e.target.src = '/fallback.png';
               }}
             />
             {idx === 3 && images.length > 4 && (
@@ -363,15 +350,22 @@ function OwnerDashboard() {
                     required
                   />
                 </div>
-                {/* Removed locationName display */}
-                {/* {locationName && (
-                  <div className="col-12">
-                    <div className="alert alert-info py-2 mb-0">
-                      <i className="bi bi-geo-alt-fill me-2"></i>
-                      {locationName}
-                    </div>
-                  </div>
-                )} */}
+                {/* Region Dropdown Field */}
+                <div className="col-md-3">
+                  <label className="form-label">Region *</label>
+                  <select
+                    className="form-select"
+                    name="region"
+                    value={form.region}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Select Region</option>
+                    {regionOptions.map(region => (
+                      <option key={region} value={region}>{region}</option>
+                    ))}
+                  </select>
+                </div>
                 {form.latitude && form.longitude && (
                   <div className="col-12">
                     <div className="map-container mb-3" style={{ height: '200px', borderRadius: '8px', overflow: 'hidden' }}>
@@ -445,9 +439,9 @@ function OwnerDashboard() {
                           amenities: '',
                           nearbyResources: '',
                           rent: '',
-                          generalPreference: ''
+                          generalPreference: '',
+                          region: '' // Reset region field
                         });
-                        // setLocationName(''); // Removed
                       }}
                     >
                       Cancel
@@ -478,59 +472,38 @@ function OwnerDashboard() {
               </button>
             </div>
             {rooms.length ? (
-              <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                {rooms.map(pg => (
-                  <div className="col" key={pg.id}>
-                    <div className="card h-100 shadow-sm border-0">
-                      <div className="position-relative">
-                        <ImageGallery images={pg.imagePaths} />
-                        <div className="position-absolute top-0 end-0 m-2">
+              <div className="table-responsive"> {/* Added for better mobile responsiveness */}
+                <table className="table table-striped table-hover align-middle">
+                  <thead className="table-dark">
+                    <tr>
+                      <th scope="col">ID</th>
+                      <th scope="col">Region</th> {/* Added Region column header */}
+                      <th scope="col">Rent</th>
+                      <th scope="col">Preference</th>
+                      <th scope="col">Amenities</th>
+                      <th scope="col">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rooms.map(pg => (
+                      <tr key={pg.id}>
+                        <td>#{pg.id}</td>
+                        <td>{pg.region || 'N/A'}</td> {/* Display Region */}
+                        <td>₹{pg.rent}/month</td>
+                        <td>
                           <span className={`badge ${
                             pg.generalPreference === 'Male' ? 'bg-primary' :
-                              pg.generalPreference === 'Female' ? 'bg-pink' : 'bg-secondary'
+                            pg.generalPreference === 'Female' ? 'bg-pink' : 'bg-secondary'
                           }`}>
                             {pg.generalPreference}
                           </span>
-                        </div>
-                      </div>
-                      <div className="card-body">
-                        <div className="d-flex justify-content-between align-items-start mb-2">
-                          <h5 className="card-title mb-0">PG #{pg.id}</h5>
-                          <span className="fw-bold text-success">₹{pg.rent}/month</span>
-                        </div>
-                        {/* Removed locationName display */}
-                        {/* {pg.locationName && (
-                          <p className="text-muted small mb-2">
-                            <i className="bi bi-geo-alt-fill me-1"></i>
-                            {pg.locationName}
-                          </p>
-                        )} */}
-                        {pg.latitude && pg.longitude && (
-                          <div className="mb-3">
-                            <MapComponent lat={pg.latitude} lng={pg.longitude} />
-                          </div>
-                        )}
-                        {pg.amenities && (
-                          <div className="mb-2">
-                            <h6 className="small fw-bold mb-1">Amenities:</h6>
-                            <p className="small text-muted mb-0">
-                              {pg.amenities.length > 60
-                                ? `${pg.amenities.substring(0, 60)}...`
-                                : pg.amenities}
-                            </p>
-                          </div>
-                        )}
-                        {pg.nearbyResources && (
-                          <div className="mb-3">
-                            <h6 className="small fw-bold mb-1">Nearby:</h6>
-                            <p className="small text-muted mb-0">
-                              {pg.nearbyResources.length > 60
-                                ? `${pg.nearbyResources.substring(0, 60)}...`
-                                : pg.nearbyResources}
-                            </p>
-                          </div>
-                        )}
-                        <div className="d-flex justify-content-between align-items-center">
+                        </td>
+                        <td>
+                          {pg.amenities && pg.amenities.length > 30
+                            ? `${pg.amenities.substring(0, 30)}...`
+                            : pg.amenities || 'N/A'}
+                        </td>
+                        <td>
                           <div className="d-flex gap-2">
                             <button
                               className="btn btn-sm btn-outline-primary"
@@ -547,11 +520,11 @@ function OwnerDashboard() {
                               <i className="bi bi-trash"></i>
                             </button>
                           </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             ) : (
               <div className="text-center py-5">
@@ -594,8 +567,7 @@ function OwnerDashboard() {
                     currentIndex: (lightbox.currentIndex - 1 + lightbox.images.length) % lightbox.images.length
                   })}
                 >
-                  {/* Corrected: Use < for < in JSX */}
-                  
+                   {/* Corrected: Use < for < in JSX */}
                 </button>
                 <button
                   className="lightbox-nav next"
@@ -604,8 +576,7 @@ function OwnerDashboard() {
                     currentIndex: (lightbox.currentIndex + 1) % lightbox.images.length
                   })}
                 >
-                  {/* Corrected: Use > for > in JSX */}
-                  
+                   {/* Corrected: Use > for > in JSX */}
                 </button>
               </>
             )}

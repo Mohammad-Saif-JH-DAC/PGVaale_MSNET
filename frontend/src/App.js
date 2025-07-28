@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Home from './pages/Home';
 import ContactUs from './pages/ContactUs';
@@ -14,6 +14,7 @@ import Login from './pages/Login';
 import UserDashboard from './pages/UserDashboard';
 import TiffinDashboard from './pages/TiffinDashboard';
 import MaidDashboard from './pages/MaidDashboard';
+import Footer from './Footer';
 
 // Helper to decode JWT and get user role
 function getUserRole() {
@@ -27,6 +28,13 @@ function getUserRole() {
   return null;
 }
 
+// Logout function
+function handleLogout(navigate) {
+  localStorage.removeItem('token');
+  localStorage.removeItem('userRole');
+  navigate('/');
+}
+
 // PrivateRoute component
 function PrivateRoute({ element, allowedRoles }) {
   const role = getUserRole();
@@ -35,54 +43,84 @@ function PrivateRoute({ element, allowedRoles }) {
   return element;
 }
 
-function App() {
+// Navigation component with logout functionality
+function Navigation() {
+  const navigate = useNavigate();
   const token = localStorage.getItem('token');
+  const userRole = getUserRole();
+
   return (
-    <Router>
-      <nav className="navbar navbar-expand-lg navbar-light bg-light">
-        <div className="container-fluid">
-          <Link className="navbar-brand" to="/">PGVaale</Link>
-          <div className="collapse navbar-collapse">
-            <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
-              <li className="nav-item">
-                <Link className="nav-link" to="/pgrooms">PG Rooms</Link>
-              </li>
+    <nav className="navbar navbar-expand-lg navbar-light bg-light">
+      <div className="container-fluid">
+        <Link className="navbar-brand" to="/">PGVaale</Link>
+        <div className="collapse navbar-collapse">
+          <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
+            <li className="nav-item">
+              <Link className="nav-link" to="/pgrooms">PG Rooms</Link>
+            </li>
+            {!token && (
               <li className="nav-item">
                 <Link className="nav-link" to="/register">Register</Link>
               </li>
-              <li className="nav-item">
-                <Link className="nav-link" to="/contact">ContactUs</Link>
-              </li>
+            )}
+            <li className="nav-item">
+              <Link className="nav-link" to="/contact">ContactUs</Link>
+            </li>
+            {token && userRole === 'owner' && (
               <li className="nav-item">
                 <Link className="nav-link" to="/owner-dashboard">Owner Dashboard</Link>
               </li>
-              {token && (
-                <li className="nav-item">
-                  <Link className="nav-link" to="/chat">Group Chat</Link>
-                </li>
-              )}
+            )}
+            {token && userRole !== 'owner' && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/chat">Group Chat</Link>
+              </li>
+            )}
+            {token ? (
+              <li className="nav-item">
+                <button 
+                  className="btn btn-outline-danger" 
+                  onClick={() => handleLogout(navigate)}
+                >
+                  Logout
+                </button>
+              </li>
+            ) : (
               <li className="nav-item">
                 <Link className="nav-link" to="/login">Login</Link>
               </li>
-            </ul>
-          </div>
-    </div>
-      </nav>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/contact" element={<ContactUs />} />
-        <Route path="/register/*" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/pgrooms" element={<PGRooms />} />
-        <Route path="/pgrooms/:id" element={<RoomDetails />} />
-        <Route path="/owner-dashboard" element={<OwnerDashboard />} />
-        <Route path="/chat" element={<Chat />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/user-dashboard" element={<UserDashboard />} />
-        <Route path="/tiffin-dashboard" element={<TiffinDashboard />} />
-        <Route path="/maid-dashboard" element={<MaidDashboard />} />
-      </Routes>
+            )}
+          </ul>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <div className="d-flex flex-column min-vh-100">
+        <Navigation />
+        <div className="flex-grow-1">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/contact" element={<ContactUs />} />
+            <Route path="/register/*" element={<Register />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/pgrooms" element={<PGRooms />} />
+            <Route path="/pgrooms/:id" element={<RoomDetails />} />
+            <Route path="/owner-dashboard" element={<OwnerDashboard />} />
+            <Route path="/chat" element={<Chat />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/user-dashboard" element={<UserDashboard />} />
+            <Route path="/tiffin-dashboard" element={<TiffinDashboard />} />
+            <Route path="/maid-dashboard" element={<MaidDashboard />} />
+          </Routes>
+        </div>
+        <Footer />
+      </div>
     </Router>
   );
 }

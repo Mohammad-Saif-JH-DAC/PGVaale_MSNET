@@ -1,11 +1,13 @@
 package com.pgvaale.backend.controller;
 
+import com.pgvaale.backend.dto.DashboardStatsDTO;
 import com.pgvaale.backend.entity.Admin;
 import com.pgvaale.backend.entity.Maid;
 import com.pgvaale.backend.entity.Tiffin;
 import com.pgvaale.backend.repository.AdminRepository;
 import com.pgvaale.backend.repository.MaidRepository;
 import com.pgvaale.backend.repository.TiffinRepository;
+import com.pgvaale.backend.service.DashboardService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +33,9 @@ public class AdminController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private DashboardService dashboardService;
 
     @GetMapping("/test")
     public ResponseEntity<?> testAdmin() {
@@ -197,6 +202,17 @@ public class AdminController {
             return ResponseEntity.ok("Tiffin rejected and removed successfully");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error rejecting tiffin: " + e.getMessage());
+        }
+    }
+
+    // Get dashboard statistics
+    @GetMapping("/dashboard-stats")
+    public ResponseEntity<?> getDashboardStats() {
+        try {
+            DashboardStatsDTO stats = dashboardService.getDashboardStats();
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error fetching dashboard statistics: " + e.getMessage());
         }
     }
 } 
