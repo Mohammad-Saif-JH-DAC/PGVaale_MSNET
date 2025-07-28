@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import Home from './pages/Home';
+import ContactUs from './pages/ContactUs';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Admin from './pages/Admin';
@@ -50,6 +51,9 @@ function App() {
                 <Link className="nav-link" to="/register">Register</Link>
               </li>
               <li className="nav-item">
+                <Link className="nav-link" to="/contactUs">ContactUs</Link>
+              </li>
+              <li className="nav-item">
                 <Link className="nav-link" to="/owner-dashboard">Owner Dashboard</Link>
               </li>
               {token && (
@@ -66,6 +70,7 @@ function App() {
       </nav>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/contactUs" element={<ContactUs />} />
         <Route path="/register/*" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/admin" element={<Admin />} />
