@@ -83,6 +83,11 @@ function Admin() {
       
       {error && <div className="alert alert-danger">{error}</div>}
       
+      {/* Dashboard Statistics */}
+      <DashboardStats />
+      
+      <hr className="my-5" />
+      
       <div className="row">
         <div className="col-md-6">
           <div className="card">
@@ -195,34 +200,12 @@ function Admin() {
         <div className="col-12">
           <div className="card">
             <div className="card-header">
-              <h4>System Information</h4>
+              <h4>System Status</h4>
             </div>
             <div className="card-body">
-              <div className="row">
-                <div className="col-md-3">
-                  <div className="text-center">
-                    <h5>Total Maids</h5>
-                    <p className="h3 text-primary">{pendingMaid.length}</p>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="text-center">
-                    <h5>Total Tiffin Providers</h5>
-                    <p className="h3 text-success">{pendingTiffin.length}</p>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="text-center">
-                    <h5>Total Service Providers</h5>
-                    <p className="h3 text-info">{pendingMaid.length + pendingTiffin.length}</p>
-                  </div>
-                </div>
-                <div className="col-md-3">
-                  <div className="text-center">
-                    <h5>System Status</h5>
-                    <span className="badge bg-success">Online</span>
-                  </div>
-                </div>
+              <div className="text-center">
+                <span className="badge bg-success fs-6">System Online</span>
+                <p className="text-muted mt-2">All services are running normally</p>
               </div>
             </div>
           </div>
