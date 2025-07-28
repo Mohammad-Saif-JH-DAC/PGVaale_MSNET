@@ -297,9 +297,9 @@ function RegisterForm() {
 
   const getBackgroundImage = () => {
     switch (role) {
-      case 'user': return 'url("/images/user-bg.jpg")';
-      case 'owner': return 'url("/images/owner-bg.jpg")';
-      case 'tiffin': return 'url("/images/tiffin-bg.jpg")';
+      case 'user': return 'url("/image/tenent1.png")';
+      case 'owner': return 'url("/image/owner.jpg")';
+      case 'tiffin': return 'url("/image/tiffin1.jpg")';
       case 'maid': return 'url("/image/maid.jpg")';
       default: return 'url("/images/default-bg.jpg")';
     }
