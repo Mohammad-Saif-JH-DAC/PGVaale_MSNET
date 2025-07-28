@@ -133,7 +133,7 @@ function ContactUs() {
         )}
 
         <button type="submit" className="btn btn-primary w-100">
-          Submit Feedback
+          Submit ContactUs
         </button>
       </form>
     </div>

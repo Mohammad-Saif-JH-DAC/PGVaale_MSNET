@@ -1,4 +1,5 @@
 import React from 'react';
+
 function MaidDashboard() {
   return (
     <div className="container mt-5">
@@ -7,4 +8,5 @@ function MaidDashboard() {
     </div>
   );
 }
+
 export default MaidDashboard; 

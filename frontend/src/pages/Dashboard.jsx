@@ -1,8 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 
 function Dashboard() {
-  const navigate = useNavigate();
   const token = localStorage.getItem('token');
   let role = '';
   if (token) {
@@ -12,17 +10,11 @@ function Dashboard() {
     } catch {}
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/');
-  };
-
   return (
     <div className="container mt-5">
       <h2>User Dashboard</h2>
       <p><b>Role:</b> {role}</p>
       <p><b>JWT:</b> <code style={{wordBreak:'break-all'}}>{token}</code></p>
-      <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
     </div>
   );
 }

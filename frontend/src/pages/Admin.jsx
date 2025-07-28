@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
-import { useNavigate } from 'react-router-dom';
 
 function Admin() {
   const [pendingMaid, setPendingMaid] = useState([]);
   const [pendingTiffin, setPendingTiffin] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Load pending maids and tiffin providers
@@ -22,11 +20,6 @@ function Admin() {
     .catch(() => setError('Failed to load service providers'))
     .finally(() => setLoading(false));
   }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/');
-  };
 
   const handleApproveMaid = async (id) => {
     try {
@@ -86,10 +79,7 @@ function Admin() {
 
   return (
     <div className="container mt-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Admin Dashboard</h2>
-        <button className="btn btn-danger" onClick={handleLogout}>Logout</button>
-      </div>
+      <h2>Admin Dashboard</h2>
       
       {error && <div className="alert alert-danger">{error}</div>}
       
