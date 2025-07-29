@@ -66,9 +66,29 @@ function Navigation() {
             <li className="nav-item">
               <Link className="nav-link" to="/contact">ContactUs</Link>
             </li>
+            {token && userRole === 'admin' && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/admin">Admin Dashboard</Link>
+              </li>
+            )}
             {token && userRole === 'owner' && (
               <li className="nav-item">
                 <Link className="nav-link" to="/owner-dashboard">Owner Dashboard</Link>
+              </li>
+            )}
+            {token && userRole === 'user' && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/user-dashboard">User Dashboard</Link>
+              </li>
+            )}
+            {token && userRole === 'tiffin' && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/tiffin-dashboard">Tiffin Dashboard</Link>
+              </li>
+            )}
+            {token && userRole === 'maid' && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/maid-dashboard">Maid Dashboard</Link>
               </li>
             )}
             {token && userRole !== 'owner' && (
