@@ -8,17 +8,14 @@ import lombok.*;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Setter
+@Getter
 public class Feedback {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-    private String email;
-    private String phone;
-
-    @Column(length = 1000)
-    private String message;
+    private String feedback;
+    private Integer rating;
 }
-
