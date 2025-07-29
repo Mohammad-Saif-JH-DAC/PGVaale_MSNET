@@ -15,6 +15,7 @@ import UserDashboard from './pages/UserDashboard';
 import TiffinDashboard from './pages/TiffinDashboard';
 import MaidDashboard from './pages/MaidDashboard';
 import Footer from './Footer';
+import PrivacyPolicy from './components/PrivacyPolicy';
 
 // Helper to decode JWT and get user role
 function getUserRole() {
@@ -137,6 +138,7 @@ function App() {
             <Route path="/user-dashboard" element={<UserDashboard />} />
             <Route path="/tiffin-dashboard" element={<TiffinDashboard />} />
             <Route path="/maid-dashboard" element={<MaidDashboard />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           </Routes>
         </div>
         <Footer />

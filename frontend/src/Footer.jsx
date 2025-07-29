@@ -52,7 +52,7 @@ function Footer() {
               <li><a href="/" className="text-light text-decoration-none">Home</a></li>
               <li><a href="/about" className="text-light text-decoration-none">About Us</a></li>
               <li><a href="/contact" className="text-light text-decoration-none">Contact</a></li>
-              <li><a href="/privacy" className="text-light text-decoration-none">Privacy Policy</a></li>
+              <li><a href="/privacy-policy" className="text-light text-decoration-none">Privacy Policy</a></li>
             </ul>
           </div>
           {/* Services Column */}
