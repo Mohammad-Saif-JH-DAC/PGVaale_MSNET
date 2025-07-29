@@ -18,13 +18,35 @@ function FeedbackModal({ show, onClose, onSubmit }) {
   const handleHover = (value) => setHover(value);
   const handleLeave = () => setHover(0);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit({ rating, feedback });
-    setRating(0);
-    setFeedback('');
-    onClose(); // Optional: auto-close after submit
-  };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const response = await fetch('http://localhost:8081/api/feedback', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ rating, feedback }),
+    });
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log('Success:', result);
+      onSubmit({ rating, feedback });
+      setRating(0);
+      setFeedback('');
+      onClose();
+    } else {
+      const error = await response.json();
+      console.error('Submission failed:', error);
+      alert('Failed to submit feedback.');
+    }
+  } catch (error) {
+    console.error('Network error:', error);
+    alert('Could not connect to server. Is it running?');
+  }
+};
 
   if (!show) return null;
 
