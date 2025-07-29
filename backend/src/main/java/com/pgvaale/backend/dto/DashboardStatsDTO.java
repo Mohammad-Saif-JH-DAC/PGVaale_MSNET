@@ -1,5 +1,6 @@
 package com.pgvaale.backend.dto;
 
+import java.math.BigDecimal;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,4 +18,10 @@ public class DashboardStatsDTO {
     private long pendingTiffins;
     private long totalServiceProviders;
     private long totalAccounts;
-} 
+    private BigDecimal averageFeedbackRating;
+
+    // Getter
+    public BigDecimal getAverageFeedbackRating() {
+        return averageFeedbackRating;
+    }
+}

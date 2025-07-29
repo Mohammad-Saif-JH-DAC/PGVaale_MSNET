@@ -1,9 +1,13 @@
+// src/main/java/com/pgvaale/backend/service/DashboardService.java
 package com.pgvaale.backend.service;
 
 import com.pgvaale.backend.dto.DashboardStatsDTO;
 import com.pgvaale.backend.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Service
 public class DashboardService {
@@ -23,6 +27,9 @@ public class DashboardService {
     @Autowired
     private PGRepository pgRepository;
 
+    @Autowired
+    private FeedbackRepository feedbackRepository; // ← Add this
+
     public DashboardStatsDTO getDashboardStats() {
         long totalUsers = userRepository.count();
         long totalOwners = ownerRepository.count();
@@ -34,16 +41,23 @@ public class DashboardService {
         long totalServiceProviders = totalTiffinProviders + totalMaids;
         long totalAccounts = totalUsers + totalOwners + totalTiffinProviders + totalMaids;
 
+        // 🔴 Calculate average feedback rating
+        Double avg = feedbackRepository.averageFeedbackRating();
+        BigDecimal averageFeedbackRating = avg != null
+                ? BigDecimal.valueOf(avg).setScale(1, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO;
+
         return new DashboardStatsDTO(
-            totalUsers,
-            totalOwners,
-            totalTiffinProviders,
-            totalMaids,
-            totalPGs,
-            pendingMaids,
-            pendingTiffins,
-            totalServiceProviders,
-            totalAccounts
+                totalUsers,
+                totalOwners,
+                totalTiffinProviders,
+                totalMaids,
+                totalPGs,
+                pendingMaids,
+                pendingTiffins,
+                totalServiceProviders,
+                totalAccounts,
+                averageFeedbackRating // ← Make sure DTO supports this!
         );
     }
-} 
+}
