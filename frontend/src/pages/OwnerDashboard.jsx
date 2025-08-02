@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
 import './OwnerDashboard.css';
+import { Link } from 'react-router-dom';
 
 // Import Leaflet CSS and components
 import 'leaflet/dist/leaflet.css';
@@ -60,28 +61,56 @@ function OwnerDashboard() {
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log('Current username:', username);
+      console.log('Current userRoles:', userRoles);
+      console.log('Current token:', token ? 'Present' : 'Missing');
+      
       if (!username) {
-        setError('User not authenticated.');
+        setError('User not authenticated. Please log in as an owner.');
         setLoading(false);
         return;
       }
+      
+      // Check if user has OWNER role
+      if (!userRoles.includes('OWNER') && !userRoles.includes('ROLE_OWNER')) {
+        setError('You need to be logged in as an owner. Current role: ' + userRoles.join(', '));
+        setLoading(false);
+        return;
+      }
+      
       try {
-        const ownerRes = await api.get('/owners/me');
+        console.log('Fetching owner details...');
+        // Try to get owner details
+        const ownerRes = await api.get('/api/owners/me');
+        console.log('Owner response:', ownerRes.data);
         const id = Number(ownerRes.data.id);
         if (Number.isNaN(id)) throw new Error('Invalid owner ID');
         setOwnerId(id);
-        const pgRes = await api.get(`/pg/owner/${id}`);
+        console.log('Owner ID:', id);
+        
+        // Get PGs for this owner
+        console.log('Fetching PGs for owner ID:', id);
+        const pgRes = await api.get(`/api/pg/owner/${id}`);
+        console.log('PGs response:', pgRes.data);
         setRooms(pgRes.data);
         setError('');
       } catch (err) {
-        console.error(err);
-        setError(err.response?.data || err.message);
+        console.error('Error fetching owner data:', err);
+        console.error('Error response:', err.response);
+        if (err.response?.status === 403) {
+          setError('Access denied. Please log in as an owner to view your PGs.');
+        } else if (err.response?.status === 401) {
+          setError('Authentication required. Please log in as an owner.');
+        } else {
+          setError(err.response?.data || err.message || 'Error loading data');
+        }
+        setRooms([]);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [username]);
+  }, [username, userRoles, token]);
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -131,14 +160,14 @@ function OwnerDashboard() {
 
     try {
       if (editingId) {
-        await api.put(`/pg/${editingId}`, dataToSend);
+        await api.put(`/api/pg/${editingId}`, dataToSend);
         setError('PG updated successfully.');
         setEditingId(null);
       } else {
-        await api.post('/pg/register', dataToSend);
+        await api.post('/api/pg/register', dataToSend);
         setError('PG registered successfully.');
       }
-      const pgRes = await api.get(`/pg/owner/${ownerId}`);
+      const pgRes = await api.get(`/api/pg/owner/${ownerId}`);
       setRooms(pgRes.data);
       setForm({
         imagePaths: ['', '', '', '', ''],
@@ -178,7 +207,7 @@ function OwnerDashboard() {
   const handleDelete = async id => {
     if (!window.confirm(`Delete PG #${id}?`)) return;
     try {
-      await api.delete(`/pg/${id}`);
+      await api.delete(`/api/pg/${id}`);
       setRooms(rooms.filter(r => r.id !== id));
       setError('PG deleted successfully.');
       setTimeout(() => setError(''), 3000);
@@ -313,8 +342,19 @@ function OwnerDashboard() {
       </div>
       {error && (
         <div className={`alert alert-${error.includes('successfully') ? 'success' : 'danger'} alert-dismissible fade show`}>
-          {error}
-          <button type="button" className="btn-close" onClick={() => setError('')}></button>
+          <div className="d-flex justify-content-between align-items-center">
+            <div>
+              {error}
+              {(error.includes('log in') || error.includes('Authentication') || error.includes('Access denied')) && (
+                <div className="mt-2">
+                  <Link to="/login" className="btn btn-primary btn-sm">
+                    Login as Owner
+                  </Link>
+                </div>
+              )}
+            </div>
+            <button type="button" className="btn-close" onClick={() => setError('')}></button>
+          </div>
         </div>
       )}
       <ul className="nav nav-tabs mb-4">

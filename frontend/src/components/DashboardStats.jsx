@@ -27,7 +27,7 @@ const DashboardStats = () => {
   const fetchDashboardStats = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/admin/dashboard-stats');
+      const response = await api.get('/api/admin/dashboard-stats');
       setStats(response.data);
     } catch (err) {
       setError('Failed to load dashboard statistics');

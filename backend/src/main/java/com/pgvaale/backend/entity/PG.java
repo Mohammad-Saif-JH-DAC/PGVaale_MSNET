@@ -44,4 +44,6 @@ public class PG {
     private double rent;
 
     private String generalPreference;
+    
+    private String region; // Added region field
 }

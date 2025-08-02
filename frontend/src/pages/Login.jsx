@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { authApi } from '../api';
 
 const roles = [
   { label: 'Admin', value: 'admin' },
@@ -56,8 +56,7 @@ function Login() {
     try {
       localStorage.removeItem('token');
 
-      const endpoint = `http://localhost:8081/api/${form.role}/login`;
-      const res = await axios.post(endpoint, {
+      const res = await authApi.post(`/api/${form.role}/login`, {
         username: form.username,
         password: form.password
       });

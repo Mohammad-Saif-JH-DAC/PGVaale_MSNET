@@ -13,8 +13,8 @@ function Admin() {
   useEffect(() => {
     // Load pending maids and tiffin providers
     Promise.all([
-      api.get('/admin/maids/pending'),
-      api.get('/admin/tiffins/pending')
+      api.get('/api/admin/maids/pending'),
+      api.get('/api/admin/tiffins/pending')
     ])
     .then(([maidRes, tiffinRes]) => {
       setPendingMaid(maidRes.data || []);
@@ -26,9 +26,9 @@ function Admin() {
 
   const handleApproveMaid = async (id) => {
     try {
-      await api.post(`/admin/maids/${id}/approve`);
+      await api.post(`/api/admin/maids/${id}/approve`);
       // Refresh the list
-      const response = await api.get('/admin/maids/pending');
+      const response = await api.get('/api/admin/maids/pending');
       setPendingMaid(response.data || []);
     } catch (error) {
       setError('Failed to approve maid');
@@ -37,9 +37,9 @@ function Admin() {
 
   const handleRejectMaid = async (id) => {
     try {
-      await api.post(`/admin/maids/${id}/reject`);
+      await api.post(`/api/admin/maids/${id}/reject`);
       // Refresh the list
-      const response = await api.get('/admin/maids/pending');
+      const response = await api.get('/api/admin/maids/pending');
       setPendingMaid(response.data || []);
     } catch (error) {
       setError('Failed to reject maid');
@@ -48,9 +48,9 @@ function Admin() {
 
   const handleApproveTiffin = async (id) => {
     try {
-      await api.post(`/admin/tiffins/${id}/approve`);
+      await api.post(`/api/admin/tiffins/${id}/approve`);
       // Refresh the list
-      const response = await api.get('/admin/tiffins/pending');
+      const response = await api.get('/api/admin/tiffins/pending');
       setPendingTiffin(response.data || []);
     } catch (error) {
       setError('Failed to approve tiffin');
@@ -59,9 +59,9 @@ function Admin() {
 
   const handleRejectTiffin = async (id) => {
     try {
-      await api.post(`/admin/tiffins/${id}/reject`);
+      await api.post(`/api/admin/tiffins/${id}/reject`);
       // Refresh the list
-      const response = await api.get('/admin/tiffins/pending');
+      const response = await api.get('/api/admin/tiffins/pending');
       setPendingTiffin(response.data || []);
     } catch (error) {
       setError('Failed to reject tiffin');

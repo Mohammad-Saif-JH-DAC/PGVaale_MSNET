@@ -16,6 +16,14 @@ public class Feedback {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "maid_id")
+    private Maid maid;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
     private String feedback;
     private Integer rating;
 }

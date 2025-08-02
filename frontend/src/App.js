@@ -51,7 +51,7 @@ function Navigation() {
   const userRole = getUserRole();
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light">
+    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
       <div className="container-fluid">
         <Link className="navbar-brand" to="/">PGVaale</Link>
         <div className="collapse navbar-collapse">
@@ -78,9 +78,29 @@ function Navigation() {
               </li>
             )}
             {token && userRole === 'user' && (
-              <li className="nav-item">
-                <Link className="nav-link" to="/user-dashboard">User Dashboard</Link>
-              </li>
+              <>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/user-dashboard">Dashboard</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/user-dashboard/pgs">PG Interests</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/user-dashboard/tiffins">Order Tiffin</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/user-dashboard/maids">Hire Maid</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/user-dashboard/bookings">My Bookings</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/user-dashboard/feedback">Feedback</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/user-dashboard/messages">Messages</Link>
+                </li>
+              </>
             )}
             {token && userRole === 'tiffin' && (
               <li className="nav-item">
@@ -88,9 +108,17 @@ function Navigation() {
               </li>
             )}
             {token && userRole === 'maid' && (
-              <li className="nav-item">
-                <Link className="nav-link" to="/maid-dashboard">Maid Dashboard</Link>
-              </li>
+              <>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/maid-dashboard">Dashboard</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/maid-dashboard/profile">Profile</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/maid-dashboard/requests">Service Requests</Link>
+                </li>
+              </>
             )}
             {token && userRole !== 'owner' && (
               <li className="nav-item">
@@ -135,9 +163,9 @@ function App() {
             <Route path="/owner-dashboard" element={<OwnerDashboard />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/user-dashboard" element={<UserDashboard />} />
+            <Route path="/user-dashboard/*" element={<UserDashboard />} />
             <Route path="/tiffin-dashboard" element={<TiffinDashboard />} />
-            <Route path="/maid-dashboard" element={<MaidDashboard />} />
+            <Route path="/maid-dashboard/*" element={<MaidDashboard />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           </Routes>
         </div>

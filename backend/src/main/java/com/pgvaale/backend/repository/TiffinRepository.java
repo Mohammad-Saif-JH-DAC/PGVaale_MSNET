@@ -10,4 +10,5 @@ public interface TiffinRepository extends JpaRepository<Tiffin, Long> {
     Optional<Tiffin> findByUsername(String username);
     Optional<Tiffin> findByEmail(String email);
     List<Tiffin> findByApprovedFalse();
+    List<Tiffin> findByApprovedTrue();
 } 

@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface PGRepository extends JpaRepository<PG, Long> {
     List<PG> findByOwner(Owner owner);
+    List<PG> findByRegion(String region);
 } 

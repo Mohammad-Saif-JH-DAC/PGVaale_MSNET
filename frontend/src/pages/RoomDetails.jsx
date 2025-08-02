@@ -18,14 +18,14 @@ function RoomDetails() {
   }
 
   useEffect(() => {
-    api.get(`/pgrooms/${id}`).then(res => setRoom(res.data));
+    api.get(`/api/pgrooms/${id}`).then(res => setRoom(res.data));
   }, [id]);
 
   const handleInterest = async (e) => {
     e.preventDefault();
     setSuccess('');
     try {
-      await api.post('/room-interests', {
+      await api.post('/api/room-interests', {
         roomId: room.id,
         username,
         message: interestMsg

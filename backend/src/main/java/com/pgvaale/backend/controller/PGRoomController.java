@@ -4,6 +4,7 @@ import com.pgvaale.backend.entity.PGRoom;
 import com.pgvaale.backend.service.PGRoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,8 +29,33 @@ public class PGRoomController {
     }
 
     @PostMapping
-    public PGRoom createRoom(@RequestBody PGRoom room) {
-        return pgRoomService.saveRoom(room);
+    public ResponseEntity<?> createRoom(@RequestBody PGRoom room) {
+        try {
+            // Validate required fields
+            if (room.getTitle() == null || room.getTitle().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Title is required");
+            }
+            if (room.getRegion() == null || room.getRegion().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Region is required");
+            }
+            if (room.getRent() == null || room.getRent() <= 0) {
+                return ResponseEntity.badRequest().body("Valid rent amount is required");
+            }
+            
+            // Set default values if not provided
+            if (room.getGender() == null || room.getGender().trim().isEmpty()) {
+                room.setGender("Any");
+            }
+            if (room.getState() == null || room.getState().trim().isEmpty()) {
+                room.setState("Maharashtra"); // Default state
+            }
+            
+            // Save the room
+            PGRoom savedRoom = pgRoomService.saveRoom(room);
+            return ResponseEntity.ok(savedRoom);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error creating room: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")
@@ -69,7 +95,23 @@ public class PGRoomController {
     }
 
     @GetMapping("/owner/{username}")
-    public List<PGRoom> getRoomsByOwner(@PathVariable String username) {
-        return pgRoomService.findByCreatedBy(username);
+    public ResponseEntity<?> getRoomsByOwner(@PathVariable String username) {
+        try {
+            List<PGRoom> rooms = pgRoomService.findByCreatedBy(username);
+            return ResponseEntity.ok(rooms);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error fetching rooms: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/my-rooms")
+    public ResponseEntity<?> getMyRooms(Authentication authentication) {
+        try {
+            String username = authentication.getName();
+            List<PGRoom> rooms = pgRoomService.findByCreatedBy(username);
+            return ResponseEntity.ok(rooms);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error fetching your rooms: " + e.getMessage());
+        }
     }
 } 

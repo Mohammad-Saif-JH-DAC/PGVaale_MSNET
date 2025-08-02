@@ -87,6 +87,10 @@ public class SecurityConfig {
                                 "/api/auth/register/**",
                                 "/api/auth/login",
                                 "/api/public/**",
+                                "/api/pg/all",
+                                "/api/pg/region/**",
+                                "/api/pgrooms/**",
+                                "/api/room-interests/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/api/contactUs/**")

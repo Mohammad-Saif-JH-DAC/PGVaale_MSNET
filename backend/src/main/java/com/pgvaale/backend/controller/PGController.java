@@ -47,6 +47,11 @@ public class PGController {
             String amenities = (String) requestData.get("amenities");
             String nearbyResources = (String) requestData.get("nearbyResources");
             String generalPreference = (String) requestData.get("generalPreference");
+            String region = (String) requestData.get("region");
+
+            if (region == null || region.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body("Region is required");
+            }
 
             Optional<Owner> ownerOptional = ownerRepository.findById(ownerId);
             if (!ownerOptional.isPresent()) {
@@ -62,6 +67,7 @@ public class PGController {
                     .nearbyResources(nearbyResources)
                     .rent(rent != null ? rent : 0.0)
                     .generalPreference(generalPreference)
+                    .region(region)
                     .build();
 
             PG saved = pgRepository.save(pg);
@@ -97,6 +103,15 @@ public class PGController {
         return ResponseEntity.ok(pgRepository.findByOwner(owner.get()));
     }
 
+    @GetMapping("/region/{region}")
+    public ResponseEntity<?> getPGsByRegion(@PathVariable String region) {
+        try {
+            return ResponseEntity.ok(pgRepository.findByRegion(region));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error fetching PGs by region: " + e.getMessage());
+        }
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('OWNER')")
     public ResponseEntity<?> updatePG(@PathVariable Long id, @RequestBody Map<String, Object> requestData) {
@@ -126,6 +141,8 @@ public class PGController {
                 pg.setRent(parseDouble(requestData.get("rent")));
             if (requestData.containsKey("generalPreference"))
                 pg.setGeneralPreference((String) requestData.get("generalPreference"));
+            if (requestData.containsKey("region"))
+                pg.setRegion((String) requestData.get("region"));
 
             pgRepository.save(pg);
             return ResponseEntity.ok("PG updated successfully");
