@@ -57,6 +57,46 @@ function OwnerDashboard() {
     images: [],
   });
 
+  const [ownerDetails, setOwnerDetails] = useState(null);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({});
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+
+// Initialize profile form when ownerDetails is available
+useEffect(() => {
+  if (ownerDetails) {
+    setProfileForm({
+      name: ownerDetails.name || '',
+      email: ownerDetails.email || '',
+      mobileNumber: ownerDetails.mobileNumber || '',
+      region: ownerDetails.region || '',
+      age: ownerDetails.age || '',
+      aadhaar: ownerDetails.aadhaar || '',
+    });
+  }
+}, [ownerDetails]);
+
+// Handle profile input change
+const handleProfileChange = (e) => {
+  const { name, value } = e.target;
+  setProfileForm((prev) => ({ ...prev, [name]: value }));
+};
+
+// Save updated profile
+const handleSaveProfile = async () => {
+  try {
+    await api.put(`/api/owners/${ownerId}`, profileForm);
+    setOwnerDetails(profileForm); // Update displayed data
+    setIsEditingProfile(false);
+    setError('Profile updated successfully.');
+    setTimeout(() => setError(''), 3000);
+  } catch (err) {
+    console.error('Error updating profile:', err);
+    setError('Failed to update profile: ' + (err.response?.data || err.message));
+  }
+};
+
   // Optimized useEffect: avoids infinite loop
   useEffect(() => {
     let isMounted = true; // Prevent state updates after unmount
@@ -90,9 +130,11 @@ function OwnerDashboard() {
 
       try {
         const ownerRes = await api.get('/api/owners/me');
+
         const id = Number(ownerRes.data.id);
         if (Number.isNaN(id)) throw new Error('Invalid owner ID');
         if (isMounted) setOwnerId(id);
+        setOwnerDetails(ownerRes.data); 
 
         const pgRes = await api.get(`/api/pg/owner/${id}`);
         if (isMounted) setRooms(pgRes.data);
@@ -228,6 +270,40 @@ function OwnerDashboard() {
     }
   };
 
+const handleDeleteAccount = async () => {
+  try {
+    // Step 1: Delete all PGs first
+    if (rooms.length > 0) {
+      const deletePgPromises = rooms.map(async (pg) => {
+        try {
+          await api.delete(`/api/pg/${pg.id}`);
+        } catch (err) {
+          console.warn(`Failed to delete PG ${pg.id}`, err);
+        }
+      });
+      await Promise.all(deletePgPromises);
+    }
+
+    // Step 2: Delete owner account
+    await api.delete(`/api/owners/${ownerId}`);
+
+    // Step 3: Clear session
+    sessionStorage.removeItem('token');
+    // If you're using localStorage too:
+    localStorage.removeItem('token');
+
+    // Step 4: Show success and redirect
+    setError('Your account has been deleted successfully.');
+    setTimeout(() => {
+      window.location.href = '/'; // Redirect to home
+    }, 2000);
+  } catch (err) {
+    console.error('Error deleting account:', err);
+    setError('Failed to delete account. Please try again.');
+    setShowDeleteModal(false);
+  }
+};
+
   const MapComponent = ({ lat, lng }) => {
     const isValidCoordinates = lat && lng && !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng));
     if (!isValidCoordinates) {
@@ -349,6 +425,215 @@ function OwnerDashboard() {
         <h2 className="text-primary">PGVaale Owner Dashboard</h2>
         <p className="text-muted">Manage your PG listings efficiently</p>
       </div>
+
+{/* Owner Profile Card */}
+{ownerDetails && (
+  <div className="card mb-4 shadow-sm border-light">
+    <div className="card-body">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h5 className="card-title mb-0">
+          <i className="bi bi-person-badge me-2 text-primary"></i>
+          Owner Profile
+        </h5>
+        {!isEditingProfile ? (
+          <button
+            className="btn btn-sm btn-outline-primary"
+            onClick={() => setIsEditingProfile(true)}
+          >
+            <i className="bi bi-pencil"></i> Edit
+          </button>
+        ) : (
+          <div className="d-flex gap-2">
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => {
+                setIsEditingProfile(false);
+                // Reset form to original data
+                setProfileForm({
+                  name: ownerDetails.name || '',
+                  email: ownerDetails.email || '',
+                  mobileNumber: ownerDetails.mobileNumber || '',
+                  region: ownerDetails.region || '',
+                  age: ownerDetails.age || '',
+                  aadhaar: ownerDetails.aadhaar || '',
+                });
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              className="btn btn-sm btn-success"
+              onClick={handleSaveProfile}
+            >
+              <i className="bi bi-save"></i> Save
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Delete Account Button */}
+<div className="mt-3">
+  <button
+    className="btn btn-sm btn-outline-danger"
+    onClick={() => setShowDeleteModal(true)}
+    title="Delete your account permanently"
+  >
+    <i className="bi bi-trash"></i> Delete Account
+  </button>
+</div>
+
+      {isEditingProfile ? (
+        <div className="row g-3">
+          <div className="col-md-6">
+            <label className="form-label">Name *</label>
+            <input
+              type="text"
+              className="form-control"
+              name="name"
+              value={profileForm.name}
+              onChange={handleProfileChange}
+              required
+            />
+          </div>
+          <div className="col-md-6">
+            <label className="form-label">Email *</label>
+            <input
+              type="email"
+              className="form-control"
+              name="email"
+              value={profileForm.email}
+              onChange={handleProfileChange}
+              required
+            />
+          </div>
+          <div className="col-md-6">
+            <label className="form-label">Mobile Number *</label>
+            <input
+              type="text"
+              className="form-control"
+              name="mobileNumber"
+              value={profileForm.mobileNumber}
+              onChange={handleProfileChange}
+              pattern="[0-9]{10}"
+              title="10-digit mobile number"
+              required
+            />
+          </div>
+          <div className="col-md-6">
+            <label className="form-label">Region *</label>
+            <select
+              className="form-select"
+              name="region"
+              value={profileForm.region}
+              onChange={handleProfileChange}
+              required
+            >
+              <option value="">Select Region</option>
+              {regionOptions.map((region) => (
+                <option key={region} value={region}>
+                  {region}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="col-md-6">
+            <label className="form-label">Age</label>
+            <input
+              type="number"
+              className="form-control"
+              name="age"
+              value={profileForm.age}
+              onChange={handleProfileChange}
+              min="18"
+              max="120"
+            />
+          </div>
+          <div className="col-md-6">
+            <label className="form-label">Aadhaar Number</label>
+            <input
+              type="text"
+              className="form-control"
+              name="aadhaar"
+              value={profileForm.aadhaar}
+              onChange={handleProfileChange}
+              pattern="[0-9]{12}"
+              title="12-digit Aadhaar number"
+              placeholder="123412341234"
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="row g-3">
+          <div className="col-md-6">
+            <strong>Name:</strong> {ownerDetails.name || 'Not provided'}
+          </div>
+          <div className="col-md-6">
+            <strong>Email:</strong> {ownerDetails.email || 'Not provided'}
+          </div>
+          <div className="col-md-6">
+            <strong>Mobile:</strong> {ownerDetails.mobileNumber || 'Not provided'}
+          </div>
+          <div className="col-md-6">
+            <strong>Region:</strong> {ownerDetails.region || 'Not provided'}
+          </div>
+          <div className="col-md-6">
+            <strong>Age:</strong> {ownerDetails.age || 'Not provided'}
+          </div>
+          <div className="col-md-6">
+            <strong>Aadhaar:</strong>{' '}
+            {ownerDetails.aadhaar ? 'XXXX-XXXX-' + ownerDetails.aadhaar.slice(-4) : 'Not provided'}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+
+{/* Delete Account Confirmation Modal */}
+{showDeleteModal && (
+  <div className="modal fade show" style={{ display: 'block' }} tabIndex="-1">
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h5 className="modal-title text-danger">Confirm Account Deletion</h5>
+          <button
+            type="button"
+            className="btn-close"
+            onClick={() => setShowDeleteModal(false)}
+          ></button>
+        </div>
+        <div className="modal-body">
+          <p>Are you sure you want to delete your account?</p>
+          <p className="text-danger">
+            <strong>This will permanently delete:</strong>
+          </p>
+          <ul>
+            <li>Your owner profile</li>
+            <li>All your PG listings</li>
+            <li>Your contact information</li>
+          </ul>
+          <p>This action cannot be undone.</p>
+        </div>
+        <div className="modal-footer">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => setShowDeleteModal(false)}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="btn btn-danger"
+            onClick={handleDeleteAccount}
+          >
+            Yes, Delete My Account
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
       {error && (
         <div
@@ -724,7 +1009,9 @@ function OwnerDashboard() {
         </div>
       )}
     </div>
+    
   );
+  
 }
 
 export default OwnerDashboard;

@@ -21,16 +21,16 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/owner")
 public class OwnerAuthController {
-    
+
     @Autowired
     private AuthenticationManager authenticationManager;
-    
+
     @Autowired
     private OwnerRepository ownerRepository;
-    
+
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
+
     @Autowired
     private JwtUtil jwtUtil;
 
@@ -44,7 +44,7 @@ public class OwnerAuthController {
             String name = (String) requestData.get("name");
             String aadhaar = (String) requestData.get("aadhaar");
             String mobileNumber = (String) requestData.get("mobileNumber");
-            
+
             // Handle age conversion from string to integer
             Integer age = null;
             Object ageObj = requestData.get("age");
@@ -62,7 +62,7 @@ public class OwnerAuthController {
                     }
                 }
             }
-            
+
             String region = (String) requestData.get("region");
 
             // Validate required fields
@@ -93,13 +93,13 @@ public class OwnerAuthController {
             if (existingOwner.isPresent()) {
                 return ResponseEntity.badRequest().body("Username already exists");
             }
-            
+
             // Check if email exists
             Optional<Owner> existingEmail = ownerRepository.findByEmail(email);
             if (existingEmail.isPresent()) {
                 return ResponseEntity.badRequest().body("Email already exists");
             }
-            
+
             // Create new owner
             Owner owner = Owner.builder()
                     .age(age != null ? age : 0)
@@ -107,18 +107,19 @@ public class OwnerAuthController {
                     .mobileNumber(mobileNumber)
                     .region(region)
                     .build();
-            
+
             // Set inherited fields manually
             owner.setUsername(username);
             owner.setPassword(passwordEncoder.encode(password));
             owner.setEmail(email);
             owner.setName(name);
-            
+            owner.setMobileNumber(mobileNumber);
+
             // Save owner
             Owner savedOwner = ownerRepository.save(owner);
-            
+
             return ResponseEntity.ok("Owner registration successful for " + savedOwner.getUsername());
-            
+
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Registration failed: " + e.getMessage());
         }
@@ -129,29 +130,28 @@ public class OwnerAuthController {
         try {
             String username = loginData.get("username");
             String password = loginData.get("password");
-            
+
             if (username == null || username.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("Username is required");
             }
             if (password == null || password.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("Password is required");
             }
-            
+
             // Check if owner exists
             Optional<Owner> ownerOptional = ownerRepository.findByUsername(username);
             if (!ownerOptional.isPresent()) {
                 return ResponseEntity.status(401).body("Invalid credentials");
             }
-            
+
             Owner owner = ownerOptional.get();
-            
+
             Authentication auth = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
-            );
-            
+                    new UsernamePasswordAuthenticationToken(username, password));
+
             UserDetails userDetails = (UserDetails) auth.getPrincipal();
             String token = jwtUtil.generateToken(userDetails.getUsername(), "ROLE_OWNER");
-            
+
             return ResponseEntity.ok(Map.of("token", token));
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(401).body("Invalid credentials");
@@ -159,4 +159,4 @@ public class OwnerAuthController {
             return ResponseEntity.status(500).body("Login failed: " + e.getMessage());
         }
     }
-} 
+}

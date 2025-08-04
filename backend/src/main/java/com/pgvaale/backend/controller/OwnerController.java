@@ -3,6 +3,7 @@ package com.pgvaale.backend.controller;
 
 import com.pgvaale.backend.entity.Owner;
 import com.pgvaale.backend.repository.OwnerRepository;
+import com.pgvaale.backend.service.OwnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,9 +16,11 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/owners") // Base path for owner-related endpoints (different from OwnerAuthController)
 public class OwnerController {
-
     @Autowired
     private OwnerRepository ownerRepository;
+
+    @Autowired
+    private OwnerService ownerService;
 
     /**
      * Endpoint for an authenticated owner to get their own details (including ID).
@@ -52,5 +55,28 @@ public class OwnerController {
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Failed to fetch owner details: " + e.getMessage());
         }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Owner> getOwnerById(@PathVariable Long id) {
+        return ownerService.getOwnerById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Owner> updateOwner(@PathVariable Long id, @RequestBody Owner updatedOwner) {
+        try {
+            Owner savedOwner = ownerService.updateOwner(id, updatedOwner);
+            return ResponseEntity.ok(savedOwner);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOwner(@PathVariable Long id) {
+        ownerService.deleteOwner(id);
+        return ResponseEntity.noContent().build();
     }
 }

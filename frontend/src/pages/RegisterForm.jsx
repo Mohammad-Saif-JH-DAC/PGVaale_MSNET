@@ -29,7 +29,7 @@ function RegisterForm() {
     age: '',
     gender: '',
     address: '',
-    contactNumber: '',
+    // contactNumber: '',
     serviceArea: '',
     experience: '',
     availability: '',
@@ -106,7 +106,7 @@ function RegisterForm() {
     age: /^(1[89]|[2-9][0-9]|100)$/,
     gender: /^(Male|Female|Other)$/,
     address: /^.{2,}$/,
-    contactNumber: /^[6-9][0-9]{9}$/, // Also updated contactNumber
+    // contactNumber: /^[6-9][0-9]{9}$/, // Also updated contactNumber
     serviceArea: /^.{2,}$/,
     experience: /^\d+$/,
     availability: /^.{2,}$/,
