@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import FeedbackModal from './FeedbackModal';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const socialLinks = [
   { href: 'https://facebook.com', icon: 'fab fa-facebook-f', label: 'Facebook' },
