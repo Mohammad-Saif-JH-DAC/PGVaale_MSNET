@@ -110,7 +110,7 @@ function OwnerDashboard() {
       }
     };
     fetchData();
-  }, [username, userRoles, token]);
+  }, [username, token]);
 
   const handleChange = e => {
     const { name, value } = e.target;
