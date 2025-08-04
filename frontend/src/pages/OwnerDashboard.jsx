@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import api from '../api';
 import './OwnerDashboard.css';
 import { Link } from 'react-router-dom';
-
 // Import Leaflet CSS and components
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -24,12 +23,10 @@ L.Icon.Default.mergeOptions({
 function OwnerDashboard() {
   const token = localStorage.getItem('token');
   let username = '';
-  let userRoles = [];
   if (token) {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       username = payload.sub || payload.username || payload.email || '';
-      userRoles = payload.role ? [payload.role] : [];
     } catch (e) {
       console.error('Error decoding token:', e);
     }
@@ -47,7 +44,8 @@ function OwnerDashboard() {
     nearbyResources: '',
     rent: '',
     generalPreference: '',
-    region: ''
+    region: '',
+    availability: 'available', // Default to available
   });
   const [editingId, setEditingId] = useState(null);
   const preferenceOptions = ['Male', 'Female', 'Any'];
@@ -56,85 +54,90 @@ function OwnerDashboard() {
   const [lightbox, setLightbox] = useState({
     isOpen: false,
     currentIndex: 0,
-    images: []
+    images: [],
   });
 
+  // Optimized useEffect: avoids infinite loop
   useEffect(() => {
+    let isMounted = true; // Prevent state updates after unmount
+
     const fetchData = async () => {
-      console.log('Current username:', username);
-      console.log('Current userRoles:', userRoles);
-      console.log('Current token:', token ? 'Present' : 'Missing');
-      
+      if (!isMounted) return;
+
       if (!username) {
         setError('User not authenticated. Please log in as an owner.');
         setLoading(false);
         return;
       }
-      
-      // Check if user has OWNER role
-      if (!userRoles.includes('OWNER') && !userRoles.includes('ROLE_OWNER')) {
-        setError('You need to be logged in as an owner. Current role: ' + userRoles.join(', '));
+
+      // Extract role from token
+      let hasOwnerRole = false;
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          const role = payload.role || '';
+          hasOwnerRole = role === 'OWNER' || role === 'ROLE_OWNER';
+        } catch (e) {
+          console.error('Error decoding token:', e);
+        }
+      }
+
+      if (!hasOwnerRole) {
+        setError('You need to be logged in as an owner.');
         setLoading(false);
         return;
       }
-      
+
       try {
-        console.log('Fetching owner details...');
-        // Try to get owner details
         const ownerRes = await api.get('/api/owners/me');
-        console.log('Owner response:', ownerRes.data);
         const id = Number(ownerRes.data.id);
         if (Number.isNaN(id)) throw new Error('Invalid owner ID');
-        setOwnerId(id);
-        console.log('Owner ID:', id);
-        
-        // Get PGs for this owner
-        console.log('Fetching PGs for owner ID:', id);
+        if (isMounted) setOwnerId(id);
+
         const pgRes = await api.get(`/api/pg/owner/${id}`);
-        console.log('PGs response:', pgRes.data);
-        setRooms(pgRes.data);
+        if (isMounted) setRooms(pgRes.data);
         setError('');
       } catch (err) {
-        console.error('Error fetching owner data:', err);
-        console.error('Error response:', err.response);
-        if (err.response?.status === 403) {
-          setError('Access denied. Please log in as an owner to view your PGs.');
-        } else if (err.response?.status === 401) {
-          setError('Authentication required. Please log in as an owner.');
-        } else {
-          setError(err.response?.data || err.message || 'Error loading data');
-        }
-        setRooms([]);
+        console.error('Error fetching data:', err);
+        const message = err.response?.data?.message || err.response?.data || err.message;
+        if (isMounted) setError(message);
+        if (isMounted) setRooms([]);
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
-    fetchData();
-  }, [username, token]);
 
-  const handleChange = e => {
+    fetchData();
+
+    return () => {
+      isMounted = false; // Cleanup
+    };
+  }, [username, token]); // ✅ Only stable values
+
+  const handleChange = (e) => {
     const { name, value } = e.target;
     if (name.startsWith('imagePath')) {
       const index = Number(name.replace('imagePath', '')) - 1;
-      setForm(prev => {
+      setForm((prev) => {
         const updated = [...prev.imagePaths];
         updated[index] = value;
         return { ...prev, imagePaths: updated };
       });
     } else {
-      setForm(prev => ({ ...prev, [name]: value }));
+      setForm((prev) => ({ ...prev, [name]: value }));
     }
   };
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!ownerId) {
       setError('Owner ID missing.');
       return;
     }
-    const validImages = form.imagePaths.filter(url => url.trim() !== '');
+
+    const validImages = form.imagePaths.filter((url) => url.trim() !== '');
     if (validImages.length === 0) {
-      setError('At least Image URL #1 is required.');
+      setError('At least one image URL is required.');
       return;
     }
     if (validImages.length > 5) {
@@ -142,8 +145,8 @@ function OwnerDashboard() {
       return;
     }
     if (!form.region) {
-        setError('Please select a region.');
-        return;
+      setError('Please select a region.');
+      return;
     }
 
     const dataToSend = {
@@ -155,20 +158,24 @@ function OwnerDashboard() {
       nearbyResources: form.nearbyResources,
       rent: parseFloat(form.rent),
       generalPreference: form.generalPreference,
-      region: form.region
+      region: form.region,
+      availability: form.availability || 'available',
     };
 
     try {
       if (editingId) {
         await api.put(`/api/pg/${editingId}`, dataToSend);
         setError('PG updated successfully.');
-        setEditingId(null);
       } else {
         await api.post('/api/pg/register', dataToSend);
         setError('PG registered successfully.');
       }
+
+      // Refetch updated list
       const pgRes = await api.get(`/api/pg/owner/${ownerId}`);
       setRooms(pgRes.data);
+
+      // Reset form
       setForm({
         imagePaths: ['', '', '', '', ''],
         latitude: '',
@@ -177,9 +184,12 @@ function OwnerDashboard() {
         nearbyResources: '',
         rent: '',
         generalPreference: '',
-        region: ''
+        region: '',
+        availability: 'available',
       });
+      setEditingId(null);
       setActiveTab('list');
+
       setTimeout(() => setError(''), 3000);
     } catch (err) {
       console.error('Error saving PG:', err);
@@ -187,28 +197,29 @@ function OwnerDashboard() {
     }
   };
 
-  const handleEditRoom = pg => {
+  const handleEditRoom = (pg) => {
     const images = pg.imagePaths || [];
     setForm({
-      imagePaths: [0, 1, 2, 3, 4].map(i => images[i] || ''),
+      imagePaths: [0, 1, 2, 3, 4].map((i) => images[i] || ''),
       latitude: pg.latitude?.toString() || '',
       longitude: pg.longitude?.toString() || '',
       amenities: pg.amenities || '',
       nearbyResources: pg.nearbyResources || '',
       rent: pg.rent?.toString() || '',
       generalPreference: pg.generalPreference || '',
-      region: pg.region || ''
+      region: pg.region || '',
+      availability: pg.availability || 'available',
     });
     setEditingId(pg.id);
     setError('');
     setActiveTab('form');
   };
 
-  const handleDelete = async id => {
+  const handleDelete = async (id) => {
     if (!window.confirm(`Delete PG #${id}?`)) return;
     try {
       await api.delete(`/api/pg/${id}`);
-      setRooms(rooms.filter(r => r.id !== id));
+      setRooms(rooms.filter((r) => r.id !== id));
       setError('PG deleted successfully.');
       setTimeout(() => setError(''), 3000);
     } catch (err) {
@@ -219,13 +230,11 @@ function OwnerDashboard() {
 
   const MapComponent = ({ lat, lng }) => {
     const isValidCoordinates = lat && lng && !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng));
-
     if (!isValidCoordinates) {
-        return <div className="alert alert-warning">Invalid map coordinates.</div>;
+      return <div className="alert alert-warning">Invalid map coordinates.</div>;
     }
 
     const position = [parseFloat(lat), parseFloat(lng)];
-
     return (
       <MapContainer
         center={position}
@@ -242,9 +251,7 @@ function OwnerDashboard() {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <Marker position={position}>
-          <Popup>
-            PG Location
-          </Popup>
+          <Popup>PG Location</Popup>
         </Marker>
       </MapContainer>
     );
@@ -252,7 +259,6 @@ function OwnerDashboard() {
 
   const ImageGallery = ({ images }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
-
     if (!images || images.length === 0) {
       return (
         <div className="no-images-placeholder">
@@ -277,19 +283,21 @@ function OwnerDashboard() {
             src={images[currentIndex]}
             alt={`PG Image ${currentIndex + 1}`}
             className="carousel-image"
-            onClick={() => setLightbox({
-              isOpen: true,
-              currentIndex: currentIndex,
-              images: images
-            })}
-            onError={e => {
+            onClick={() =>
+              setLightbox({
+                isOpen: true,
+                currentIndex,
+                images,
+              })
+            }
+            onError={(e) => {
               e.target.onerror = null;
               e.target.src = '/fallback.png';
             }}
           />
           {images.length > 1 && (
             <>
-              <button 
+              <button
                 className="carousel-control prev"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -298,7 +306,7 @@ function OwnerDashboard() {
               >
                 <i className="bi bi-chevron-left"></i>
               </button>
-              <button 
+              <button
                 className="carousel-control next"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -326,13 +334,14 @@ function OwnerDashboard() {
     );
   };
 
-  if (loading) return (
-    <div className="d-flex justify-content-center align-items-center" style={{ height: '80vh' }}>
-      <div className="spinner-border text-primary" role="status">
-        <span className="visually-hidden">Loading...</span>
+  if (loading)
+    return (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '80vh' }}>
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
       </div>
-    </div>
-  );
+    );
 
   return (
     <div className="container py-4">
@@ -340,12 +349,19 @@ function OwnerDashboard() {
         <h2 className="text-primary">PGVaale Owner Dashboard</h2>
         <p className="text-muted">Manage your PG listings efficiently</p>
       </div>
+
       {error && (
-        <div className={`alert alert-${error.includes('successfully') ? 'success' : 'danger'} alert-dismissible fade show`}>
+        <div
+          className={`alert alert-${
+            error.includes('successfully') ? 'success' : 'danger'
+          } alert-dismissible fade show`}
+        >
           <div className="d-flex justify-content-between align-items-center">
             <div>
               {error}
-              {(error.includes('log in') || error.includes('Authentication') || error.includes('Access denied')) && (
+              {(error.includes('log in') ||
+                error.includes('Authentication') ||
+                error.includes('Access denied')) && (
                 <div className="mt-2">
                   <Link to="/login" className="btn btn-primary btn-sm">
                     Login as Owner
@@ -357,6 +373,7 @@ function OwnerDashboard() {
           </div>
         </div>
       )}
+
       <ul className="nav nav-tabs mb-4">
         <li className="nav-item">
           <button
@@ -382,10 +399,11 @@ function OwnerDashboard() {
             <h5 className="card-title mb-4">{editingId ? 'Edit PG Details' : 'Register New PG'}</h5>
             <form onSubmit={handleSubmit}>
               <div className="row g-3">
-                {[1, 2, 3, 4, 5].map(n => (
+                {[1, 2, 3, 4, 5].map((n) => (
                   <div className="col-md-6" key={n}>
                     <label htmlFor={`imagePath${n}`} className="form-label">
-                      Image URL {n}{n === 1 && ' *'}
+                      Image URL {n}
+                      {n === 1 && ' *'}
                     </label>
                     <input
                       type="text"
@@ -399,6 +417,7 @@ function OwnerDashboard() {
                     />
                   </div>
                 ))}
+
                 <div className="col-md-3">
                   <label className="form-label">Latitude *</label>
                   <input
@@ -433,18 +452,25 @@ function OwnerDashboard() {
                     required
                   >
                     <option value="">Select Region</option>
-                    {regionOptions.map(region => (
-                      <option key={region} value={region}>{region}</option>
+                    {regionOptions.map((region) => (
+                      <option key={region} value={region}>
+                        {region}
+                      </option>
                     ))}
                   </select>
                 </div>
+
                 {form.latitude && form.longitude && (
                   <div className="col-12">
-                    <div className="map-container mb-3" style={{ height: '200px', borderRadius: '8px', overflow: 'hidden' }}>
+                    <div
+                      className="map-container mb-3"
+                      style={{ height: '200px', borderRadius: '8px', overflow: 'hidden' }}
+                    >
                       <MapComponent lat={form.latitude} lng={form.longitude} />
                     </div>
                   </div>
                 )}
+
                 <div className="col-md-6">
                   <label className="form-label">Amenities</label>
                   <textarea
@@ -491,11 +517,27 @@ function OwnerDashboard() {
                     required
                   >
                     <option value="">Select Preference</option>
-                    {preferenceOptions.map(opt => (
-                      <option key={opt} value={opt}>{opt}</option>
+                    {preferenceOptions.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
                     ))}
                   </select>
                 </div>
+                <div className="col-md-4">
+                  <label className="form-label">Availability *</label>
+                  <select
+                    className="form-select"
+                    name="availability"
+                    value={form.availability}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="available">Available</option>
+                    <option value="not_available">Not Available</option>
+                  </select>
+                </div>
+
                 <div className="col-12 mt-3">
                   <div className="d-flex justify-content-end gap-2">
                     <button
@@ -512,7 +554,8 @@ function OwnerDashboard() {
                           nearbyResources: '',
                           rent: '',
                           generalPreference: '',
-                          region: ''
+                          region: '',
+                          availability: 'available',
                         });
                       }}
                     >
@@ -544,6 +587,7 @@ function OwnerDashboard() {
                 <i className="bi bi-plus-lg me-1"></i> Add New
               </button>
             </div>
+
             {rooms.length ? (
               <div className="table-responsive">
                 <table className="table table-striped table-hover align-middle">
@@ -555,11 +599,12 @@ function OwnerDashboard() {
                       <th scope="col" style={{ width: '20%' }}>Location</th>
                       <th scope="col" style={{ width: '10%' }}>Rent</th>
                       <th scope="col" style={{ width: '10%' }}>Preference</th>
+                      <th scope="col" style={{ width: '10%' }}>Availability</th>
                       <th scope="col" style={{ width: '10%' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {rooms.map(pg => (
+                    {rooms.map((pg) => (
                       <tr key={pg.id}>
                         <td>#{pg.id}</td>
                         <td>
@@ -575,11 +620,25 @@ function OwnerDashboard() {
                         </td>
                         <td>₹{pg.rent}/month</td>
                         <td>
-                          <span className={`badge ${
-                            pg.generalPreference === 'Male' ? 'bg-primary' :
-                            pg.generalPreference === 'Female' ? 'bg-pink' : 'bg-secondary'
-                          }`}>
+                          <span
+                            className={`badge ${
+                              pg.generalPreference === 'Male'
+                                ? 'bg-primary'
+                                : pg.generalPreference === 'Female'
+                                ? 'bg-pink'
+                                : 'bg-secondary'
+                            }`}
+                          >
                             {pg.generalPreference}
+                          </span>
+                        </td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              pg.availability === 'available' ? 'bg-success' : 'bg-danger'
+                            }`}
+                          >
+                            {pg.availability === 'available' ? 'Available' : 'Not Available'}
                           </span>
                         </td>
                         <td>
@@ -612,10 +671,7 @@ function OwnerDashboard() {
                 </div>
                 <h5 className="text-muted">No PGs registered yet</h5>
                 <p className="text-muted">Start by adding your first PG property</p>
-                <button
-                  className="btn btn-primary mt-2"
-                  onClick={() => setActiveTab('form')}
-                >
+                <button className="btn btn-primary mt-2" onClick={() => setActiveTab('form')}>
                   Add Your First PG
                 </button>
               </div>
@@ -641,21 +697,26 @@ function OwnerDashboard() {
               <>
                 <button
                   className="lightbox-nav prev"
-                  onClick={() => setLightbox({
-                    ...lightbox,
-                    currentIndex: (lightbox.currentIndex - 1 + lightbox.images.length) % lightbox.images.length
-                  })}
+                  onClick={() =>
+                    setLightbox({
+                      ...lightbox,
+                      currentIndex:
+                        (lightbox.currentIndex - 1 + lightbox.images.length) % lightbox.images.length,
+                    })
+                  }
                 >
-                  &lt;
+                  
                 </button>
                 <button
                   className="lightbox-nav next"
-                  onClick={() => setLightbox({
-                    ...lightbox,
-                    currentIndex: (lightbox.currentIndex + 1) % lightbox.images.length
-                  })}
+                  onClick={() =>
+                    setLightbox({
+                      ...lightbox,
+                      currentIndex: (lightbox.currentIndex + 1) % lightbox.images.length,
+                    })
+                  }
                 >
-                  &gt;
+                  
                 </button>
               </>
             )}
