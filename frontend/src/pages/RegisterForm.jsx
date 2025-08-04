@@ -241,9 +241,9 @@ function RegisterForm() {
       // Use the correct endpoint for tiffin, others remain as before
       let endpoint;
       if (role === 'tiffin') {
-        endpoint = '/tiffin/register';
+        endpoint = '/api/tiffin/register';
       } else {
-        endpoint = `/${role}/register`;
+        endpoint = `/api/${role}/register`;
       }
       const response = await api.post(endpoint, dataToSubmit); // Send potentially modified data
       console.log('Registration response:', response.data);
