@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
+import RoomDetailsModal from '../components/RoomDetailsModal';
 
 // Fix for Leaflet default icons
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -25,6 +26,8 @@ function PGRooms() {
     availability: '',
   });
   const [bookingStatus, setBookingStatus] = useState({});
+  const [showModal, setShowModal] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState(null);
 
   // Fetch rooms (with or without filters)
   const fetchRooms = async (filterParams = filters) => {
@@ -65,6 +68,19 @@ function PGRooms() {
     fetchRooms(updatedFilters);
   };
 
+  // Handle opening room details modal
+  const handleViewDetails = (room) => {
+    console.log('Selected Room:', room);
+    setSelectedRoom(room);
+    setShowModal(true);
+  };
+
+  // Handle closing room details modal
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedRoom(null);
+  };
+
   // Handle booking room
   const handleBookRoom = async (roomId) => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -92,16 +108,39 @@ function PGRooms() {
   // Image Gallery with Auto-Slideshow
   const ImageGallery = ({ images }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
-
+  
+    // Normalize image URLs
+    const normalizedImages = (images || []).map((img) => {
+      if (!img || typeof img !== 'string') return '/placeholder.png'; // Fallback to placeholder
+      const trimmed = img.trim();
+  
+      // If it's already a full URL (http/https)
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+        return trimmed;
+      }
+  
+      // If it's a relative path (starts with /)
+      if (trimmed.startsWith('/')) {
+        return `${window.location.origin}${trimmed}`; // Convert to absolute URL
+      }
+  
+      // If it's a partial path without protocol
+      if (!trimmed.startsWith('http')) {
+        return `http://${trimmed}`; // Only use if you're sure about domain
+      }
+  
+      return trimmed;
+    });
+  
     useEffect(() => {
-      if (!images || images.length <= 1) return;
+      if (!normalizedImages || normalizedImages.length <= 1) return;
       const interval = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % images.length);
+        setCurrentIndex((prev) => (prev + 1) % normalizedImages.length);
       }, 3000);
       return () => clearInterval(interval);
-    }, [images]);
-
-    if (!images || images.length === 0) {
+    }, [normalizedImages]);
+  
+    if (!normalizedImages || normalizedImages.length === 0) {
       return (
         <div className="no-images-placeholder text-center text-muted p-3 border rounded bg-light">
           <i className="bi bi-image" style={{ fontSize: '2rem' }}></i>
@@ -109,21 +148,30 @@ function PGRooms() {
         </div>
       );
     }
-
-    const next = () => setCurrentIndex((prev) => (prev + 1) % images.length);
-    const prev = () => setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-
+  
+    const next = () => setCurrentIndex((prev) => (prev + 1) % normalizedImages.length);
+    const prev = () => setCurrentIndex((prev) => (prev - 1 + normalizedImages.length) % normalizedImages.length);
+  
     return (
       <div className="position-relative">
         <img
-  src={images[currentIndex]}
-  alt="PG Room"
-  className="w-100 shadow-sm"
-  style={{ height: '200px', objectFit: 'cover', borderRadius: '8px', cursor: 'pointer', transition: 'transform 0.3s ease-in-out' }}
-  onClick={() => window.open(images[currentIndex], '_blank')}
-/>
-
-        {images.length > 1 && (
+          src={normalizedImages[currentIndex]}
+          alt="PG Room"
+          className="w-100 shadow-sm"
+          style={{
+            height: '200px',
+            objectFit: 'cover',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            transition: 'transform 0.3s ease-in-out',
+          }}
+          onClick={() => window.open(normalizedImages[currentIndex], '_blank')}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = '/placeholder.png'; // Fallback to placeholder on error
+          }}
+        />
+        {normalizedImages.length > 1 && (
           <>
             <button
               className="carousel-control prev"
@@ -146,7 +194,7 @@ function PGRooms() {
               <i className="bi bi-chevron-right"></i>
             </button>
             <div className="carousel-indicators d-flex justify-content-center mt-2">
-              {images.map((_, idx) => (
+              {normalizedImages.map((_, idx) => (
                 <span
                   key={idx}
                   className={`indicator mx-1 ${idx === currentIndex ? 'active' : ''}`}
@@ -300,9 +348,12 @@ function PGRooms() {
                   />
 
                   <div className="mt-3 d-flex justify-content-between">
-                    <Link to={`/pgrooms/${room.id}`} className="btn btn-sm btn-primary">
+                    <button 
+                      className="btn btn-sm btn-primary"
+                      onClick={() => handleViewDetails(room)}
+                    >
                       View Details
-                    </Link>
+                    </button>
                     {localStorage.getItem('token') || sessionStorage.getItem('token') ? (
                       <button
                         className={`btn btn-sm ${
@@ -350,6 +401,13 @@ function PGRooms() {
           </div>
         </div>
       )}
+      
+      {/* Room Details Modal */}
+      <RoomDetailsModal
+        show={showModal}
+        onClose={handleCloseModal}
+        room={selectedRoom}
+      />
     </div>
   );
 }
