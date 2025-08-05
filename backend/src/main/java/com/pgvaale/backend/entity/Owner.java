@@ -1,5 +1,7 @@
 package com.pgvaale.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -25,10 +27,12 @@ public class Owner extends BaseEntity {
     @Size(min = 12, max = 12)
     private String aadhaar;
 
+    @Column(name = "mobile_number")
     @NotBlank
     @Size(min = 10, max = 10)
+    @JsonProperty("mobileNumber")
     private String mobileNumber;
 
     @NotBlank
     private String region;
-} 
+}

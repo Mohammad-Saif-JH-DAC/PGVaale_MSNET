@@ -48,6 +48,7 @@ public class PGController {
             String nearbyResources = (String) requestData.get("nearbyResources");
             String generalPreference = (String) requestData.get("generalPreference");
             String region = (String) requestData.get("region");
+            String availability = (String) requestData.get("availability");
 
             if (region == null || region.trim().isEmpty()) {
                 return ResponseEntity.badRequest().body("Region is required");
@@ -68,6 +69,7 @@ public class PGController {
                     .rent(rent != null ? rent : 0.0)
                     .generalPreference(generalPreference)
                     .region(region)
+                    .availability(availability)
                     .build();
 
             PG saved = pgRepository.save(pg);
@@ -143,6 +145,9 @@ public class PGController {
                 pg.setGeneralPreference((String) requestData.get("generalPreference"));
             if (requestData.containsKey("region"))
                 pg.setRegion((String) requestData.get("region"));
+
+            if (requestData.containsKey("availability"))
+                pg.setAvailability((String) requestData.get("availability"));
 
             pgRepository.save(pg);
             return ResponseEntity.ok("PG updated successfully");

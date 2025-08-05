@@ -28,4 +28,26 @@ public class OwnerService {
     public void deleteOwner(Long id) {
         ownerRepository.deleteById(id);
     }
-} 
+
+    public Owner updateOwner(Long id, Owner updatedOwner) {
+        Optional<Owner> existingOwnerOpt = ownerRepository.findById(id);
+        if (existingOwnerOpt.isEmpty()) {
+            throw new RuntimeException("Owner not found with id: " + id);
+        }
+
+        Owner existingOwner = existingOwnerOpt.get();
+
+        // Update fields (you can add more as needed)
+        existingOwner.setName(updatedOwner.getName());
+        existingOwner.setEmail(updatedOwner.getEmail());
+        existingOwner.setMobileNumber(updatedOwner.getMobileNumber());
+        existingOwner.setRegion(updatedOwner.getRegion());
+        existingOwner.setAge(updatedOwner.getAge());
+        existingOwner.setAadhaar(updatedOwner.getAadhaar());
+
+        // Optionally: don't allow email/id changes
+        // existingOwner.setEmail(existingOwner.getEmail()); // keep old
+
+        return ownerRepository.save(existingOwner);
+    }
+}
