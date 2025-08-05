@@ -116,14 +116,13 @@ function PGRooms() {
     return (
       <div className="position-relative">
         <img
-          src={images[currentIndex]}
-          alt="PG Room"
-          className="w-100"
-          style={{ height: '200px', objectFit: 'cover', borderRadius: '8px' }}
-          onClick={() =>
-            window.open(images[currentIndex], '_blank') // Open in new tab on click
-          }
-        />
+  src={images[currentIndex]}
+  alt="PG Room"
+  className="w-100 shadow-sm"
+  style={{ height: '200px', objectFit: 'cover', borderRadius: '8px', cursor: 'pointer', transition: 'transform 0.3s ease-in-out' }}
+  onClick={() => window.open(images[currentIndex], '_blank')}
+/>
+
         {images.length > 1 && (
           <>
             <button
@@ -281,7 +280,7 @@ function PGRooms() {
         <div className="row g-4">
           {rooms.map((room) => (
             <div key={room.id} className="col-md-6 col-lg-4">
-              <div className="card shadow-sm h-100">
+              <div className="card shadow h-100 border-0">
                 <ImageGallery images={room.imagePaths || []} />
 
                 <div className="card-body d-flex flex-column">

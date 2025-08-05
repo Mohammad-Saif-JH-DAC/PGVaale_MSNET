@@ -12,20 +12,30 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-shadow.png',
 });
 
-const MapComponent = ({ lat, lng, location }) => {
-  if (!lat || !lng) return <div style={{ color: 'gray' }}>Location not set</div>;
+const MapComponent = ({ lat, lng, region }) => {
+  const isValid = lat && lng && !isNaN(lat) && !isNaN(lng);
+  if (!isValid) return <div className="alert alert-warning">Location not available</div>;
+
+  const position = [parseFloat(lat), parseFloat(lng)];
 
   return (
-    <MapContainer center={[lat, lng]} zoom={13} scrollWheelZoom={false} style={{ height: "150px", width: "100%", borderRadius: "8px" }}>
-      <TileLayer
-        attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <Marker position={[lat, lng]}>
-        <Popup>{location || "PG Location"}</Popup>
-      </Marker>
-    </MapContainer>
+    <div className="rounded overflow-hidden border" style={{ height: '180px' }}>
+      <MapContainer
+        center={position}
+        zoom={15}
+        style={{ height: '100%', width: '100%' }}
+        dragging={true}
+        scrollWheelZoom={true}
+        zoomControl={true}
+      >
+        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <Marker position={position}>
+          <Popup>{region}</Popup>
+        </Marker>
+      </MapContainer>
+    </div>
   );
 };
+
 
 export default MapComponent;
