@@ -1,10 +1,10 @@
 package com.pgvaale.backend.controller;
 
 import com.pgvaale.backend.entity.Maid;
-import com.pgvaale.backend.entity.MaidRequest;
+import com.pgvaale.backend.entity.UserMaid;
 import com.pgvaale.backend.entity.Feedback;
 import com.pgvaale.backend.repository.MaidRepository;
-import com.pgvaale.backend.repository.MaidRequestRepository;
+import com.pgvaale.backend.repository.UserMaidRepository;
 import com.pgvaale.backend.repository.FeedbackRepository;
 import com.pgvaale.backend.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +13,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +29,7 @@ public class MaidController {
     private MaidRepository maidRepository;
     
     @Autowired
-    private MaidRequestRepository maidRequestRepository;
+    private UserMaidRepository userMaidRepository;
     
     @Autowired
     private FeedbackRepository feedbackRepository;
@@ -141,14 +143,14 @@ public class MaidController {
             Long maidId = maid.getId();
             
             // Get counts
-            Long pendingRequests = maidRequestRepository.countByMaidIdAndStatus(maidId, MaidRequest.RequestStatus.REQUESTED);
-            Long acceptedJobs = maidRequestRepository.countByMaidIdAndStatus(maidId, MaidRequest.RequestStatus.ACCEPTED);
+            Long pendingRequests = userMaidRepository.countByMaidIdAndStatus(maidId, UserMaid.RequestStatus.PENDING);
+            Long acceptedJobs = userMaidRepository.countByMaidIdAndStatus(maidId, UserMaid.RequestStatus.ACCEPTED);
             
             // Calculate average rating
             Double averageRating = feedbackRepository.findAverageRatingByMaidId(maidId);
             
             // Get recent activity
-            List<MaidRequest> recentRequests = maidRequestRepository.findRecentRequestsByMaidId(maidId);
+            List<UserMaid> recentRequests = userMaidRepository.findAllRequestsByMaidId(maidId);
             
             Map<String, Object> dashboard = new HashMap<>();
             dashboard.put("maidName", maid.getName());
@@ -175,7 +177,7 @@ public class MaidController {
             }
             
             Long maidId = maidOptional.get().getId();
-            List<MaidRequest> requests = maidRequestRepository.findByMaidId(maidId);
+            List<UserMaid> requests = userMaidRepository.findAllRequestsByMaidId(maidId);
             
             return ResponseEntity.ok(requests);
         } catch (Exception e) {
@@ -193,12 +195,12 @@ public class MaidController {
                 return ResponseEntity.badRequest().body("Status is required");
             }
             
-            Optional<MaidRequest> requestOptional = maidRequestRepository.findById(requestId);
+            Optional<UserMaid> requestOptional = userMaidRepository.findById(requestId);
             if (!requestOptional.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
             
-            MaidRequest request = requestOptional.get();
+            UserMaid request = requestOptional.get();
             
             // Verify the request belongs to the authenticated maid
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -210,15 +212,48 @@ public class MaidController {
             }
             
             try {
-                MaidRequest.RequestStatus status = MaidRequest.RequestStatus.valueOf(newStatus.toUpperCase());
+                UserMaid.RequestStatus status = UserMaid.RequestStatus.valueOf(newStatus.toUpperCase());
                 request.setStatus(status);
-                maidRequestRepository.save(request);
+                
+                // If status is ACCEPTED, update the service date to current date
+                if (status == UserMaid.RequestStatus.ACCEPTED) {
+                    request.setServiceDate(LocalDate.now());
+                }
+                
+                userMaidRepository.save(request);
                 return ResponseEntity.ok("Request status updated successfully");
             } catch (IllegalArgumentException e) {
                 return ResponseEntity.badRequest().body("Invalid status");
             }
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error updating request status: " + e.getMessage());
+        }
+    }
+
+    // Get requests by status
+    @GetMapping("/requests/status/{status}")
+    public ResponseEntity<?> getRequestsByStatus(@PathVariable String status) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            
+            Optional<Maid> maidOptional = maidRepository.findByUsername(username);
+            if (!maidOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Long maidId = maidOptional.get().getId();
+            
+            try {
+                UserMaid.RequestStatus requestStatus = UserMaid.RequestStatus.valueOf(status.toUpperCase());
+                List<UserMaid> requests = userMaidRepository.findByMaidIdAndStatus(maidId, requestStatus);
+                
+                return ResponseEntity.ok(requests);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body("Invalid status");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error fetching requests: " + e.getMessage());
         }
     }
 } 

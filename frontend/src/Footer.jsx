@@ -64,11 +64,17 @@ function Footer() {
           <div className="col-12 col-md-2 mb-2 mb-md-0">
             <h6 className="fw-bold text-warning mb-1" style={{ fontSize: '1rem' }}>Services</h6>
             <ul className="list-unstyled mb-0" style={{ fontSize: '0.95em' }}>
-              <li><a href="/pgrooms" className="text-light text-decoration-none">PG Rooms</a></li>
-              <li><a href="/tiffin-dashboard" className="text-light text-decoration-none">Tiffin Service</a></li>
-              <li><a href="/maid-dashboard" className="text-light text-decoration-none">Maid Service</a></li>
+              <li><a href="/" className="text-light text-decoration-none">PG Rooms</a></li>
+              <li><a href="/" className="text-light text-decoration-none">Tiffin Service</a></li>
+              <li><a href="/" className="text-light text-decoration-none">Maid Service</a></li>
               {userRole === 'owner' && (
                 <li><a href="/owner-dashboard" className="text-light text-decoration-none">Owner Dashboard</a></li>
+              )}
+              {userRole === 'maid' && (
+                <li><a href="/maid-dashboard" className="text-light text-decoration-none">Maid Dashboard</a></li>
+              )}
+              {userRole === 'tiffin' && (
+                <li><a href="/tiffin-dashboard" className="text-light text-decoration-none">Tiffin Dashboard</a></li>
               )}
             </ul>
           </div>

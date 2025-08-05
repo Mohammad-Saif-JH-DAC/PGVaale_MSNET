@@ -7,12 +7,13 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Component
 public class TestDataInitializer implements CommandLineRunner {
 
     @Autowired
-    private MaidRequestRepository maidRequestRepository;
+    private UserMaidRepository userMaidRepository;
     
     @Autowired
     private FeedbackRepository feedbackRepository;
@@ -26,7 +27,7 @@ public class TestDataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         // Only add test data if no requests exist
-        if (maidRequestRepository.count() == 0) {
+        if (userMaidRepository.count() == 0) {
             addTestData();
         }
     }
@@ -41,26 +42,28 @@ public class TestDataInitializer implements CommandLineRunner {
             User user = userOptional.get();
             
             // Add sample service requests
-            MaidRequest request1 = MaidRequest.builder()
+            UserMaid request1 = UserMaid.builder()
                     .maid(maid)
                     .user(user)
-                    .requestDate(LocalDate.now().minusDays(2))
+                    .assignedDateTime(LocalDateTime.now().minusDays(2))
                     .serviceDate(LocalDate.now().plusDays(1))
-                    .timeSlot("9:00 AM - 12:00 PM")
-                    .status(MaidRequest.RequestStatus.REQUESTED)
+                    .timeSlot(maid.getTiming()) // Use maid's timing
+                    .status(UserMaid.RequestStatus.PENDING)
+                    .userAddress("123 Test Street, Test City")
                     .build();
             
-            MaidRequest request2 = MaidRequest.builder()
+            UserMaid request2 = UserMaid.builder()
                     .maid(maid)
                     .user(user)
-                    .requestDate(LocalDate.now().minusDays(1))
+                    .assignedDateTime(LocalDateTime.now().minusDays(1))
                     .serviceDate(LocalDate.now().plusDays(2))
-                    .timeSlot("2:00 PM - 5:00 PM")
-                    .status(MaidRequest.RequestStatus.ACCEPTED)
+                    .timeSlot(maid.getTiming()) // Use maid's timing
+                    .status(UserMaid.RequestStatus.ACCEPTED)
+                    .userAddress("456 Sample Road, Sample City")
                     .build();
             
-            maidRequestRepository.save(request1);
-            maidRequestRepository.save(request2);
+            userMaidRepository.save(request1);
+            userMaidRepository.save(request2);
             
             // Add sample feedback
             Feedback feedback1 = new Feedback();

@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 // Import the authApi instance that never sends auth tokens
 import { authApi as api } from '../api';
 import { FaUser, FaEnvelope, FaLock, FaIdCard, FaPhone, FaCalendarAlt, FaVenusMars, FaMapMarkerAlt, FaHome, FaMoneyBillWave, FaConciergeBell, FaClock, FaUtensils, FaBuilding, FaBed } from 'react-icons/fa';
+import Select from 'react-select';
 
 const allowedRoles = ['user', 'owner', 'tiffin', 'maid'];
 // Define the specific regions allowed
@@ -12,6 +13,16 @@ const allowedRegions = [
   'Pune',
   'Bangalore',
   'Hyderabad'
+];
+
+// Define maid services options for the multiple-select dropdown
+const maidServicesOptions = [
+  { value: 'Mopping', label: 'Mopping' },
+  { value: 'Cooking', label: 'Cooking' },
+  { value: 'Cleaning', label: 'Cleaning' },
+  { value: 'Laundry', label: 'Laundry' },
+  { value: 'Gardening', label: 'Gardening' },
+  { value: 'Ironing', label: 'Ironing' }
 ];
 
 function RegisterForm() {
@@ -46,6 +57,9 @@ function RegisterForm() {
     foodCategory: '',
     maidAddress: '',
   });
+
+  // State for selected maid services
+  const [selectedServices, setSelectedServices] = useState([]);
 
   const [fieldErrors, setFieldErrors] = useState({});
   const [error, setError] = useState('');
@@ -89,6 +103,7 @@ function RegisterForm() {
     setFieldErrors({}); // Clear field errors on role change
     setError('');
     setSuccess('');
+    setSelectedServices([]); // Reset selected services when role changes
   }, [role, navigate]);
 
   // --- Updated regexValidators ---
@@ -174,6 +189,13 @@ function RegisterForm() {
         }
         return ''; // Valid if it's in the allowed list
     }
+    // Handle services validation for maid role
+    if (name === 'services' && role === 'maid') {
+      if (selectedServices.length === 0) {
+        return 'Please select at least one service.';
+      }
+      return '';
+    }
     // Existing validation logic for other fields
     if (!regexValidators[name]) return '';
     if (value === '' && name !== 'maidAddress') return errorMessages[name];
@@ -193,12 +215,38 @@ function RegisterForm() {
     }));
   };
 
+  // Handler for services dropdown
+  const handleServicesChange = (selectedOptions) => {
+    setSelectedServices(selectedOptions || []);
+    
+    // Update the form services field with comma-separated values
+    const servicesString = selectedOptions ? selectedOptions.map(option => option.value).join(', ') : '';
+    setForm(prevForm => ({
+      ...prevForm,
+      services: servicesString
+    }));
+    
+    // Clear services error when services are selected
+    setFieldErrors(prevErrors => ({
+      ...prevErrors,
+      services: selectedOptions && selectedOptions.length > 0 ? '' : 'Please select at least one service.'
+    }));
+  };
+
   // --- Updated handleSubmit to handle time combination and validation ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
     setLoading(true);
+
+    // --- Add Services Validation Logic for Maid ---
+    if (role === 'maid' && selectedServices.length === 0) {
+      setFieldErrors(prev => ({ ...prev, services: 'Please select at least one service.' }));
+      setLoading(false);
+      return;
+    }
+    // --- End Services Validation Logic ---
 
     // --- Add Timing Validation Logic ---
     let timingError = '';
@@ -557,16 +605,76 @@ function RegisterForm() {
                         <label className="form-label d-flex align-items-center">
                           <FaConciergeBell className="me-2 text-primary" /> Services *
                         </label>
-                        <input
-                          type="text"
-                          className={`form-control form-control-sm rounded-3 ${fieldErrors.services ? 'is-invalid' : ''}`}
+                        <Select
+                          isMulti
                           name="services"
-                          value={form.services}
-                          onChange={handleChange}
-                          disabled={loading}
+                          options={maidServicesOptions}
+                          className={`${fieldErrors.services ? 'is-invalid' : ''}`}
+                          classNamePrefix="select"
+                          value={selectedServices}
+                          onChange={handleServicesChange}
+                          isDisabled={loading}
                           placeholder="E.g., Mopping, Cooking, Cleaning"
+                          noOptionsMessage={() => "No services available"}
+                          isClearable={true}
+                          isSearchable={true}
+                          styles={{
+                            control: (provided, state) => ({
+                              ...provided,
+                              minHeight: '38px',
+                              border: state.isFocused ? '1px solid #F1C40F' : fieldErrors.services ? '1px solid #dc3545' : '1px solid #ced4da',
+                              borderRadius: '0.375rem',
+                              boxShadow: state.isFocused ? '0 0 0 0.25rem rgba(241, 196, 15, 0.25)' : 'none',
+                              '&:hover': {
+                                borderColor: '#F1C40F'
+                              }
+                            }),
+                            multiValue: (provided) => ({
+                              ...provided,
+                              backgroundColor: '#2C3E50',
+                              color: 'white'
+                            }),
+                            multiValueLabel: (provided) => ({
+                              ...provided,
+                              color: 'white'
+                            }),
+                            multiValueRemove: (provided) => ({
+                              ...provided,
+                              color: 'white',
+                              '&:hover': {
+                                backgroundColor: '#E74C3C',
+                                color: 'white'
+                              }
+                            }),
+                            option: (provided, state) => ({
+                              ...provided,
+                              backgroundColor: state.isSelected ? '#2C3E50' : state.isFocused ? '#ECF0F1' : 'white',
+                              color: state.isSelected ? 'white' : '#2C3E50',
+                              '&:hover': {
+                                backgroundColor: state.isSelected ? '#2C3E50' : '#ECF0F1'
+                              }
+                            }),
+                            menu: (provided) => ({
+                              ...provided,
+                              zIndex: 9999
+                            })
+                          }}
                         />
-                        {fieldErrors.services && <div className="invalid-feedback">{fieldErrors.services}</div>}
+                        {fieldErrors.services && <div className="invalid-feedback d-block">{fieldErrors.services}</div>}
+                        <div className="mt-2">
+                          <button
+                            type="button"
+                            className="btn btn-outline-secondary btn-sm"
+                            onClick={() => {
+                              setSelectedServices([]);
+                              setForm(prevForm => ({ ...prevForm, services: '' }));
+                              setFieldErrors(prevErrors => ({ ...prevErrors, services: '' }));
+                            }}
+                            disabled={loading}
+                          >
+                            Reset Services
+                          </button>
+                        </div>
                       </div>
 
                       <div className="row g-2">
@@ -812,6 +920,48 @@ function RegisterForm() {
         .btn-check:checked + .btn, .btn.active, .btn.show, .btn:first-child:active, :not(.btn-check) + .btn:active {
           background-color: #2C3E50; /* Navy Blue active state */
           border-color: #2C3E50; /* Navy Blue active border */
+        }
+        
+        /* React Select Custom Styles */
+        .select__control {
+          border-radius: 0.375rem !important;
+          min-height: 38px !important;
+        }
+        
+        .select__control--is-focused {
+          border-color: #F1C40F !important;
+          box-shadow: 0 0 0 0.25rem rgba(241, 196, 15, 0.25) !important;
+        }
+        
+        .select__control--is-focused:hover {
+          border-color: #F1C40F !important;
+        }
+        
+        .select__multi-value {
+          background-color: #2C3E50 !important;
+          border-radius: 0.25rem !important;
+        }
+        
+        .select__multi-value__label {
+          color: white !important;
+        }
+        
+        .select__multi-value__remove:hover {
+          background-color: #E74C3C !important;
+          color: white !important;
+        }
+        
+        .select__option--is-focused {
+          background-color: #ECF0F1 !important;
+        }
+        
+        .select__option--is-selected {
+          background-color: #2C3E50 !important;
+          color: white !important;
+        }
+        
+        .select__menu {
+          z-index: 9999 !important;
         }
       `}</style>
     </div>
