@@ -87,21 +87,8 @@ function Navigation() {
                 <li className="nav-item">
                   <Link className="nav-link" to="/user-dashboard/pgs">PG Interests</Link>
                 </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/user-dashboard/tiffins">Order Tiffin</Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/user-dashboard/maids">Hire Maid</Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/user-dashboard/bookings">My Bookings</Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/user-dashboard/feedback">Feedback</Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/user-dashboard/messages">Messages</Link>
-                </li>
+               
+               
               </>
             )}
             {token && userRole === 'tiffin' && (
@@ -166,7 +153,7 @@ function App() {
             <Route path="/chat" element={<Chat />} />
             <Route path="/login" element={<Login />} />
             <Route path="/user-dashboard/*" element={<UserDashboard />} />
-            <Route path="/tiffin-dashboard" element={<TiffinDashboard />} />
+            <Route path="/tiffin-dashboard/*" element={<TiffinDashboard />} />
             <Route path="/maid-dashboard/*" element={<MaidDashboard />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           </Routes>

@@ -45,47 +45,6 @@ const DashboardHome = () => {
         </div>
       </div>
 
-      <div className="row mb-4">
-        <div className="col-md-3 mb-3">
-          <div className="card dashboard-card">
-            <div className="card-body text-center">
-              <div className="card-icon">🏠</div>
-              <h5 className="card-title">PG Interests</h5>
-              <h3 className="card-text text-primary">{dashboardData?.pgInterests || 0}</h3>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-3 mb-3">
-          <div className="card dashboard-card">
-            <div className="card-body text-center">
-              <div className="card-icon">🧹</div>
-              <h5 className="card-title">Maid Requests</h5>
-              <h3 className="card-text text-success">{dashboardData?.maidRequests || 0}</h3>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-3 mb-3">
-          <div className="card dashboard-card">
-            <div className="card-body text-center">
-              <div className="card-icon">⭐</div>
-              <h5 className="card-title">Feedback Given</h5>
-              <h3 className="card-text text-warning">{dashboardData?.feedbackCount || 0}</h3>
-            </div>
-          </div>
-        </div>
-
-        <div className="col-md-3 mb-3">
-          <div className="card dashboard-card">
-            <div className="card-body text-center">
-              <div className="card-icon">💬</div>
-              <h5 className="card-title">Messages</h5>
-              <h3 className="card-text text-info">0</h3>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div className="row">
         <div className="col-12">
@@ -116,15 +75,11 @@ const DashboardHome = () => {
                   </a>
                 </div>
               </div>
+              
               <div className="row mt-3">
-                <div className="col-md-6 mb-3">
-                  <a href="/user-dashboard/feedback" className="btn btn-outline-warning w-100">
+                <div className="col-md-12 mb-3">
+                  <a href="/user-dashboard/feedback" className="btn btn-outline-info w-100">
                     ⭐ Give Feedback
-                  </a>
-                </div>
-                <div className="col-md-6 mb-3">
-                  <a href="/user-dashboard/messages" className="btn btn-outline-secondary w-100">
-                    💬 Messages
                   </a>
                 </div>
               </div>
@@ -233,13 +188,8 @@ const PGInterests = () => {
 const TiffinServices = () => {
   const [tiffins, setTiffins] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedTiffin, setSelectedTiffin] = useState(null);
-  const [orderForm, setOrderForm] = useState({
-    mealType: '',
-    deliveryDate: '',
-    quantity: 1
-  });
+  const [showTiffinModal, setShowTiffinModal] = useState(false);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -248,7 +198,7 @@ const TiffinServices = () => {
 
   const fetchTiffins = async () => {
     try {
-              const response = await api.get('/api/user/tiffins');
+      const response = await api.get('/api/user/tiffins');
       setTiffins(response.data);
     } catch (error) {
       console.error('Error fetching tiffin services:', error);
@@ -257,24 +207,22 @@ const TiffinServices = () => {
     }
   };
 
-  const handleOrderClick = (tiffin) => {
+  const handleRequestClick = (tiffin) => {
     setSelectedTiffin(tiffin);
-    setShowOrderModal(true);
+    setShowTiffinModal(true);
   };
 
-  const handleOrderSubmit = async (e) => {
+  const handleRequestSubmit = async (e) => {
     e.preventDefault();
     try {
-      // For now, just show success message
-      // In future, you can add tiffin booking functionality
-      setMessage(`Order placed with ${selectedTiffin.name}!`);
-      setShowOrderModal(false);
-      setOrderForm({ mealType: '', deliveryDate: '', quantity: 1 });
+      await api.post(`/api/user/tiffins/${selectedTiffin.id}/request`);
+      setMessage(`Request sent to ${selectedTiffin.name}!`);
+      setShowTiffinModal(false);
       setSelectedTiffin(null);
       
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage('Error placing order: ' + error.response?.data);
+      setMessage('Error sending request: ' + error.response?.data);
     }
   };
 
@@ -310,16 +258,16 @@ const TiffinServices = () => {
               <div className="card-body">
                 <h5 className="card-title">{tiffin.name}</h5>
                 <p className="card-text">
-                  <strong>Services:</strong> {tiffin.services || 'N/A'}<br/>
+                  <strong>Food Category:</strong> {tiffin.foodCategory || 'N/A'}<br/>
                   <strong>Region:</strong> {tiffin.region || 'N/A'}<br/>
-                  <strong>Timing:</strong> {tiffin.timing || 'N/A'}<br/>
-                  <strong>Price:</strong> ₹{tiffin.monthlyPrice || 'N/A'}
+                  <strong>Price per Meal:</strong> ₹{tiffin.price || 'N/A'}<br/>
+                  <strong>Address:</strong> {tiffin.maidAddress || 'N/A'}
                 </p>
                 <button 
                   className="btn btn-warning w-100"
-                  onClick={() => handleOrderClick(tiffin)}
+                  onClick={() => handleRequestClick(tiffin)}
                 >
-                  Order Now
+                  Send Request
                 </button>
               </div>
             </div>
@@ -327,66 +275,39 @@ const TiffinServices = () => {
         ))}
       </div>
 
-      {/* Order Modal */}
-      {showOrderModal && selectedTiffin && (
+      {/* Tiffin Request Modal */}
+      {showTiffinModal && selectedTiffin && (
         <div className="modal fade show" style={{display: 'block'}}>
           <div className="modal-dialog">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Order from {selectedTiffin.name}</h5>
+                <h5 className="modal-title">Request Tiffin Service from {selectedTiffin.name}</h5>
                 <button 
                   type="button" 
                   className="btn-close" 
-                  onClick={() => setShowOrderModal(false)}
+                  onClick={() => setShowTiffinModal(false)}
                 ></button>
               </div>
-              <form onSubmit={handleOrderSubmit}>
+              <form onSubmit={handleRequestSubmit}>
                 <div className="modal-body">
-                  <div className="mb-3">
-                    <label className="form-label">Meal Type</label>
-                    <select
-                      className="form-control"
-                      value={orderForm.mealType}
-                      onChange={(e) => setOrderForm({...orderForm, mealType: e.target.value})}
-                      required
-                    >
-                      <option value="">Select Meal Type</option>
-                      <option value="Breakfast">Breakfast</option>
-                      <option value="Lunch">Lunch</option>
-                      <option value="Dinner">Dinner</option>
-                      <option value="Full Day">Full Day (Breakfast + Lunch + Dinner)</option>
-                    </select>
+                  <div className="alert alert-info">
+                    <strong>Provider Details:</strong><br/>
+                    <strong>Name:</strong> {selectedTiffin.name}<br/>
+                    <strong>Food Category:</strong> {selectedTiffin.foodCategory}<br/>
+                    <strong>Price per Meal:</strong> ₹{selectedTiffin.price}<br/>
+                    <strong>Region:</strong> {selectedTiffin.region}
                   </div>
-                  <div className="mb-3">
-                    <label className="form-label">Delivery Date</label>
-                    <input
-                      type="date"
-                      className="form-control"
-                      value={orderForm.deliveryDate}
-                      onChange={(e) => setOrderForm({...orderForm, deliveryDate: e.target.value})}
-                      required
-                      min={new Date().toISOString().split('T')[0]}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Quantity</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      value={orderForm.quantity}
-                      onChange={(e) => setOrderForm({...orderForm, quantity: parseInt(e.target.value)})}
-                      required
-                      min="1"
-                      max="10"
-                    />
-                  </div>
+                  <p className="text-muted">
+                    By sending this request, you're asking the tiffin provider to accept you as a customer. 
+                    They will review your request and either accept or reject it.
+                  </p>
                 </div>
                 <div className="modal-footer">
-                  <button type="button" className="btn btn-secondary" onClick={() => setShowOrderModal(false)}>
+                  <button type="button" className="btn btn-secondary" onClick={() => setShowTiffinModal(false)}>
                     Cancel
                   </button>
                   <button type="submit" className="btn btn-warning">
-                    Place Order
+                    Send Request
                   </button>
                 </div>
               </form>
@@ -396,12 +317,175 @@ const TiffinServices = () => {
       )}
 
       {/* Modal Backdrop */}
-      {showOrderModal && (
+      {showTiffinModal && (
         <div className="modal-backdrop fade show"></div>
       )}
     </div>
   );
 };
+
+// Tiffin Requests Component
+const TiffinRequests = () => {
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState('all');
+
+  useEffect(() => {
+    fetchRequests();
+  }, [filterStatus]);
+
+  const fetchRequests = async () => {
+    try {
+      let response;
+      if (filterStatus === 'all') {
+        response = await api.get('/api/user/requests');
+      } else {
+        response = await api.get(`/api/user/requests?status=${filterStatus}`);
+      }
+      setRequests(response.data);
+    } catch (error) {
+      console.error('Error fetching requests:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelRequest = async (requestId) => {
+    if (window.confirm('Are you sure you want to cancel this request?')) {
+      try {
+        await api.delete(`/api/user/requests/${requestId}`);
+        fetchRequests(); // Refresh the list
+        alert('Request cancelled successfully');
+      } catch (error) {
+        alert('Error cancelling request: ' + error.response?.data);
+      }
+    }
+  };
+
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'PENDING': return 'bg-warning';
+      case 'ACCEPTED': return 'bg-success';
+      case 'REJECTED': return 'bg-danger';
+      default: return 'bg-secondary';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container mt-5">
+        <div className="text-center">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mt-4">
+      <div className="row">
+        <div className="col-12">
+          <h2 className="mb-4">📋 My Tiffin Requests</h2>
+          <div className="mb-3">
+            <div className="btn-group" role="group">
+              <button
+                type="button"
+                className={`btn btn-outline-primary ${filterStatus === 'all' ? 'active' : ''}`}
+                onClick={() => setFilterStatus('all')}
+              >
+                All
+              </button>
+              <button
+                type="button"
+                className={`btn btn-outline-warning ${filterStatus === 'PENDING' ? 'active' : ''}`}
+                onClick={() => setFilterStatus('PENDING')}
+              >
+                Pending
+              </button>
+              <button
+                type="button"
+                className={`btn btn-outline-success ${filterStatus === 'ACCEPTED' ? 'active' : ''}`}
+                onClick={() => setFilterStatus('ACCEPTED')}
+              >
+                Accepted
+              </button>
+              <button
+                type="button"
+                className={`btn btn-outline-danger ${filterStatus === 'REJECTED' ? 'active' : ''}`}
+                onClick={() => setFilterStatus('REJECTED')}
+              >
+                Rejected
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="col-12">
+          {requests.length > 0 ? (
+            <div className="card">
+              <div className="card-body">
+                <div className="table-responsive">
+                  <table className="table table-hover">
+                    <thead>
+                      <tr>
+                        <th>Tiffin Provider</th>
+                        <th>Request Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {requests.map((request) => (
+                        <tr key={request.id}>
+                          <td>{request.tiffinName || 'Unknown Provider'}</td>
+                          <td>{new Date(request.assignedDateTime).toLocaleDateString()}</td>
+                          <td>
+                            <span className={`badge ${getStatusBadgeClass(request.status)}`}>
+                              {request.status}
+                            </span>
+                          </td>
+                          <td>
+                            {request.status === 'PENDING' && (
+                              <button 
+                                className="btn btn-outline-danger btn-sm"
+                                onClick={() => handleCancelRequest(request.id)}
+                              >
+                                Cancel
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="card">
+              <div className="card-body text-center">
+                <div className="mb-3">
+                  <span style={{fontSize: '3rem'}}>🍱</span>
+                </div>
+                <h5 className="text-muted">No Tiffin Requests Yet</h5>
+                <p className="text-muted">Send requests to tiffin providers to see them here.</p>
+                <a href="/user-dashboard/tiffins" className="btn btn-warning">
+                  Browse Tiffin Services
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 
 // Maid Services Component
 const MaidServices = () => {
@@ -411,7 +495,7 @@ const MaidServices = () => {
   const [selectedMaid, setSelectedMaid] = useState(null);
   const [hireForm, setHireForm] = useState({
     serviceDate: '',
-    timeSlot: ''
+    userAddress: ''
   });
   const [message, setMessage] = useState('');
 
@@ -441,12 +525,12 @@ const MaidServices = () => {
               const response = await api.post('/api/user/maids/hire', {
         maidId: selectedMaid.id,
         serviceDate: hireForm.serviceDate,
-        timeSlot: hireForm.timeSlot
+        userAddress: hireForm.userAddress
       });
       
       setMessage(response.data.message);
       setShowHireModal(false);
-      setHireForm({ serviceDate: '', timeSlot: '' });
+      setHireForm({ serviceDate: '', userAddress: '' });
       setSelectedMaid(null);
       
       // Show success message
@@ -532,19 +616,25 @@ const MaidServices = () => {
                     />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label">Time Slot</label>
-                    <select
+                    <label className="form-label">Maid's Available Timing</label>
+                    <input
+                      type="text"
                       className="form-control"
-                      value={hireForm.timeSlot}
-                      onChange={(e) => setHireForm({...hireForm, timeSlot: e.target.value})}
+                      value={selectedMaid.timing || 'Not specified'}
+                      disabled
+                    />
+                    <small className="text-muted">The maid will work according to their available timing</small>
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Your Address</label>
+                    <textarea
+                      className="form-control"
+                      value={hireForm.userAddress}
+                      onChange={(e) => setHireForm({...hireForm, userAddress: e.target.value})}
+                      placeholder="Enter your complete address where the maid should come"
+                      rows="3"
                       required
-                    >
-                      <option value="">Select Time Slot</option>
-                      <option value="9:00 AM - 12:00 PM">9:00 AM - 12:00 PM</option>
-                      <option value="12:00 PM - 3:00 PM">12:00 PM - 3:00 PM</option>
-                      <option value="3:00 PM - 6:00 PM">3:00 PM - 6:00 PM</option>
-                      <option value="6:00 PM - 9:00 PM">6:00 PM - 9:00 PM</option>
-                    </select>
+                    />
                   </div>
                 </div>
                 <div className="modal-footer">
@@ -587,6 +677,22 @@ const MyBookings = () => {
       console.error('Error fetching bookings:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCancelRequest = async (requestId, requestType) => {
+    if (window.confirm('Are you sure you want to cancel this request?')) {
+      try {
+        if (requestType === 'maid') {
+          await api.delete(`/api/user/maid-requests/${requestId}`);
+        } else if (requestType === 'tiffin') {
+          await api.delete(`/api/user/requests/${requestId}`);
+        }
+        fetchBookings(); // Refresh the list
+        alert('Request cancelled successfully');
+      } catch (error) {
+        alert('Error cancelling request: ' + error.response?.data);
+      }
     }
   };
 
@@ -685,18 +791,64 @@ const MyBookings = () => {
 
             {/* Tiffin Bookings Tab */}
             <div className={`tab-pane fade ${activeTab === 'tiffin' ? 'show active' : ''}`}>
-              <div className="card">
-                <div className="card-body text-center">
-                  <div className="mb-3">
-                    <span style={{fontSize: '3rem'}}>🍱</span>
+              {bookings?.tiffinRequests && bookings.tiffinRequests.length > 0 ? (
+                <div className="card">
+                  <div className="card-body">
+                    <div className="table-responsive">
+                      <table className="table table-hover">
+                        <thead>
+                          <tr>
+                            <th>Tiffin Provider</th>
+                            <th>Request Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {bookings.tiffinRequests.map((request) => (
+                            <tr key={request.id}>
+                              <td>{request.tiffinName || 'Unknown Provider'}</td>
+                              <td>{new Date(request.assignedDateTime).toLocaleDateString()}</td>
+                              <td>
+                                <span className={`badge bg-${
+                                  request.status === 'PENDING' ? 'warning' :
+                                  request.status === 'ACCEPTED' ? 'success' :
+                                  request.status === 'REJECTED' ? 'danger' : 'secondary'
+                                }`}>
+                                  {request.status}
+                                </span>
+                              </td>
+                              <td>
+                                {request.status === 'PENDING' && (
+                                  <button 
+                                    className="btn btn-outline-danger btn-sm"
+                                    onClick={() => handleCancelRequest(request.id, 'tiffin')}
+                                  >
+                                    Cancel
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                  <h5 className="text-muted">No Tiffin Bookings Yet</h5>
-                  <p className="text-muted">Order tiffin services to see your bookings here.</p>
-                  <a href="/user-dashboard/tiffins" className="btn btn-warning">
-                    Order Tiffin
-                  </a>
                 </div>
-              </div>
+              ) : (
+                <div className="card">
+                  <div className="card-body text-center">
+                    <div className="mb-3">
+                      <span style={{fontSize: '3rem'}}>🍱</span>
+                    </div>
+                    <h5 className="text-muted">No Tiffin Requests Yet</h5>
+                    <p className="text-muted">Send requests to tiffin providers to see them here.</p>
+                    <a href="/user-dashboard/tiffins" className="btn btn-warning">
+                      Browse Tiffin Services
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Maid Requests Tab */}
@@ -710,9 +862,9 @@ const MyBookings = () => {
                           <tr>
                             <th>Maid Name</th>
                             <th>Service Date</th>
-                            <th>Time Slot</th>
                             <th>Request Date</th>
                             <th>Status</th>
+                            <th>Actions</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -720,16 +872,25 @@ const MyBookings = () => {
                             <tr key={request.id}>
                               <td>{request.maid?.name || 'Unknown Maid'}</td>
                               <td>{new Date(request.serviceDate).toLocaleDateString()}</td>
-                              <td>{request.timeSlot}</td>
-                              <td>{new Date(request.requestDate).toLocaleDateString()}</td>
+                              <td>{new Date(request.assignedDateTime).toLocaleDateString()}</td>
                               <td>
                                 <span className={`badge bg-${
-                                  request.status === 'REQUESTED' ? 'warning' :
+                                  request.status === 'PENDING' ? 'warning' :
                                   request.status === 'ACCEPTED' ? 'success' :
-                                  request.status === 'COMPLETED' ? 'primary' : 'secondary'
+                                  request.status === 'REJECTED' ? 'danger' : 'secondary'
                                 }`}>
                                   {request.status}
                                 </span>
+                              </td>
+                              <td>
+                                {request.status === 'PENDING' && (
+                                  <button 
+                                    className="btn btn-outline-danger btn-sm"
+                                    onClick={() => handleCancelRequest(request.id, 'maid')}
+                                  >
+                                    Cancel
+                                  </button>
+                                )}
                               </td>
                             </tr>
                           ))}
@@ -749,6 +910,83 @@ const MyBookings = () => {
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  );
+};
+
+// Active Maid Services Component
+const ActiveMaidServices = () => {
+  const [activeServices, setActiveServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchActiveServices();
+  }, []);
+
+  const fetchActiveServices = async () => {
+    try {
+      const response = await api.get('/api/user/maids/active');
+      setActiveServices(response.data);
+    } catch (error) {
+      console.error('Error fetching active services:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container mt-5">
+        <div className="text-center">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mt-4">
+      <div className="row">
+        <div className="col-12">
+          <h2 className="mb-4">👥 Active Maid Services</h2>
+        </div>
+      </div>
+
+      <div className="row">
+        {activeServices.length > 0 ? (
+          activeServices.map((service) => (
+            <div key={service.id} className="col-md-6 col-lg-4 mb-4">
+              <div className="card h-100">
+                <div className="card-body">
+                  <h5 className="card-title">{service.maid?.name}</h5>
+                  <p className="card-text">
+                    <strong>Contact:</strong> {service.maid?.phoneNumber || 'N/A'}<br/>
+                    <strong>Email:</strong> {service.maid?.email || 'N/A'}<br/>
+                    <strong>Region:</strong> {service.maid?.region || 'N/A'}<br/>
+                    <strong>Services:</strong> {service.maid?.services || 'N/A'}<br/>
+                    <strong>Service Date:</strong> {new Date(service.serviceDate).toLocaleDateString()}<br/>
+                    <strong>Time Slot:</strong> {service.timeSlot || 'N/A'}
+                  </p>
+                  <div className="mt-3">
+                    <span className="badge bg-success">Active Service</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="col-12">
+            <div className="card">
+              <div className="card-body text-center">
+                <h5 className="text-muted">No Active Services</h5>
+                <p className="text-muted">You don't have any active maid services at the moment.</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -940,82 +1178,7 @@ const Feedback = () => {
   );
 };
 
-// Messages Component
-const Messages = () => {
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchMessages();
-  }, []);
-
-  const fetchMessages = async () => {
-    try {
-              const response = await api.get('/api/user/messages');
-      setMessages(response.data);
-    } catch (error) {
-      console.error('Error fetching messages:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="container mt-5">
-        <div className="text-center">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mt-4">
-      <div className="row">
-        <div className="col-12">
-          <h2 className="mb-4">💬 Messages</h2>
-        </div>
-      </div>
-
-      <div className="row">
-        <div className="col-12">
-          {messages.length > 0 ? (
-            <div className="card">
-              <div className="card-body">
-                {messages.map((message) => (
-                  <div key={message.id} className="border-bottom pb-3 mb-3">
-                    <div className="d-flex justify-content-between align-items-start">
-                      <div>
-                        <h6>{message.senderName || 'Unknown Sender'}</h6>
-                        <p className="mt-2">{message.message}</p>
-                      </div>
-                      <small className="text-muted">
-                        {new Date(message.timestamp).toLocaleString()}
-                      </small>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="card">
-              <div className="card-body text-center">
-                <div className="mb-3">
-                  <span style={{fontSize: '3rem'}}>💬</span>
-                </div>
-                <h5 className="text-muted">No Messages Yet</h5>
-                <p className="text-muted">You'll see messages here when someone contacts you.</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // Main UserDashboard Component
 function UserDashboard() {
@@ -1025,10 +1188,12 @@ function UserDashboard() {
         <Route path="/dashboard" element={<DashboardHome />} />
         <Route path="/pgs" element={<PGInterests />} />
         <Route path="/tiffins" element={<TiffinServices />} />
+        <Route path="/tiffins/requests" element={<TiffinRequests />} />
+
         <Route path="/maids" element={<MaidServices />} />
         <Route path="/bookings" element={<MyBookings />} />
+        <Route path="/active-services" element={<ActiveMaidServices />} />
         <Route path="/feedback" element={<Feedback />} />
-        <Route path="/messages" element={<Messages />} />
         <Route path="/" element={<DashboardHome />} />
       </Routes>
     </div>

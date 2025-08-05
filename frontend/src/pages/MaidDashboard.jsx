@@ -119,7 +119,10 @@ const DashboardHome = () => {
                       <div className="activity-content">
                         <strong>New request from {request.user?.name || 'User'}</strong>
                         <small className="text-muted d-block">
-                          {new Date(request.requestDate).toLocaleDateString()} - {request.timeSlot}
+                          {request.status === 'PENDING' ? 'Service not accepted yet' : 
+                           request.serviceDate ? new Date(request.serviceDate).toLocaleDateString() : 
+                           request.assignedDateTime ? new Date(request.assignedDateTime).toLocaleDateString() : 
+                           'Date not specified'} - {request.timeSlot || 'Time not specified'}
                         </small>
                       </div>
                       <div className="activity-status">
@@ -372,14 +375,20 @@ const Profile = () => {
 const ServiceRequests = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState('all');
 
   useEffect(() => {
     fetchRequests();
-  }, []);
+  }, [filterStatus]);
 
-  const fetchRequests = async () => {
+    const fetchRequests = async () => {
     try {
-              const response = await api.get('/api/maid/requests');
+      let response;
+      if (filterStatus === 'all') {
+        response = await api.get('/api/maid/requests');
+      } else {
+        response = await api.get(`/api/maid/requests/status/${filterStatus}`);
+      }
       setRequests(response.data);
     } catch (error) {
       console.error('Error fetching requests:', error);
@@ -403,6 +412,7 @@ const ServiceRequests = () => {
       case 'ACCEPTED': return 'bg-success';
       case 'REJECTED': return 'bg-danger';
       case 'COMPLETED': return 'bg-primary';
+      case 'CANCELLED': return 'bg-secondary';
       default: return 'bg-secondary';
     }
   };
@@ -424,6 +434,45 @@ const ServiceRequests = () => {
       <div className="row">
         <div className="col-12">
           <h2 className="mb-4">📋 Service Requests</h2>
+          <div className="mb-3">
+            <div className="btn-group" role="group">
+              <button
+                type="button"
+                className={`btn btn-outline-primary ${filterStatus === 'all' ? 'active' : ''}`}
+                onClick={() => setFilterStatus('all')}
+              >
+                All
+              </button>
+              <button
+                type="button"
+                className={`btn btn-outline-warning ${filterStatus === 'PENDING' ? 'active' : ''}`}
+                onClick={() => setFilterStatus('PENDING')}
+              >
+                Pending
+              </button>
+              <button
+                type="button"
+                className={`btn btn-outline-success ${filterStatus === 'ACCEPTED' ? 'active' : ''}`}
+                onClick={() => setFilterStatus('ACCEPTED')}
+              >
+                Accepted
+              </button>
+              <button
+                type="button"
+                className={`btn btn-outline-danger ${filterStatus === 'REJECTED' ? 'active' : ''}`}
+                onClick={() => setFilterStatus('REJECTED')}
+              >
+                Rejected
+              </button>
+              <button
+                type="button"
+                className={`btn btn-outline-secondary ${filterStatus === 'CANCELLED' ? 'active' : ''}`}
+                onClick={() => setFilterStatus('CANCELLED')}
+              >
+                Cancelled
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -438,7 +487,8 @@ const ServiceRequests = () => {
                       <tr>
                         <th>User</th>
                         <th>Service Date</th>
-                        <th>Time Slot</th>
+                        <th>My Timing</th>
+                        <th>Address</th>
                         <th>Request Date</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -449,15 +499,20 @@ const ServiceRequests = () => {
                         <tr key={request.id}>
                           <td>{request.user?.name || 'Unknown User'}</td>
                           <td>{new Date(request.serviceDate).toLocaleDateString()}</td>
-                          <td>{request.timeSlot}</td>
-                          <td>{new Date(request.requestDate).toLocaleDateString()}</td>
+                          <td>{request.timeSlot || 'Not specified'}</td>
+                          <td>
+                            <span className="text-muted small">
+                              {request.userAddress || 'No address provided'}
+                            </span>
+                          </td>
+                          <td>{new Date(request.assignedDateTime).toLocaleDateString()}</td>
                           <td>
                             <span className={`badge ${getStatusBadgeClass(request.status)}`}>
                               {request.status}
                             </span>
                           </td>
                           <td>
-                            {request.status === 'REQUESTED' && (
+                            {request.status === 'PENDING' && (
                               <div className="btn-group" role="group">
                                 <button
                                   className="btn btn-success btn-sm"
@@ -472,14 +527,6 @@ const ServiceRequests = () => {
                                   Reject
                                 </button>
                               </div>
-                            )}
-                            {request.status === 'ACCEPTED' && (
-                              <button
-                                className="btn btn-primary btn-sm"
-                                onClick={() => updateRequestStatus(request.id, 'COMPLETED')}
-                              >
-                                Mark Complete
-                              </button>
                             )}
                           </td>
                         </tr>
