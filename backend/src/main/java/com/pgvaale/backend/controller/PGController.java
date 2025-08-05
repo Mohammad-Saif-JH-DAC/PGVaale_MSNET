@@ -3,6 +3,7 @@ package com.pgvaale.backend.controller;
 import com.pgvaale.backend.entity.PG;
 import com.pgvaale.backend.entity.Owner;
 import com.pgvaale.backend.repository.PGRepository;
+import com.pgvaale.backend.service.PGService;
 import com.pgvaale.backend.repository.OwnerRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -22,6 +24,9 @@ public class PGController {
 
     @Autowired
     private OwnerRepository ownerRepository;
+
+    @Autowired
+    private PGService pgService;
 
     // Register PG
     @PostMapping("/register")
@@ -81,12 +86,30 @@ public class PGController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<?> getAllPGs() {
-        try {
-            return ResponseEntity.ok(pgRepository.findAll());
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error fetching PGs: " + e.getMessage());
+    public ResponseEntity<List<PG>> getAllPGs(
+            @RequestParam(required = false) String region,
+            @RequestParam(required = false) String generalPreference,
+            @RequestParam(required = false) Boolean availability) {
+
+        List<PG> pgs = pgService.getAllPGs();
+        // Apply filters
+        if (region != null) {
+            pgs = pgs.stream().filter(pg -> pg.getRegion().equalsIgnoreCase(region)).collect(Collectors.toList());
         }
+        if (generalPreference != null) {
+            pgs = pgs.stream().filter(pg -> pg.getGeneralPreference().equalsIgnoreCase(generalPreference))
+                    .collect(Collectors.toList());
+        }
+        if (availability != null) {
+            pgs = pgs.stream().filter(pg -> {
+                String avail = pg.getAvailability();
+                if (avail == null)
+                    return false;
+                return availability ? avail.equalsIgnoreCase("available") : !avail.equalsIgnoreCase("available");
+            }).collect(Collectors.toList());
+        }
+
+        return ResponseEntity.ok(pgs);
     }
 
     @GetMapping("/{id}")
@@ -105,14 +128,37 @@ public class PGController {
         return ResponseEntity.ok(pgRepository.findByOwner(owner.get()));
     }
 
-    @GetMapping("/region/{region}")
-    public ResponseEntity<?> getPGsByRegion(@PathVariable String region) {
-        try {
-            return ResponseEntity.ok(pgRepository.findByRegion(region));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error fetching PGs by region: " + e.getMessage());
-        }
-    }
+    // @GetMapping("/region/{region}")
+    // public ResponseEntity<?> getPGsByRegion(@PathVariable String region) {
+    // try {
+    // return ResponseEntity.ok(pgRepository.findByRegion(region));
+    // } catch (Exception e) {
+    // return ResponseEntity.status(500).body("Error fetching PGs by region: " +
+    // e.getMessage());
+    // }
+    // }
+
+    // @GetMapping("/gender/{gender}")
+    // public ResponseEntity<?> getPGsByGeneralPreference(@PathVariable String
+    // gender) {
+    // try {
+    // return ResponseEntity.ok(pgRepository.findByGeneralPreference(gender));
+    // } catch (Exception e) {
+    // return ResponseEntity.status(500).body("Error fetching PGs by Gender
+    // Preference: " + e.getMessage());
+    // }
+    // }
+
+    // @GetMapping("/available/{availability}")
+    // public ResponseEntity<?> getPGsByAvailibilty(@PathVariable String available)
+    // {
+    // try {
+    // return ResponseEntity.ok(pgRepository.findByAvailability(available));
+    // } catch (Exception e) {
+    // return ResponseEntity.status(500).body("Error fetching PGs by Availibility: "
+    // + e.getMessage());
+    // }
+    // }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('OWNER')")
