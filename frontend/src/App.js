@@ -1,6 +1,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Home from './pages/Home';
 import ContactUs from './pages/ContactUs';
 import Register from './pages/Register';
@@ -167,6 +170,7 @@ function App() {
         </div>
         <Footer />
       </div>
+      <ToastContainer position="top-center" autoClose={3000} />
     </Router>
   );
 }

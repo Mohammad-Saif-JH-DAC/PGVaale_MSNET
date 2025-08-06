@@ -1,6 +1,9 @@
 import React from 'react';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import RegisterForm from './RegisterForm';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 function Register() {
   return (
