@@ -797,6 +797,18 @@ const MyBookings = () => {
     }
   };
 
+  const handleChangeMaid = async (request) => {
+    if (window.confirm('Are you sure you want to change the maid for this booking?')) {
+      try {
+        await api.post(`/api/user/maid-requests/${request.id}/change`);
+        alert('Maid changed successfully!');
+        fetchBookings(); // Refresh the list
+      } catch (error) {
+        alert('Error changing maid: ' + error.response?.data);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="container mt-5">
@@ -988,10 +1000,18 @@ const MyBookings = () => {
                               <td>
                                 {request.status === 'PENDING' && (
                                   <button 
-                                    className="btn btn-outline-danger btn-sm"
+                                    className="btn btn-outline-danger btn-sm me-1"
                                     onClick={() => handleCancelRequest(request.id, 'maid')}
                                   >
                                     Cancel
+                                  </button>
+                                )}
+                                {request.status === 'ACCEPTED' && (
+                                  <button 
+                                    className="btn btn-outline-primary btn-sm"
+                                    onClick={() => handleChangeMaid(request)}
+                                  >
+                                    Change Maid
                                   </button>
                                 )}
                               </td>

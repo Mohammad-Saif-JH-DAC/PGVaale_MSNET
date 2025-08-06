@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -226,6 +227,39 @@ public class UserController {
             return ResponseEntity.ok("Request cancelled successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error cancelling request: " + e.getMessage());
+        }
+    }
+    
+    // Change maid for accepted request
+    @PostMapping("/maid-requests/{requestId}/change")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> changeMaidForRequest(@PathVariable Long requestId) {
+        try {
+            // Find the existing request
+            Optional<UserMaid> requestOptional = userMaidRepository.findById(requestId);
+            if (!requestOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            UserMaid existingRequest = requestOptional.get();
+            
+            // Check if request is accepted
+            if (existingRequest.getStatus() != UserMaid.RequestStatus.ACCEPTED) {
+                return ResponseEntity.badRequest().body("Can only change maid for accepted requests");
+            }
+            
+            // Cancel the existing request
+            existingRequest.setStatus(UserMaid.RequestStatus.CANCELLED);
+            existingRequest.setDeletionDateTime(LocalDateTime.now());
+            userMaidRepository.save(existingRequest);
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Maid request cancelled. You can now hire a different maid.",
+                "requestId", existingRequest.getId()
+            ));
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error changing maid: " + e.getMessage());
         }
     }
     
