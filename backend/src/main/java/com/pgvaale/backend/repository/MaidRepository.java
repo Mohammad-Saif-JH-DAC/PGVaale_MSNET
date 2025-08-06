@@ -11,4 +11,6 @@ public interface MaidRepository extends JpaRepository<Maid, Long> {
     Optional<Maid> findByEmail(String email);
     List<Maid> findByApprovedFalse();
     List<Maid> findByApprovedTrue();
+    List<Maid> findByRegionAndApprovedTrue(String region);
+
 } 

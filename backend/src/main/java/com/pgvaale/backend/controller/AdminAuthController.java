@@ -136,7 +136,7 @@ public class AdminAuthController {
             UserDetails userDetails = (UserDetails) auth.getPrincipal();
             System.out.println("UserDetails: " + userDetails.getUsername() + " with authorities: " + userDetails.getAuthorities());
             
-            String token = jwtUtil.generateToken(userDetails.getUsername(), "ROLE_ADMIN");
+            String token = jwtUtil.generateToken(userDetails.getUsername(), "ROLE_ADMIN", admin.getId());
             System.out.println("JWT token generated successfully");
             System.out.println("=== ADMIN LOGIN SUCCESS ===");
             

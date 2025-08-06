@@ -6,15 +6,19 @@ CREATE TABLE IF NOT EXISTS user_maid (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     maid_id BIGINT NOT NULL,
-    status ENUM('PENDING', 'ACCEPTED', 'REJECTED') DEFAULT 'PENDING',
+    status ENUM('PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED') DEFAULT 'PENDING',
     assigned_date_time DATETIME DEFAULT CURRENT_TIMESTAMP,
+    accepted_date_time DATETIME NULL,
     deletion_date_time DATETIME NULL,
     user_address TEXT,
-    service_date DATE,
+    start_date DATE,
+    end_date DATE,
     time_slot VARCHAR(50),
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (maid_id) REFERENCES maids(id)
 );
+
+
 
 -- Update feedback table to include maid_id and user_id
 ALTER TABLE feedback ADD COLUMN IF NOT EXISTS maid_id BIGINT;

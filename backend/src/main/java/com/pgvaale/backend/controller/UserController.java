@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -107,8 +108,11 @@ public class UserController {
             userMaid.setAssignedDateTime(LocalDateTime.now());
 
             // Set additional fields if provided
-            if (requestData.containsKey("serviceDate")) {
-                userMaid.setServiceDate(LocalDate.parse((String) requestData.get("serviceDate")));
+            if (requestData.containsKey("startDate")) {
+                userMaid.setStartDate(LocalDate.parse((String) requestData.get("startDate")));
+            }
+            if (requestData.containsKey("endDate")) {
+                userMaid.setEndDate(LocalDate.parse((String) requestData.get("endDate")));
             }
             if (requestData.containsKey("userAddress")) {
                 userMaid.setUserAddress((String) requestData.get("userAddress"));
@@ -151,8 +155,11 @@ public class UserController {
             userMaid.setAssignedDateTime(LocalDateTime.now());
 
             // Set additional fields if provided
-            if (requestData.containsKey("serviceDate")) {
-                userMaid.setServiceDate(LocalDate.parse((String) requestData.get("serviceDate")));
+            if (requestData.containsKey("startDate")) {
+                userMaid.setStartDate(LocalDate.parse((String) requestData.get("startDate")));
+            }
+            if (requestData.containsKey("endDate")) {
+                userMaid.setEndDate(LocalDate.parse((String) requestData.get("endDate")));
             }
             if (requestData.containsKey("userAddress")) {
                 userMaid.setUserAddress((String) requestData.get("userAddress"));
@@ -220,6 +227,38 @@ public class UserController {
             return ResponseEntity.ok("Request cancelled successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error cancelling request: " + e.getMessage());
+        }
+    }
+
+    // Change maid for accepted request
+    @PostMapping("/maid-requests/{requestId}/change")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> changeMaidForRequest(@PathVariable Long requestId) {
+        try {
+            // Find the existing request
+            Optional<UserMaid> requestOptional = userMaidRepository.findById(requestId);
+            if (!requestOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            UserMaid existingRequest = requestOptional.get();
+
+            // Check if request is accepted
+            if (existingRequest.getStatus() != UserMaid.RequestStatus.ACCEPTED) {
+                return ResponseEntity.badRequest().body("Can only change maid for accepted requests");
+            }
+
+            // Cancel the existing request
+            existingRequest.setStatus(UserMaid.RequestStatus.CANCELLED);
+            existingRequest.setDeletionDateTime(LocalDateTime.now());
+            userMaidRepository.save(existingRequest);
+
+            return ResponseEntity.ok(Map.of(
+                    "message", "Maid request cancelled. You can now hire a different maid.",
+                    "requestId", existingRequest.getId()));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error changing maid: " + e.getMessage());
         }
     }
 
@@ -438,6 +477,37 @@ public class UserController {
         }
     }
 
+    // Get user profile
+    @GetMapping("/profile")
+    public ResponseEntity<?> getUserProfile() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+
+            Optional<User> userOptional = userRepository.findByUsername(username);
+            if (!userOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+
+            User user = userOptional.get();
+
+            Map<String, Object> profile = Map.of(
+                    "id", user.getId(),
+                    "name", user.getName(),
+                    "email", user.getEmail(),
+                    "username", user.getUsername(),
+                    "mobileNumber", user.getMobileNumber(),
+                    "age", user.getAge(),
+                    "gender", user.getGender(),
+                    "aadhaar", user.getAadhaar(),
+                    "uniqueId", user.getUniqueId());
+
+            return ResponseEntity.ok(profile);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error fetching profile: " + e.getMessage());
+        }
+    }
+
     // Helper method to get user ID from username
     private Long getUserIdFromUsername(String username) {
         Optional<User> userOptional = userRepository.findByUsername(username);
@@ -450,26 +520,25 @@ public class UserController {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
-            
+
             Optional<User> userOptional = userRepository.findByUsername(username);
             if (!userOptional.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
-            
+
             User user = userOptional.get();
             // Create a response object without password
             Map<String, Object> userProfile = Map.of(
-                "id", user.getId(),
-                "name", user.getName(),
-                "email", user.getEmail(),
-                "username", user.getUsername(),
-                "aadhaar", user.getAadhaar(),
-                "mobileNumber", user.getMobileNumber(),
-                "age", user.getAge(),
-                "gender", user.getGender(),
-                "uniqueId", user.getUniqueId()
-            );
-            
+                    "id", user.getId(),
+                    "name", user.getName(),
+                    "email", user.getEmail(),
+                    "username", user.getUsername(),
+                    "aadhaar", user.getAadhaar(),
+                    "mobileNumber", user.getMobileNumber(),
+                    "age", user.getAge(),
+                    "gender", user.getGender(),
+                    "uniqueId", user.getUniqueId());
+
             return ResponseEntity.ok(userProfile);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching user profile: " + e.getMessage());
@@ -482,14 +551,14 @@ public class UserController {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
-            
+
             Optional<User> userOptional = userRepository.findByUsername(username);
             if (!userOptional.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
-            
+
             User user = userOptional.get();
-            
+
             // Update fields if provided
             if (updateData.containsKey("name")) {
                 user.setName((String) updateData.get("name"));
@@ -506,22 +575,21 @@ public class UserController {
             if (updateData.containsKey("gender")) {
                 user.setGender((String) updateData.get("gender"));
             }
-            
+
             User savedUser = userRepository.save(user);
-            
+
             // Return updated profile without password
             Map<String, Object> userProfile = Map.of(
-                "id", savedUser.getId(),
-                "name", savedUser.getName(),
-                "email", savedUser.getEmail(),
-                "username", savedUser.getUsername(),
-                "aadhaar", savedUser.getAadhaar(),
-                "mobileNumber", savedUser.getMobileNumber(),
-                "age", savedUser.getAge(),
-                "gender", savedUser.getGender(),
-                "uniqueId", savedUser.getUniqueId()
-            );
-            
+                    "id", savedUser.getId(),
+                    "name", savedUser.getName(),
+                    "email", savedUser.getEmail(),
+                    "username", savedUser.getUsername(),
+                    "aadhaar", savedUser.getAadhaar(),
+                    "mobileNumber", savedUser.getMobileNumber(),
+                    "age", savedUser.getAge(),
+                    "gender", savedUser.getGender(),
+                    "uniqueId", savedUser.getUniqueId());
+
             return ResponseEntity.ok(userProfile);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error updating user profile: " + e.getMessage());
@@ -534,25 +602,25 @@ public class UserController {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
-            
+
             Optional<User> userOptional = userRepository.findByUsername(username);
             if (!userOptional.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
-            
+
             User user = userOptional.get();
             Long userId = user.getId();
-            
+
             // Delete related data first (to maintain referential integrity)
             // Delete room interests
             roomInterestRepository.deleteAll(roomInterestRepository.findByUsername(username));
-            
+
             // Delete user-maid relationships
             userMaidRepository.deleteAll(userMaidRepository.findByUserId(userId));
-            
+
             // Delete the user
             userRepository.delete(user);
-            
+
             return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error deleting account: " + e.getMessage());

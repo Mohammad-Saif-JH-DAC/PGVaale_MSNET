@@ -158,7 +158,7 @@ public class MaidAuthController {
             );
             
             UserDetails userDetails = (UserDetails) auth.getPrincipal();
-            String token = jwtUtil.generateToken(userDetails.getUsername(), "ROLE_MAID");
+            String token = jwtUtil.generateToken(userDetails.getUsername(), "ROLE_MAID", maid.getId());
             
             return ResponseEntity.ok(Map.of("token", token));
         } catch (BadCredentialsException e) {

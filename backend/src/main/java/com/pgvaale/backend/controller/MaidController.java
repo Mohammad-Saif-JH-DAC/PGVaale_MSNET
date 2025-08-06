@@ -65,6 +65,7 @@ public class MaidController {
             profile.put("monthlySalary", maid.getMonthlySalary());
             profile.put("gender", maid.getGender());
             profile.put("approved", maid.isApproved());
+
             
             System.out.println("Profile data: " + profile);
             
@@ -120,6 +121,7 @@ public class MaidController {
                     }
                 }
             }
+
             
             Maid savedMaid = maidRepository.save(maid);
             return ResponseEntity.ok("Profile updated successfully");
@@ -215,9 +217,9 @@ public class MaidController {
                 UserMaid.RequestStatus status = UserMaid.RequestStatus.valueOf(newStatus.toUpperCase());
                 request.setStatus(status);
                 
-                // If status is ACCEPTED, update the service date to current date
+                // If status is ACCEPTED, update the accepted date time
                 if (status == UserMaid.RequestStatus.ACCEPTED) {
-                    request.setServiceDate(LocalDate.now());
+                    request.setAcceptedDateTime(LocalDateTime.now());
                 }
                 
                 userMaidRepository.save(request);
@@ -254,6 +256,49 @@ public class MaidController {
             }
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error fetching requests: " + e.getMessage());
+        }
+    }
+    
+    // Get all available maids (for users to hire)
+    @GetMapping("/available")
+    public ResponseEntity<?> getAvailableMaids(@RequestParam(required = false) String region) {
+        try {
+            List<Maid> maids;
+            
+            if (region != null && !region.trim().isEmpty()) {
+                // Filter by region if provided
+                maids = maidRepository.findByRegionAndApprovedTrue(region);
+            } else {
+                // Get all approved maids
+                maids = maidRepository.findByApprovedTrue();
+            }
+            
+            return ResponseEntity.ok(maids);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error fetching available maids: " + e.getMessage());
+        }
+    }
+    
+    // Get maid details by ID
+    @GetMapping("/{maidId}")
+    public ResponseEntity<?> getMaidById(@PathVariable Long maidId) {
+        try {
+            Optional<Maid> maidOptional = maidRepository.findById(maidId);
+            
+            if (!maidOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Maid maid = maidOptional.get();
+            
+            // Only return approved maids
+            if (!maid.isApproved()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            return ResponseEntity.ok(maid);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error fetching maid details: " + e.getMessage());
         }
     }
 } 

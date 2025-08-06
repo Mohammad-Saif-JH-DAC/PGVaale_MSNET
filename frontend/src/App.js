@@ -17,6 +17,7 @@ import Login from './pages/Login';
 import UserDashboard from './pages/UserDashboard';
 import TiffinDashboard from './pages/TiffinDashboard';
 import MaidDashboard from './pages/MaidDashboard';
+import MaidHiring from './pages/MaidHiring';
 import Footer from './Footer';
 import PrivacyPolicy from './components/PrivacyPolicy';
 
@@ -62,6 +63,11 @@ function Navigation() {
             {userRole !== 'owner' && (
   <li className="nav-item">
     <Link className="nav-link" to="/pgrooms">PG Rooms</Link>
+  </li>
+)}
+            {userRole === 'user' && (
+  <li className="nav-item">
+    <Link className="nav-link" to="/maid-hiring">Hire Maid</Link>
   </li>
 )}
             {!token && (
@@ -158,6 +164,7 @@ function App() {
             <Route path="/user-dashboard/*" element={<UserDashboard />} />
             <Route path="/tiffin-dashboard/*" element={<TiffinDashboard />} />
             <Route path="/maid-dashboard/*" element={<MaidDashboard />} />
+            <Route path="/maid-hiring" element={<MaidHiring />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           </Routes>
         </div>

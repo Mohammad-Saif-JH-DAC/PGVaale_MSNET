@@ -32,6 +32,23 @@ public class JwtUtil {
         }
     }
 
+    public Long extractUserId(String token) {
+        try {
+            return extractClaim(token, claims -> {
+                Object userIdObj = claims.get("userId");
+                if (userIdObj instanceof Integer) {
+                    return ((Integer) userIdObj).longValue();
+                } else if (userIdObj instanceof Long) {
+                    return (Long) userIdObj;
+                }
+                return null;
+            });
+        } catch (Exception e) {
+            System.err.println("Error extracting user ID from token: " + e.getMessage());
+            return null;
+        }
+    }
+
     public Date extractExpiration(String token) {
         try {
             return extractClaim(token, Claims::getExpiration);
@@ -68,9 +85,16 @@ public class JwtUtil {
     }
 
     public String generateToken(String username, String role) {
+        return generateToken(username, role, null);
+    }
+
+    public String generateToken(String username, String role, Long userId) {
         Map<String, Object> claims = new HashMap<>();
         if (role != null && !role.isEmpty()) {
             claims.put("role", role);
+        }
+        if (userId != null) {
+            claims.put("userId", userId);
         }
         return createToken(claims, username);
     }

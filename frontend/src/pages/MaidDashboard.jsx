@@ -120,9 +120,9 @@ const DashboardHome = () => {
                         <strong>New request from {request.user?.name || 'User'}</strong>
                         <small className="text-muted d-block">
                           {request.status === 'PENDING' ? 'Service not accepted yet' : 
-                           request.serviceDate ? new Date(request.serviceDate).toLocaleDateString() : 
+                           request.startDate ? new Date(request.startDate).toLocaleDateString() : 
                            request.assignedDateTime ? new Date(request.assignedDateTime).toLocaleDateString() : 
-                           'Date not specified'} - {request.timeSlot || 'Time not specified'}
+                           'Date not specified'} - {profile?.timing || 'My timing not set'}
                         </small>
                       </div>
                       <div className="activity-status">
@@ -184,14 +184,17 @@ const Profile = () => {
     });
   };
 
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-              await api.post('/api/maid/profile', formData);
+      await api.post('/api/maid/profile', formData);
       setMessage('Profile updated successfully!');
       setIsEditing(false);
       fetchProfile(); // Refresh profile data
     } catch (error) {
+
       setMessage('Error updating profile: ' + error.response?.data);
     }
   };
@@ -376,9 +379,11 @@ const ServiceRequests = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     fetchRequests();
+    fetchProfile();
   }, [filterStatus]);
 
     const fetchRequests = async () => {
@@ -394,6 +399,15 @@ const ServiceRequests = () => {
       console.error('Error fetching requests:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchProfile = async () => {
+    try {
+      const response = await api.get('/api/maid/profile');
+      setProfile(response.data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
     }
   };
 
@@ -464,13 +478,6 @@ const ServiceRequests = () => {
               >
                 Rejected
               </button>
-              <button
-                type="button"
-                className={`btn btn-outline-secondary ${filterStatus === 'CANCELLED' ? 'active' : ''}`}
-                onClick={() => setFilterStatus('CANCELLED')}
-              >
-                Cancelled
-              </button>
             </div>
           </div>
         </div>
@@ -486,10 +493,12 @@ const ServiceRequests = () => {
                     <thead>
                       <tr>
                         <th>User</th>
-                        <th>Service Date</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
                         <th>My Timing</th>
                         <th>Address</th>
                         <th>Request Date</th>
+                        <th>Accept Date</th>
                         <th>Status</th>
                         <th>Actions</th>
                       </tr>
@@ -498,14 +507,16 @@ const ServiceRequests = () => {
                       {requests.map((request) => (
                         <tr key={request.id}>
                           <td>{request.user?.name || 'Unknown User'}</td>
-                          <td>{new Date(request.serviceDate).toLocaleDateString()}</td>
-                          <td>{request.timeSlot || 'Not specified'}</td>
+                          <td>{request.startDate ? new Date(request.startDate).toLocaleDateString() : 'N/A'}</td>
+                          <td>{request.endDate ? new Date(request.endDate).toLocaleDateString() : 'N/A'}</td>
+                          <td>{profile?.timing || 'My timing not set'}</td>
                           <td>
                             <span className="text-muted small">
                               {request.userAddress || 'No address provided'}
                             </span>
                           </td>
                           <td>{new Date(request.assignedDateTime).toLocaleDateString()}</td>
+                          <td>{request.acceptedDateTime ? new Date(request.acceptedDateTime).toLocaleDateString() : '-'}</td>
                           <td>
                             <span className={`badge ${getStatusBadgeClass(request.status)}`}>
                               {request.status}

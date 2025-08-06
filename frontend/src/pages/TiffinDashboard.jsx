@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 import api from '../api';
 import './TiffinDashboard.css';
+import TiffinNavigationModal from './TiffinNavigationModal'; // import the new component
+
 
 // Dashboard Home Component
 const DashboardHome = () => {
@@ -879,10 +881,10 @@ const TiffinNavigation = () => {
   const location = window.location.pathname;
 
   const navItems = [
-    { path: '/tiffin-dashboard', label: '🏠 Dashboard', icon: '🏠' },
-    { path: '/tiffin-dashboard/menu', label: '🍽️ Menu Management', icon: '🍽️' },
-    { path: '/tiffin-dashboard/requests', label: '📋 Service Requests', icon: '📋' },
-    { path: '/tiffin-dashboard/profile', label: '👤 Profile', icon: '👤' }
+   
+    { path: '/tiffin-dashboard/menu', label: 'Menu Management', icon: '🍽️' },
+    { path: '/tiffin-dashboard/requests', label: 'Service Requests', icon: '📋' },
+    { path: '/tiffin-dashboard/profile', label: 'Profile', icon: '👤' }
   ];
 
   const handleLogout = () => {
@@ -894,9 +896,7 @@ const TiffinNavigation = () => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
       <div className="container">
-        <a className="navbar-brand" href="/tiffin-dashboard">
-          🍱 Tiffin Dashboard
-        </a>
+       
         
         <button 
           className="navbar-toggler" 
@@ -921,16 +921,7 @@ const TiffinNavigation = () => {
             ))}
           </ul>
           
-          <ul className="navbar-nav">
-            <li className="nav-item">
-              <button 
-                className="btn btn-outline-light btn-sm"
-                onClick={handleLogout}
-              >
-                🚪 Logout
-              </button>
-            </li>
-          </ul>
+        
         </div>
       </div>
     </nav>
