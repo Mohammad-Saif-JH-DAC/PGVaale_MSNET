@@ -6,6 +6,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { FaRupeeSign, FaMapMarkerAlt, FaCheckCircle, FaImages, FaUser } from 'react-icons/fa';
+import UserProfile from '../components/UserProfile';
 
 const MyBookedPGs = ({ bookedPGs }) => {
   // This component is not used, but if needed, define defaultIcon here.
@@ -14,6 +15,7 @@ const MyBookedPGs = ({ bookedPGs }) => {
 // Dashboard Home Component
 const DashboardHome = () => {
   const [dashboardData, setDashboardData] = useState(null);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,6 +27,19 @@ const DashboardHome = () => {
       // Debug: Check if token exists
       const token = localStorage.getItem('token');
       console.log('Token exists:', !!token);
+      
+      // Fetch user profile to get real name
+      let userName = 'Guest';
+      if (token) {
+        try {
+          const profileResponse = await api.get('/api/user/profile');
+          setUserProfile(profileResponse.data);
+          userName = profileResponse.data.name || 'User';
+        } catch (profileError) {
+          console.warn('Could not fetch user profile, using default name');
+          userName = 'User';
+        }
+      }
       
       // Try to get user-specific data, fallback to general data if 403
       let response;
@@ -41,7 +56,7 @@ const DashboardHome = () => {
       }
       
       setDashboardData({
-        userName: token ? 'User' : 'Guest',
+        userName: userName,
         data: response.data
       });
     } catch (error) {
@@ -115,7 +130,12 @@ const DashboardHome = () => {
               </div>
               
               <div className="row mt-3">
-                <div className="col-md-12 mb-3">
+                <div className="col-md-6 mb-3">
+                  <a href="/user-dashboard/profile" className="btn btn-outline-secondary w-100">
+                    👤 Manage Profile
+                  </a>
+                </div>
+                <div className="col-md-6 mb-3">
                   <a href="/user-dashboard/feedback" className="btn btn-outline-info w-100">
                     ⭐ Give Feedback
                   </a>
@@ -1295,6 +1315,7 @@ function UserDashboard() {
     <div className="user-dashboard">
       <Routes>
         <Route path="/dashboard" element={<DashboardHome />} />
+        <Route path="/profile" element={<UserProfile />} />
         <Route path="/pgs" element={<PGInterests />} />
         <Route path="/tiffins" element={<TiffinServices />} />
         <Route path="/tiffins/requests" element={<TiffinRequests />} />

@@ -145,7 +145,7 @@ function ContactUs() {
             </div>
           )}
 
-          <button type="submit" className="btn btn-danger w-100">Submit Feedback</button>
+          <button type="submit" className="btn btn-danger w-100">Submit Contact Us Form</button>
         </form>
       </div>
 
@@ -153,14 +153,14 @@ function ContactUs() {
         <div className="side-box">
           <h5>🏠 Want to list your PG?</h5>
           <p>We help you connect with verified users.</p>
-          <a href="/register">List Now</a>
+          <a href="/register/owner">List Now</a>
         </div>
 
-        <div className="side-box">
+        {/* <div className="side-box">
           <h5>⚠️ Report Safety Concern</h5>
           <p>Your safety is our priority. Let us know if you faced any issue.</p>
           <a href="/report-safety">Report Here</a>
-        </div>
+        </div> */}
       </div>
     </div>
   </div>

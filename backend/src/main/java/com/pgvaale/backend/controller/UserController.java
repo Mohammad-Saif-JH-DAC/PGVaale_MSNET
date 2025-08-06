@@ -440,14 +440,122 @@ public class UserController {
 
     // Helper method to get user ID from username
     private Long getUserIdFromUsername(String username) {
+        Optional<User> userOptional = userRepository.findByUsername(username);
+        return userOptional.map(User::getId).orElse(null);
+    }
+
+    // Get current user profile
+    @GetMapping("/profile")
+    public ResponseEntity<?> getUserProfile() {
         try {
-            Optional<User> user = userRepository.findByUsername(username);
-            if (user.isPresent()) {
-                return user.get().getId();
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            
+            Optional<User> userOptional = userRepository.findByUsername(username);
+            if (!userOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
             }
-            throw new RuntimeException("User not found for username: " + username);
+            
+            User user = userOptional.get();
+            // Create a response object without password
+            Map<String, Object> userProfile = Map.of(
+                "id", user.getId(),
+                "name", user.getName(),
+                "email", user.getEmail(),
+                "username", user.getUsername(),
+                "aadhaar", user.getAadhaar(),
+                "mobileNumber", user.getMobileNumber(),
+                "age", user.getAge(),
+                "gender", user.getGender(),
+                "uniqueId", user.getUniqueId()
+            );
+            
+            return ResponseEntity.ok(userProfile);
         } catch (Exception e) {
-            throw new RuntimeException("Error getting user ID: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error fetching user profile: " + e.getMessage());
+        }
+    }
+
+    // Update user profile
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateUserProfile(@RequestBody Map<String, Object> updateData) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            
+            Optional<User> userOptional = userRepository.findByUsername(username);
+            if (!userOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            User user = userOptional.get();
+            
+            // Update fields if provided
+            if (updateData.containsKey("name")) {
+                user.setName((String) updateData.get("name"));
+            }
+            if (updateData.containsKey("email")) {
+                user.setEmail((String) updateData.get("email"));
+            }
+            if (updateData.containsKey("mobileNumber")) {
+                user.setMobileNumber((String) updateData.get("mobileNumber"));
+            }
+            if (updateData.containsKey("age")) {
+                user.setAge(Integer.parseInt(updateData.get("age").toString()));
+            }
+            if (updateData.containsKey("gender")) {
+                user.setGender((String) updateData.get("gender"));
+            }
+            
+            User savedUser = userRepository.save(user);
+            
+            // Return updated profile without password
+            Map<String, Object> userProfile = Map.of(
+                "id", savedUser.getId(),
+                "name", savedUser.getName(),
+                "email", savedUser.getEmail(),
+                "username", savedUser.getUsername(),
+                "aadhaar", savedUser.getAadhaar(),
+                "mobileNumber", savedUser.getMobileNumber(),
+                "age", savedUser.getAge(),
+                "gender", savedUser.getGender(),
+                "uniqueId", savedUser.getUniqueId()
+            );
+            
+            return ResponseEntity.ok(userProfile);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error updating user profile: " + e.getMessage());
+        }
+    }
+
+    // Delete user account
+    @DeleteMapping("/profile")
+    public ResponseEntity<?> deleteUserAccount() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            
+            Optional<User> userOptional = userRepository.findByUsername(username);
+            if (!userOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            User user = userOptional.get();
+            Long userId = user.getId();
+            
+            // Delete related data first (to maintain referential integrity)
+            // Delete room interests
+            roomInterestRepository.deleteAll(roomInterestRepository.findByUsername(username));
+            
+            // Delete user-maid relationships
+            userMaidRepository.deleteAll(userMaidRepository.findByUserId(userId));
+            
+            // Delete the user
+            userRepository.delete(user);
+            
+            return ResponseEntity.ok(Map.of("message", "Account deleted successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error deleting account: " + e.getMessage());
         }
     }
 }
