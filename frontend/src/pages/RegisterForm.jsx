@@ -4,6 +4,10 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { authApi as api } from '../api';
 import { FaUser, FaEnvelope, FaLock, FaIdCard, FaPhone, FaCalendarAlt, FaVenusMars, FaMapMarkerAlt, FaHome, FaMoneyBillWave, FaConciergeBell, FaClock, FaUtensils, FaBuilding, FaBed } from 'react-icons/fa';
 import Select from 'react-select';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+
 
 const allowedRoles = ['user', 'owner', 'tiffin', 'maid'];
 // Define the specific regions allowed
@@ -295,8 +299,12 @@ function RegisterForm() {
       }
       const response = await api.post(endpoint, dataToSubmit); // Send potentially modified data
       console.log('Registration response:', response.data);
-      setSuccess('Registration successful!');
-      setTimeout(() => navigate('/login'), 2000);
+      //setSuccess('Registration successful!');
+      //setTimeout(() => navigate('/login'), 2000);
+     toast.success('Registration successful! Please login.');
+     setTimeout(() => navigate('/login'), 2000);
+
+
     } catch (err) {
       console.error('Registration error:', err);
       console.error('Error response:', err.response); // Log the full response for debugging
@@ -315,7 +323,11 @@ function RegisterForm() {
         // The request was made but no response was received
         errorMessage = 'Network error. Please check your connection.';
       }
-      setError(errorMessage);
+      //setError(errorMessage);
+
+     toast.error(errorMessage);
+
+
     } finally {
       setLoading(false);
     }
