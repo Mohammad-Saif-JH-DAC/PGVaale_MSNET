@@ -14,6 +14,7 @@ import com.pgvaale.backend.repository.UserMaidRepository;
 import com.pgvaale.backend.repository.UserRepository;
 import com.pgvaale.backend.service.TiffinService;
 import com.pgvaale.backend.service.UserService;
+import com.pgvaale.backend.service.UserMaidService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -50,6 +51,9 @@ public class UserController {
     
     @Autowired
     private RoomInterestRepository roomInterestRepository;
+    
+    @Autowired
+    private UserMaidService userMaidService;
     
     // Get all available maids
     @GetMapping("/maids")
@@ -90,38 +94,16 @@ public class UserController {
             String username = auth.getName();
             Long userId = getUserIdFromUsername(username);
             
-            Optional<Maid> maidOptional = maidRepository.findById(maidId);
-            if (!maidOptional.isPresent()) {
-                return ResponseEntity.notFound().build();
-            }
+            // Use UserMaidService to create request with proper validation
+            String userAddress = (String) requestData.get("userAddress");
+            String startDateStr = (String) requestData.get("startDate");
+            String endDateStr = (String) requestData.get("endDate");
+            String timeSlot = (String) requestData.get("timeSlot");
             
-            Maid maid = maidOptional.get();
-            if (!maid.isApproved()) {
-                return ResponseEntity.badRequest().body("Maid is not approved");
-            }
+            LocalDate startDate = startDateStr != null ? LocalDate.parse(startDateStr) : LocalDate.now().plusDays(1);
+            LocalDate endDate = endDateStr != null ? LocalDate.parse(endDateStr) : LocalDate.now().plusDays(7);
             
-            // Create user-maid request
-            UserMaid userMaid = new UserMaid();
-            userMaid.setUser(userRepository.findById(userId).orElse(null));
-            userMaid.setMaid(maid);
-            userMaid.setStatus(UserMaid.RequestStatus.PENDING);
-            userMaid.setAssignedDateTime(LocalDateTime.now());
-            
-            // Set additional fields if provided
-            if (requestData.containsKey("startDate")) {
-                userMaid.setStartDate(LocalDate.parse((String) requestData.get("startDate")));
-            }
-            if (requestData.containsKey("endDate")) {
-                userMaid.setEndDate(LocalDate.parse((String) requestData.get("endDate")));
-            }
-            if (requestData.containsKey("userAddress")) {
-                userMaid.setUserAddress((String) requestData.get("userAddress"));
-            }
-            if (requestData.containsKey("timeSlot")) {
-                userMaid.setTimeSlot((String) requestData.get("timeSlot"));
-            }
-            
-            UserMaid savedRequest = userMaidRepository.save(userMaid);
+            UserMaid savedRequest = userMaidService.createHiringRequest(userId, maidId, userAddress, startDate, endDate, timeSlot);
             return ResponseEntity.ok(savedRequest);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error sending request: " + e.getMessage());
@@ -137,38 +119,17 @@ public class UserController {
             Long userId = getUserIdFromUsername(username);
             
             Long maidId = Long.valueOf(requestData.get("maidId").toString());
-            Optional<Maid> maidOptional = maidRepository.findById(maidId);
-            if (!maidOptional.isPresent()) {
-                return ResponseEntity.notFound().build();
-            }
             
-            Maid maid = maidOptional.get();
-            if (!maid.isApproved()) {
-                return ResponseEntity.badRequest().body("Maid is not approved");
-            }
+            // Use UserMaidService to create request with proper validation
+            String userAddress = (String) requestData.get("userAddress");
+            String startDateStr = (String) requestData.get("startDate");
+            String endDateStr = (String) requestData.get("endDate");
+            String timeSlot = (String) requestData.get("timeSlot");
             
-            // Create user-maid request
-            UserMaid userMaid = new UserMaid();
-            userMaid.setUser(userRepository.findById(userId).orElse(null));
-            userMaid.setMaid(maid);
-            userMaid.setStatus(UserMaid.RequestStatus.PENDING);
-            userMaid.setAssignedDateTime(LocalDateTime.now());
+            LocalDate startDate = startDateStr != null ? LocalDate.parse(startDateStr) : LocalDate.now().plusDays(1);
+            LocalDate endDate = endDateStr != null ? LocalDate.parse(endDateStr) : LocalDate.now().plusDays(7);
             
-            // Set additional fields if provided
-            if (requestData.containsKey("startDate")) {
-                userMaid.setStartDate(LocalDate.parse((String) requestData.get("startDate")));
-            }
-            if (requestData.containsKey("endDate")) {
-                userMaid.setEndDate(LocalDate.parse((String) requestData.get("endDate")));
-            }
-            if (requestData.containsKey("userAddress")) {
-                userMaid.setUserAddress((String) requestData.get("userAddress"));
-            }
-            if (requestData.containsKey("timeSlot")) {
-                userMaid.setTimeSlot((String) requestData.get("timeSlot"));
-            }
-            
-            UserMaid savedRequest = userMaidRepository.save(userMaid);
+            UserMaid savedRequest = userMaidService.createHiringRequest(userId, maidId, userAddress, startDate, endDate, timeSlot);
             return ResponseEntity.ok(Map.of("message", "Maid hired successfully", "request", savedRequest));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error hiring maid: " + e.getMessage());

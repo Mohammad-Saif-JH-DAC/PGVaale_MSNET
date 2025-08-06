@@ -1138,10 +1138,11 @@ const Feedback = () => {
     try {
       const [feedbackResponse, maidsResponse] = await Promise.all([
         api.get('/api/user/feedback'),
-        api.get('/api/user/maids')
+        api.get('/api/maid/available') // Use the available maids endpoint instead
       ]);
       setFeedback(feedbackResponse.data);
       setMaids(maidsResponse.data);
+      console.log('Fetched maids for feedback:', maidsResponse.data); // Debug log
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -1217,7 +1218,7 @@ const Feedback = () => {
                   <option value="">Choose a maid...</option>
                   {maids.map((maid) => (
                     <option key={maid.id} value={maid.id}>
-                      {maid.name} - {maid.services}
+                      {maid.name || `Maid ${maid.id}`} - {maid.services || 'Services not specified'} ({maid.region || 'Region not specified'})
                     </option>
                   ))}
                 </select>

@@ -40,9 +40,9 @@ public class UserMaidService {
             throw new RuntimeException("Maid not found");
         }
         
-        // Check if there's already an active request for this user and maid
-        if (userMaidRepository.existsActiveRequestByUserIdAndMaidId(userId, maidId)) {
-            throw new RuntimeException("You already have an active request with this maid");
+        // Check if user has any active request (only 1 maid can be hired at a time)
+        if (userMaidRepository.existsActiveRequestByUserId(userId)) {
+            throw new RuntimeException("You can only hire one maid at a time. Please cancel your existing request first.");
         }
         
         UserMaid userMaid = UserMaid.builder()

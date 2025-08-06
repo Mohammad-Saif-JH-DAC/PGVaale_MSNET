@@ -56,6 +56,10 @@ public interface UserMaidRepository extends JpaRepository<UserMaid, Long> {
     @Query("SELECT COUNT(um) FROM UserMaid um WHERE um.user.id = :userId AND um.deletionDateTime IS NULL")
     Long countActiveRequestsByUserId(@Param("userId") Long userId);
     
+    // Check if a user has any active request
+    @Query("SELECT COUNT(um) > 0 FROM UserMaid um WHERE um.user.id = :userId AND um.deletionDateTime IS NULL")
+    boolean existsActiveRequestByUserId(@Param("userId") Long userId);
+    
     // Find all requests for a maid (including canceled ones)
     @Query("SELECT um FROM UserMaid um WHERE um.maid.id = :maidId")
     List<UserMaid> findAllRequestsByMaidId(@Param("maidId") Long maidId);
