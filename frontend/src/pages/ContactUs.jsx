@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import './ContactUs.css';
+const bannerImage = process.env.PUBLIC_URL + '/image/ContactUsBG.png';
+
 
 
 function ContactUs() {
@@ -69,78 +71,101 @@ function ContactUs() {
   };
 
   return (
-  <div className="container mt-5 contact-container" style={{ maxWidth: '600px' }}>
-    <h2 className="text-center mb-3">📩 Contact Us</h2>
-    <p className="text-muted text-center mb-4">
-      Got a question ❓ A suggestion 💡 Or just want to say hi 👋?<br />
-      We'd love to hear from you!
-    </p>
+  <div className="contact-page">
+    <div className="banner"
+    style={{
+          backgroundImage: `url(${bannerImage})`,
+        }}
+    >
+            <h1>We would love to hear from you!</h1>
 
-    <form onSubmit={handleSubmit} noValidate>
-      <div className="mb-3">
-        <label className="form-label">👤 Full Name *</label>
-        <input
-          type="text"
-          className={`form-control ${errors.name ? 'is-invalid' : ''}`}
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          placeholder="e.g., Mansi Kamble"
-        />
-        {errors.name && <div className="invalid-contactUs">{errors.name}</div>}
-      </div>
-
-      <div className="mb-3">
-        <label className="form-label">📧 Email Address *</label>
-        <input
-          type="email"
-          className={`form-control ${errors.email ? 'is-invalid' : ''}`}
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          placeholder="e.g., mansi111@example.com"
-        />
-        {errors.email && <div className="invalid-contactUs">{errors.email}</div>}
-      </div>
-
-      <div className="mb-3">
-        <label className="form-label">📱 Mobile Number *</label>
-        <input
-          type="tel"
-          className={`form-control ${errors.phone ? 'is-invalid' : ''}`}
-          name="phone"
-          value={form.phone}
-          onChange={handleChange}
-          placeholder="e.g., 9876543210"
-        />
-        {errors.phone && <div className="invalid-contactUs">{errors.phone}</div>}
-      </div>
-
-      <div className="mb-3">
-        <label className="form-label">💬 Your Message *</label>
-        <textarea
-          className={`form-control ${errors.message ? 'is-invalid' : ''}`}
-          name="message"
-          rows="4"
-          value={form.message}
-          onChange={handleChange}
-          placeholder="Tell us what’s on your mind..."
-        ></textarea>
-        {errors.message && <div className="invalid-contactUs">{errors.message}</div>}
-      </div>
-
-      {success && (
-        <div className={`alert mt-2 ${success.startsWith('✅') ? 'alert-success' : 'alert-danger'}`} role="alert">
-          {success}
-        </div>
-      )}
-
-        <button type="submit" className="btn btn-primary w-100">
-          Submit ContactUs
-        </button>
-      </form>
     </div>
-  );
+  
+
+    <div className="form-section container">
+      <div className="contact-form-box">
+        <form onSubmit={handleSubmit} noValidate>
+          <h2 className="mb-3">📩 Contact Us</h2>
+
+          <div className="mb-3">
+            <label className="form-label">Full Name *</label>
+            <input
+              type="text"
+              className={`form-control ${errors.name ? 'is-invalid' : ''}`}
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="e.g., Mansi Kamble"
+            />
+            {errors.name && <div className="invalid-contactUs">{errors.name}</div>}
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Email Address *</label>
+            <input
+              type="email"
+              className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="e.g., mansi111@example.com"
+            />
+            {errors.email && <div className="invalid-contactUs">{errors.email}</div>}
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Mobile Number *</label>
+            <input
+              type="tel"
+              className={`form-control ${errors.phone ? 'is-invalid' : ''}`}
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="e.g., 9876543210"
+            />
+            {errors.phone && <div className="invalid-contactUs">{errors.phone}</div>}
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Message *</label>
+            <textarea
+              className={`form-control ${errors.message ? 'is-invalid' : ''}`}
+              name="message"
+              rows="4"
+              value={form.message}
+              onChange={handleChange}
+              placeholder="Tell us what’s on your mind..."
+            ></textarea>
+            {errors.message && <div className="invalid-contactUs">{errors.message}</div>}
+          </div>
+
+          {success && (
+            <div className={`alert mt-2 ${success.startsWith('✅') ? 'alert-success' : 'alert-danger'}`} role="alert">
+              {success}
+            </div>
+          )}
+
+          <button type="submit" className="btn btn-danger w-100">Submit Feedback</button>
+        </form>
+      </div>
+
+      <div className="contact-side-boxes">
+        <div className="side-box">
+          <h5>🏠 Want to list your PG?</h5>
+          <p>We help you connect with verified users.</p>
+          <a href="/register">List Now</a>
+        </div>
+
+        <div className="side-box">
+          <h5>⚠️ Report Safety Concern</h5>
+          <p>Your safety is our priority. Let us know if you faced any issue.</p>
+          <a href="/report-safety">Report Here</a>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 }
 
 export default ContactUs;
