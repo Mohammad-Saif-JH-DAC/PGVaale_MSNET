@@ -3,11 +3,13 @@ package com.pgvaale.backend.controller;
 import com.pgvaale.backend.dto.MenuDTO;
 import com.pgvaale.backend.dto.UserTiffinDTO;
 import com.pgvaale.backend.entity.Maid;
+import com.pgvaale.backend.entity.RoomInterest;
 import com.pgvaale.backend.entity.Tiffin;
 import com.pgvaale.backend.entity.User;
 import com.pgvaale.backend.entity.UserMaid;
 import com.pgvaale.backend.entity.UserTiffin;
 import com.pgvaale.backend.repository.MaidRepository;
+import com.pgvaale.backend.repository.RoomInterestRepository;
 import com.pgvaale.backend.repository.UserMaidRepository;
 import com.pgvaale.backend.repository.UserRepository;
 import com.pgvaale.backend.service.TiffinService;
@@ -44,6 +46,9 @@ public class UserController {
     
     @Autowired
     private UserMaidRepository userMaidRepository;
+    
+    @Autowired
+    private RoomInterestRepository roomInterestRepository;
     
     // Get all available maids
     @GetMapping("/maids")
@@ -418,6 +423,21 @@ public class UserController {
         }
     }
     
+    // Get user's PG interests
+    @GetMapping("/pgs")
+    public ResponseEntity<?> getUserPGInterests() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            
+            // Get user's room interests from the database
+            List<RoomInterest> interests = roomInterestRepository.findByUsername(username);
+            return ResponseEntity.ok(interests);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error fetching PG interests: " + e.getMessage());
+        }
+    }
+    
     // Helper method to get user ID from username
     private Long getUserIdFromUsername(String username) {
         try {
@@ -430,4 +450,4 @@ public class UserController {
             throw new RuntimeException("Error getting user ID: " + e.getMessage());
         }
     }
-} 
+}

@@ -14,10 +14,40 @@ const DashboardHome = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await api.get('/api/user/dashboard');
-      setDashboardData(response.data);
+      // Debug: Check if token exists
+      const token = localStorage.getItem('token');
+      console.log('Token exists:', !!token);
+      
+      // Try to get user-specific data, fallback to general data if 403
+      let response;
+      try {
+        response = await api.get('/api/user/pgs');
+      } catch (userError) {
+        if (userError.response?.status === 403) {
+          console.warn('User-specific endpoint not accessible, using general endpoint');
+          // Fallback to general PG data that works
+          response = await api.get('/api/pg/all');
+        } else {
+          throw userError;
+        }
+      }
+      
+      setDashboardData({
+        userName: token ? 'User' : 'Guest',
+        data: response.data
+      });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      
+      // Handle 403 specifically
+      if (error.response?.status === 403) {
+        console.error('403 Forbidden - User not authorized or token invalid');
+        // Set fallback data for logged-in users
+        setDashboardData({
+          userName: 'User',
+          data: []
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -102,10 +132,18 @@ const PGInterests = () => {
 
   const fetchInterests = async () => {
     try {
-              const response = await api.get('/api/user/pgs');
+      const response = await api.get('/api/user/pgs');
       setInterests(response.data);
     } catch (error) {
       console.error('Error fetching PG interests:', error);
+      if (error.response?.status === 401) {
+        // Authentication failed - redirect to login
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      } else {
+        // Other errors - show empty state
+        setInterests([]);
+      }
     } finally {
       setLoading(false);
     }

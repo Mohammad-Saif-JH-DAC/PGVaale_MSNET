@@ -103,7 +103,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/user/**").hasRole("USER")
                         .requestMatchers("/api/maid/**").hasRole("MAID")
                         .requestMatchers("/api/tiffin/**").hasRole("TIFFIN")
-                        .requestMatchers("/api/pg/**").hasAnyRole("OWNER", "USER", "ADMIN")
+                        .requestMatchers("/api/pgs/**").hasAnyRole("OWNER", "USER", "ADMIN") // pg->pgs
                         .anyRequest().authenticated())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 

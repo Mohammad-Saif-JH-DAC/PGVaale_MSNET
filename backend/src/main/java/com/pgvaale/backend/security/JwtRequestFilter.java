@@ -32,8 +32,16 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         System.out.println("JWT Filter - " + method + " " + path);
         System.out.println("Authorization Header: " + request.getHeader("Authorization"));
 
+        // List of public paths
+        if (isPublicPath(path)) {
+            System.out.println("Allowing public access to: " + path);
+            chain.doFilter(request, response);
+            return;
+        }
+
         // Allow unauthenticated access to public auth routes
-        if (path.startsWith("/api/auth/login") || path.startsWith("/api/auth/register")) {
+        if (path.startsWith("/api/auth/login") || path.startsWith("/api/auth/register")
+                || path.startsWith("/api/user/pgs")) {
             chain.doFilter(request, response);
             return;
         }
@@ -75,5 +83,16 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
 
         chain.doFilter(request, response);
+    }
+
+    private boolean isPublicPath(String path) {
+        return path.startsWith("/api/auth/login") ||
+                path.startsWith("/api/auth/register") ||
+                // path.startsWith("/api/user/pgs") ||
+                path.startsWith("/api/user/dashboard") ||
+                path.startsWith("/api/pg/all") ||
+                path.startsWith("/api/pg/region") ||
+                path.startsWith("/swagger-ui") ||
+                path.startsWith("/v3/api-docs");
     }
 }
