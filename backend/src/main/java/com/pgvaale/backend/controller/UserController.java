@@ -107,8 +107,11 @@ public class UserController {
             userMaid.setAssignedDateTime(LocalDateTime.now());
             
             // Set additional fields if provided
-            if (requestData.containsKey("serviceDate")) {
-                userMaid.setServiceDate(LocalDate.parse((String) requestData.get("serviceDate")));
+            if (requestData.containsKey("startDate")) {
+                userMaid.setStartDate(LocalDate.parse((String) requestData.get("startDate")));
+            }
+            if (requestData.containsKey("endDate")) {
+                userMaid.setEndDate(LocalDate.parse((String) requestData.get("endDate")));
             }
             if (requestData.containsKey("userAddress")) {
                 userMaid.setUserAddress((String) requestData.get("userAddress"));
@@ -151,8 +154,11 @@ public class UserController {
             userMaid.setAssignedDateTime(LocalDateTime.now());
             
             // Set additional fields if provided
-            if (requestData.containsKey("serviceDate")) {
-                userMaid.setServiceDate(LocalDate.parse((String) requestData.get("serviceDate")));
+            if (requestData.containsKey("startDate")) {
+                userMaid.setStartDate(LocalDate.parse((String) requestData.get("startDate")));
+            }
+            if (requestData.containsKey("endDate")) {
+                userMaid.setEndDate(LocalDate.parse((String) requestData.get("endDate")));
             }
             if (requestData.containsKey("userAddress")) {
                 userMaid.setUserAddress((String) requestData.get("userAddress"));
@@ -435,6 +441,38 @@ public class UserController {
             return ResponseEntity.ok(interests);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching PG interests: " + e.getMessage());
+        }
+    }
+    
+    // Get user profile
+    @GetMapping("/profile")
+    public ResponseEntity<?> getUserProfile() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            
+            Optional<User> userOptional = userRepository.findByUsername(username);
+            if (!userOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            User user = userOptional.get();
+            
+            Map<String, Object> profile = Map.of(
+                "id", user.getId(),
+                "name", user.getName(),
+                "email", user.getEmail(),
+                "username", user.getUsername(),
+                "mobileNumber", user.getMobileNumber(),
+                "age", user.getAge(),
+                "gender", user.getGender(),
+                "aadhaar", user.getAadhaar(),
+                "uniqueId", user.getUniqueId()
+            );
+            
+            return ResponseEntity.ok(profile);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error fetching profile: " + e.getMessage());
         }
     }
     

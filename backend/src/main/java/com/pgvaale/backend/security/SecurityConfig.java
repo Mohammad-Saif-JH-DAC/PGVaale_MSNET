@@ -100,7 +100,7 @@ public class SecurityConfig {
                         // Role-based endpoints
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/owner/**").hasRole("OWNER")
-                        .requestMatchers("/api/user/**").hasRole("USER")
+                        .requestMatchers("/api/user/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/api/maid/**").hasRole("MAID")
                         .requestMatchers("/api/tiffin/**").hasRole("TIFFIN")
                         .requestMatchers("/api/pgs/**").hasAnyRole("OWNER", "USER", "ADMIN") // pg->pgs

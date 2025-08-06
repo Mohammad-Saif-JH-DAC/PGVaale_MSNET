@@ -156,7 +156,7 @@ public class TiffinAuthController {
             );
             
             UserDetails userDetails = (UserDetails) auth.getPrincipal();
-            String token = jwtUtil.generateToken(userDetails.getUsername(), "ROLE_TIFFIN");
+            String token = jwtUtil.generateToken(userDetails.getUsername(), "ROLE_TIFFIN", tiffin.getId());
             
             return ResponseEntity.ok(Map.of("token", token));
         } catch (BadCredentialsException e) {

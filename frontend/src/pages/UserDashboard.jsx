@@ -95,7 +95,7 @@ const DashboardHome = () => {
                   </a>
                 </div>
                 <div className="col-md-3 mb-3">
-                  <a href="/user-dashboard/maids" className="btn btn-outline-success w-100">
+                  <a href="/maid-hiring" className="btn btn-outline-success w-100">
                     🧹 Hire Maid Service
                   </a>
                 </div>
@@ -532,7 +532,8 @@ const MaidServices = () => {
   const [showHireModal, setShowHireModal] = useState(false);
   const [selectedMaid, setSelectedMaid] = useState(null);
   const [hireForm, setHireForm] = useState({
-    serviceDate: '',
+    startDate: '',
+    endDate: '',
     userAddress: ''
   });
   const [message, setMessage] = useState('');
@@ -543,7 +544,7 @@ const MaidServices = () => {
 
   const fetchMaids = async () => {
     try {
-              const response = await api.get('/api/user/maids');
+      const response = await api.get('/api/maid/available');
       setMaids(response.data);
     } catch (error) {
       console.error('Error fetching maids:', error);
@@ -560,21 +561,39 @@ const MaidServices = () => {
   const handleHireSubmit = async (e) => {
     e.preventDefault();
     try {
-              const response = await api.post('/api/user/maids/hire', {
+             // Get user ID from token
+       const token = localStorage.getItem('token');
+       if (!token) {
+         setMessage('Please log in to hire a maid');
+         return;
+       }
+
+       const payload = JSON.parse(atob(token.split('.')[1]));
+       const userId = payload.userId;
+
+       if (!userId) {
+         setMessage('Unable to get user information. Please try logging in again.');
+         return;
+       }
+
+      const response = await api.post('/api/user-maid/request', {
+        userId: userId,
         maidId: selectedMaid.id,
-        serviceDate: hireForm.serviceDate,
-        userAddress: hireForm.userAddress
+        startDate: hireForm.startDate,
+        endDate: hireForm.endDate,
+        userAddress: hireForm.userAddress,
+        timeSlot: selectedMaid.timing || 'Not specified' // Use maid's actual timing
       });
       
-      setMessage(response.data.message);
+      setMessage('Maid hiring request sent successfully!');
       setShowHireModal(false);
-      setHireForm({ serviceDate: '', userAddress: '' });
+      setHireForm({ startDate: '', endDate: '', userAddress: '' });
       setSelectedMaid(null);
       
       // Show success message
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage('Error hiring maid: ' + error.response?.data);
+      setMessage('Error hiring maid: ' + (error.response?.data || error.message));
     }
   };
 
@@ -608,18 +627,51 @@ const MaidServices = () => {
           <div key={maid.id} className="col-md-6 col-lg-4 mb-4">
             <div className="card h-100">
               <div className="card-body">
-                <h5 className="card-title">{maid.name}</h5>
-                <p className="card-text">
-                  <strong>Services:</strong> {maid.services || 'N/A'}<br/>
-                  <strong>Region:</strong> {maid.region || 'N/A'}<br/>
-                  <strong>Timing:</strong> {maid.timing || 'N/A'}<br/>
-                  <strong>Salary:</strong> ₹{maid.monthlySalary || 'N/A'}
-                </p>
+                <div className="d-flex justify-content-between align-items-start mb-3">
+                  <h5 className="card-title mb-0">{maid.name}</h5>
+                  <span className="badge bg-success">Available</span>
+                </div>
+                
+                <div className="mb-3">
+                  <p className="card-text">
+                    <strong>Services:</strong>
+                  </p>
+                  <div className="mb-2">
+                    {maid.services?.split(',').map((service, index) => (
+                      <span key={index} className="badge bg-light text-dark me-1 mb-1">
+                        {service.trim()}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="row mb-3">
+                  <div className="col-6">
+                    <small className="text-muted">Region</small>
+                    <p className="mb-0"><strong>{maid.region}</strong></p>
+                  </div>
+                  <div className="col-6">
+                    <small className="text-muted">Salary</small>
+                    <p className="mb-0"><strong>₹{maid.monthlySalary}/month</strong></p>
+                  </div>
+                </div>
+
+                <div className="row mb-3">
+                  <div className="col-6">
+                    <small className="text-muted">Timing</small>
+                    <p className="mb-0"><strong>{maid.timing}</strong></p>
+                  </div>
+                  <div className="col-6">
+                    <small className="text-muted">Gender</small>
+                    <p className="mb-0"><strong>{maid.gender}</strong></p>
+                  </div>
+                </div>
+
                 <button 
                   className="btn btn-success w-100"
                   onClick={() => handleHireClick(maid)}
                 >
-                  Hire Now
+                  🧹 Hire Now
                 </button>
               </div>
             </div>
@@ -643,14 +695,25 @@ const MaidServices = () => {
               <form onSubmit={handleHireSubmit}>
                 <div className="modal-body">
                   <div className="mb-3">
-                    <label className="form-label">Service Date</label>
+                    <label className="form-label">Start Date</label>
                     <input
                       type="date"
                       className="form-control"
-                      value={hireForm.serviceDate}
-                      onChange={(e) => setHireForm({...hireForm, serviceDate: e.target.value})}
+                      value={hireForm.startDate}
+                      onChange={(e) => setHireForm({...hireForm, startDate: e.target.value})}
                       required
                       min={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">End Date</label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      value={hireForm.endDate}
+                      onChange={(e) => setHireForm({...hireForm, endDate: e.target.value})}
+                      required
+                      min={hireForm.startDate || new Date().toISOString().split('T')[0]}
                     />
                   </div>
                   <div className="mb-3">
@@ -899,7 +962,8 @@ const MyBookings = () => {
                         <thead>
                           <tr>
                             <th>Maid Name</th>
-                            <th>Service Date</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
                             <th>Request Date</th>
                             <th>Status</th>
                             <th>Actions</th>
@@ -909,7 +973,8 @@ const MyBookings = () => {
                           {bookings.maidRequests.map((request) => (
                             <tr key={request.id}>
                               <td>{request.maid?.name || 'Unknown Maid'}</td>
-                              <td>{new Date(request.serviceDate).toLocaleDateString()}</td>
+                              <td>{request.startDate ? new Date(request.startDate).toLocaleDateString() : 'N/A'}</td>
+                              <td>{request.endDate ? new Date(request.endDate).toLocaleDateString() : 'N/A'}</td>
                               <td>{new Date(request.assignedDateTime).toLocaleDateString()}</td>
                               <td>
                                 <span className={`badge bg-${
@@ -949,6 +1014,8 @@ const MyBookings = () => {
           </div>
         </div>
       </div>
+
+      
     </div>
   );
 };

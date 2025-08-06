@@ -68,6 +68,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 String role = jwtUtil.extractClaim(jwt, claims -> (String) claims.get("role"));
                 System.out.println("Extracted role: " + role);
 
+                if (role == null || role.isEmpty()) {
+                    System.err.println("No role found in JWT token");
+                    chain.doFilter(request, response);
+                    return;
+                }
+
                 // Create authorities and set authentication
                 List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, null,
@@ -75,11 +81,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-                System.out.println("Authentication successful for user: " + username);
+                System.out.println("Authentication successful for user: " + username + " with role: " + role);
 
             } catch (Exception e) {
                 System.err.println("JWT validation/authentication failed: " + e.getMessage());
             }
+        } else if (username == null) {
+            System.out.println("No username extracted from JWT token");
+        } else {
+            System.out.println("User already authenticated: " + username);
         }
 
         chain.doFilter(request, response);
@@ -88,6 +98,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private boolean isPublicPath(String path) {
         return path.startsWith("/api/auth/login") ||
                 path.startsWith("/api/auth/register") ||
+                path.startsWith("/api/user/register") ||
+                path.startsWith("/api/user/login") ||
                 // path.startsWith("/api/user/pgs") ||
                 path.startsWith("/api/user/dashboard") ||
                 path.startsWith("/api/pg/all") ||

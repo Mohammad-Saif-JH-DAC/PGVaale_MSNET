@@ -39,14 +39,20 @@ public class UserMaid {
     @Column(name = "assigned_date_time")
     private LocalDateTime assignedDateTime;
     
+    @Column(name = "accepted_date_time")
+    private LocalDateTime acceptedDateTime;
+    
     @Column(name = "deletion_date_time")
     private LocalDateTime deletionDateTime;
     
     @Column(name = "user_address")
     private String userAddress;
     
-    @Column(name = "service_date")
-    private LocalDate serviceDate;
+    @Column(name = "start_date")
+    private LocalDate startDate;
+    
+    @Column(name = "end_date")
+    private LocalDate endDate;
     
     @Column(name = "time_slot")
     private String timeSlot;

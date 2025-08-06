@@ -151,7 +151,7 @@ public class UserAuthController {
             );
             
             UserDetails userDetails = (UserDetails) auth.getPrincipal();
-            String token = jwtUtil.generateToken(userDetails.getUsername(), "ROLE_USER");
+            String token = jwtUtil.generateToken(userDetails.getUsername(), "ROLE_USER", user.getId());
             
             return ResponseEntity.ok(Map.of("token", token));
         } catch (BadCredentialsException e) {

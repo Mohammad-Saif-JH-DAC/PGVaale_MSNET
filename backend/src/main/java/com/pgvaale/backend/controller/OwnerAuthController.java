@@ -150,7 +150,7 @@ public class OwnerAuthController {
                     new UsernamePasswordAuthenticationToken(username, password));
 
             UserDetails userDetails = (UserDetails) auth.getPrincipal();
-            String token = jwtUtil.generateToken(userDetails.getUsername(), "ROLE_OWNER");
+            String token = jwtUtil.generateToken(userDetails.getUsername(), "ROLE_OWNER", owner.getId());
 
             return ResponseEntity.ok(Map.of("token", token));
         } catch (BadCredentialsException e) {
