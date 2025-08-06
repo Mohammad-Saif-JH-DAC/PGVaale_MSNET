@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api';
+import { toast } from 'react-toastify'; // ✅ Added
 
 const roles = [
   { label: 'Admin', value: 'admin' },
@@ -66,6 +67,9 @@ function Login() {
         localStorage.setItem('token', token);
         localStorage.setItem('userRole', form.role);
 
+        // ✅ Toast on success
+        toast.success('Login successful!');
+
         setTimeout(() => {
           localStorage.removeItem('token');
           localStorage.removeItem('userRole');
@@ -106,6 +110,8 @@ function Login() {
         errorMessage = 'Network error. Please check your connection.';
       }
 
+      // ✅ Toast on error
+      toast.error(errorMessage);
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -154,8 +160,7 @@ function Login() {
               <option key={r.value} value={r.value}>{r.label}</option>
             ))}
           </select>
-        </div>
-        {error && <div className="alert alert-danger">{error}</div>}
+        </div>       
         <button 
           type="submit" 
           className="btn btn-primary w-100" 
@@ -169,3 +174,4 @@ function Login() {
 }
 
 export default Login;
+
