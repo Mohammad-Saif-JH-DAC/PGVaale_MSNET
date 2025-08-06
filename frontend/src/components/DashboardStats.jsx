@@ -138,7 +138,7 @@ const DashboardStats = () => {
       {/* Charts Row */}
       <div className="row">
         {/* Pie Chart */}
-        <div className="col-md-6">
+        <div className="col">
           <div className="card">
             <div className="card-header">
               <h5 className="card-title mb-0">User Distribution</h5>
@@ -169,32 +169,7 @@ const DashboardStats = () => {
         </div>
 
         {/* Bar Chart */}
-        <div className="col-md-6">
-          <div className="card">
-            <div className="card-header">
-              <h5 className="card-title mb-0">Detailed Statistics</h5>
-            </div>
-            <div className="card-body">
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart
-                  data={barData}
-                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="count" fill="#8884d8">
-                    {barData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
+        
       </div>
 
       {/* Additional Statistics */}
