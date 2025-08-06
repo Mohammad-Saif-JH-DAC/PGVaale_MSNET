@@ -92,12 +92,17 @@ function PGRooms() {
     setBookingStatus((prev) => ({ ...prev, [roomId]: 'booking' }));
 
     try {
-      // Backend will automatically set username from authenticated user
-      await api.post('/api/room-interests', { roomId, message: 'Interested in this PG room' });
+      // Call the new PG booking endpoint that updates user_id and availability
+      await api.post(`/api/pg/${roomId}/book`);
       setBookingStatus((prev) => ({ ...prev, [roomId]: 'booked' }));
+      
+      // Refresh the rooms list to show updated availability
+      fetchRooms();
     } catch (error) {
       console.error('Booking failed:', error);
-      setBookingStatus((prev) => ({ ...prev, [roomId]: 'error' }));
+      const errorMessage = error.response?.data || 'Booking failed';
+      alert(errorMessage);
+      setBookingStatus((prev) => ({ ...prev, [roomId]: 'failed' }));
     }
 
     // Reset status after 3 seconds

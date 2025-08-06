@@ -27,6 +27,9 @@ public class PGController {
 
     @Autowired
     private PGService pgService;
+    
+    @Autowired
+    private com.pgvaale.backend.repository.UserRepository userRepository;
 
     // Register PG
     @PostMapping("/register")
@@ -227,5 +230,97 @@ public class PGController {
             }
         }
         return null;
+    }
+    
+    // Book/Express Interest in PG
+    @PostMapping("/{pgId}/book")
+    public ResponseEntity<?> bookPG(@PathVariable Long pgId) {
+        try {
+            System.out.println("DEBUG: Booking request for PG ID: " + pgId);
+            
+            // Get authenticated user
+            org.springframework.security.core.Authentication auth = 
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            System.out.println("DEBUG: Authenticated username: " + username);
+            
+            // Find the PG
+            Optional<PG> pgOptional = pgRepository.findById(pgId);
+            if (!pgOptional.isPresent()) {
+                System.out.println("DEBUG: PG not found with ID: " + pgId);
+                return ResponseEntity.notFound().build();
+            }
+            
+            PG pg = pgOptional.get();
+            System.out.println("DEBUG: Found PG: " + pg.getId() + ", Current availability: " + pg.getAvailability());
+            System.out.println("DEBUG: Current registered user: " + (pg.getRegisteredUser() != null ? pg.getRegisteredUser().getUsername() : "null"));
+            
+            // Check if already booked
+            if ("Not Available".equals(pg.getAvailability()) || pg.getRegisteredUser() != null) {
+                System.out.println("DEBUG: PG is already booked");
+                return ResponseEntity.badRequest().body("PG is already booked");
+            }
+            
+            // Find the user by username
+            com.pgvaale.backend.entity.User user = findUserByUsername(username);
+            if (user == null) {
+                System.out.println("DEBUG: User not found with username: " + username);
+                return ResponseEntity.badRequest().body("User not found: " + username);
+            }
+            System.out.println("DEBUG: Found user: " + user.getUsername() + ", ID: " + user.getId());
+            
+            // Book the PG
+            pg.setRegisteredUser(user);
+            pg.setAvailability("Not Available");
+            
+            PG savedPG = pgRepository.save(pg);
+            System.out.println("DEBUG: PG booked successfully. New availability: " + savedPG.getAvailability());
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "PG booked successfully",
+                "pgId", pgId,
+                "bookedBy", username,
+                "availability", "Not Available"
+            ));
+        } catch (Exception e) {
+            System.out.println("DEBUG: Exception occurred: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error booking PG: " + e.getMessage());
+        }
+    }
+    
+    // Get PGs booked by the authenticated user
+    @GetMapping("/user/booked")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> getUserBookedPGs() {
+        try {
+            // Get authenticated user
+            org.springframework.security.core.Authentication auth = 
+                org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            
+            // Find the user by username
+            com.pgvaale.backend.entity.User user = findUserByUsername(username);
+            if (user == null) {
+                return ResponseEntity.badRequest().body("User not found: " + username);
+            }
+            
+            // Find all PGs where this user is the registered user
+            List<PG> userPGs = pgRepository.findByRegisteredUser(user);
+            
+            return ResponseEntity.ok(userPGs);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error fetching user PGs: " + e.getMessage());
+        }
+    }
+    
+    // Helper method to find user by username
+    private com.pgvaale.backend.entity.User findUserByUsername(String username) {
+        try {
+            Optional<com.pgvaale.backend.entity.User> userOptional = userRepository.findByUsername(username);
+            return userOptional.orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

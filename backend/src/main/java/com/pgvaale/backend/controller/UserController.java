@@ -31,25 +31,25 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
-    
+
     @Autowired
     private TiffinService tiffinService;
-    
+
     @Autowired
     private UserService userService;
-    
+
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private MaidRepository maidRepository;
-    
+
     @Autowired
     private UserMaidRepository userMaidRepository;
-    
+
     @Autowired
     private RoomInterestRepository roomInterestRepository;
-    
+
     // Get all available maids
     @GetMapping("/maids")
     public ResponseEntity<?> getAllMaids() {
@@ -60,7 +60,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("Error fetching maids: " + e.getMessage());
         }
     }
-    
+
     // Get maid details
     @GetMapping("/maids/{maidId}")
     public ResponseEntity<?> getMaidDetails(@PathVariable Long maidId) {
@@ -69,18 +69,18 @@ public class UserController {
             if (!maidOptional.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
-            
+
             Maid maid = maidOptional.get();
             if (!maid.isApproved()) {
                 return ResponseEntity.badRequest().body("Maid is not approved");
             }
-            
+
             return ResponseEntity.ok(maid);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching maid details: " + e.getMessage());
         }
     }
-    
+
     // Send request to maid (legacy endpoint)
     @PostMapping("/maids/{maidId}/request")
     public ResponseEntity<?> sendMaidRequest(@PathVariable Long maidId, @RequestBody Map<String, Object> requestData) {
@@ -88,24 +88,24 @@ public class UserController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
             Long userId = getUserIdFromUsername(username);
-            
+
             Optional<Maid> maidOptional = maidRepository.findById(maidId);
             if (!maidOptional.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
-            
+
             Maid maid = maidOptional.get();
             if (!maid.isApproved()) {
                 return ResponseEntity.badRequest().body("Maid is not approved");
             }
-            
+
             // Create user-maid request
             UserMaid userMaid = new UserMaid();
             userMaid.setUser(userRepository.findById(userId).orElse(null));
             userMaid.setMaid(maid);
             userMaid.setStatus(UserMaid.RequestStatus.PENDING);
             userMaid.setAssignedDateTime(LocalDateTime.now());
-            
+
             // Set additional fields if provided
             if (requestData.containsKey("serviceDate")) {
                 userMaid.setServiceDate(LocalDate.parse((String) requestData.get("serviceDate")));
@@ -116,14 +116,14 @@ public class UserController {
             if (requestData.containsKey("timeSlot")) {
                 userMaid.setTimeSlot((String) requestData.get("timeSlot"));
             }
-            
+
             UserMaid savedRequest = userMaidRepository.save(userMaid);
             return ResponseEntity.ok(savedRequest);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error sending request: " + e.getMessage());
         }
     }
-    
+
     // Hire maid (frontend endpoint)
     @PostMapping("/maids/hire")
     public ResponseEntity<?> hireMaid(@RequestBody Map<String, Object> requestData) {
@@ -131,25 +131,25 @@ public class UserController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
             Long userId = getUserIdFromUsername(username);
-            
+
             Long maidId = Long.valueOf(requestData.get("maidId").toString());
             Optional<Maid> maidOptional = maidRepository.findById(maidId);
             if (!maidOptional.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
-            
+
             Maid maid = maidOptional.get();
             if (!maid.isApproved()) {
                 return ResponseEntity.badRequest().body("Maid is not approved");
             }
-            
+
             // Create user-maid request
             UserMaid userMaid = new UserMaid();
             userMaid.setUser(userRepository.findById(userId).orElse(null));
             userMaid.setMaid(maid);
             userMaid.setStatus(UserMaid.RequestStatus.PENDING);
             userMaid.setAssignedDateTime(LocalDateTime.now());
-            
+
             // Set additional fields if provided
             if (requestData.containsKey("serviceDate")) {
                 userMaid.setServiceDate(LocalDate.parse((String) requestData.get("serviceDate")));
@@ -160,14 +160,14 @@ public class UserController {
             if (requestData.containsKey("timeSlot")) {
                 userMaid.setTimeSlot((String) requestData.get("timeSlot"));
             }
-            
+
             UserMaid savedRequest = userMaidRepository.save(userMaid);
             return ResponseEntity.ok(Map.of("message", "Maid hired successfully", "request", savedRequest));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error hiring maid: " + e.getMessage());
         }
     }
-    
+
     // Get user's maid requests
     @GetMapping("/maid-requests")
     public ResponseEntity<?> getUserMaidRequests(@RequestParam(required = false) String status) {
@@ -175,25 +175,25 @@ public class UserController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
             Long userId = getUserIdFromUsername(username);
-            
+
             UserMaid.RequestStatus requestStatus = null;
             if (status != null && !status.isEmpty()) {
                 requestStatus = UserMaid.RequestStatus.valueOf(status.toUpperCase());
             }
-            
+
             List<UserMaid> requests;
             if (requestStatus != null) {
                 requests = userMaidRepository.findByUserIdAndStatus(userId, requestStatus);
             } else {
                 requests = userMaidRepository.findByUserId(userId);
             }
-            
+
             return ResponseEntity.ok(requests);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching maid requests: " + e.getMessage());
         }
     }
-    
+
     // Cancel maid request
     @DeleteMapping("/maid-requests/{requestId}")
     public ResponseEntity<?> cancelMaidRequest(@PathVariable Long requestId) {
@@ -201,28 +201,28 @@ public class UserController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
             Long userId = getUserIdFromUsername(username);
-            
+
             Optional<UserMaid> requestOptional = userMaidRepository.findById(requestId);
             if (!requestOptional.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
-            
+
             UserMaid request = requestOptional.get();
             if (!request.getUser().getId().equals(userId)) {
                 return ResponseEntity.status(403).body("Unauthorized");
             }
-            
+
             if (request.getStatus() != UserMaid.RequestStatus.PENDING) {
                 return ResponseEntity.badRequest().body("Cannot cancel non-pending request");
             }
-            
+
             userMaidRepository.delete(request);
             return ResponseEntity.ok("Request cancelled successfully");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error cancelling request: " + e.getMessage());
         }
     }
-    
+
     // Get user's active maid service
     @GetMapping("/active-maid-service")
     public ResponseEntity<?> getActiveMaidService() {
@@ -230,27 +230,27 @@ public class UserController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
             Long userId = getUserIdFromUsername(username);
-            
-            List<UserMaid> activeRequests = userMaidRepository.findByUserIdAndStatus(userId, UserMaid.RequestStatus.ACCEPTED);
-            
+
+            List<UserMaid> activeRequests = userMaidRepository.findByUserIdAndStatus(userId,
+                    UserMaid.RequestStatus.ACCEPTED);
+
             if (activeRequests.isEmpty()) {
                 return ResponseEntity.ok(Map.of("message", "No active maid service"));
             }
-            
+
             // Get the most recent accepted request
             UserMaid activeService = activeRequests.get(0);
-            
+
             Map<String, Object> response = Map.of(
-                "activeService", activeService,
-                "maid", activeService.getMaid()
-            );
-            
+                    "activeService", activeService,
+                    "maid", activeService.getMaid());
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching active maid service: " + e.getMessage());
         }
     }
-    
+
     // Get user's active maid service (frontend endpoint)
     @GetMapping("/maids/active")
     public ResponseEntity<?> getActiveMaidServiceFrontend() {
@@ -258,27 +258,27 @@ public class UserController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
             Long userId = getUserIdFromUsername(username);
-            
-            List<UserMaid> activeRequests = userMaidRepository.findByUserIdAndStatus(userId, UserMaid.RequestStatus.ACCEPTED);
-            
+
+            List<UserMaid> activeRequests = userMaidRepository.findByUserIdAndStatus(userId,
+                    UserMaid.RequestStatus.ACCEPTED);
+
             if (activeRequests.isEmpty()) {
                 return ResponseEntity.ok(Map.of("message", "No active maid service"));
             }
-            
+
             // Get the most recent accepted request
             UserMaid activeService = activeRequests.get(0);
-            
+
             Map<String, Object> response = Map.of(
-                "activeService", activeService,
-                "maid", activeService.getMaid()
-            );
-            
+                    "activeService", activeService,
+                    "maid", activeService.getMaid());
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching active maid service: " + e.getMessage());
         }
     }
-    
+
     // Get all available tiffin providers
     @GetMapping("/tiffins")
     public ResponseEntity<?> getAllTiffins() {
@@ -289,7 +289,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("Error fetching tiffins: " + e.getMessage());
         }
     }
-    
+
     // Get tiffin details with menu
     @GetMapping("/tiffins/{tiffinId}")
     public ResponseEntity<?> getTiffinDetails(@PathVariable Long tiffinId) {
@@ -298,37 +298,37 @@ public class UserController {
             if (tiffin == null) {
                 return ResponseEntity.notFound().build();
             }
-            
+
             List<MenuDTO> menus = tiffinService.getWeeklyMenu(tiffinId);
-            
+
             Map<String, Object> response = Map.of(
-                "tiffin", tiffin,
-                "menus", menus
-            );
-            
+                    "tiffin", tiffin,
+                    "menus", menus);
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching tiffin details: " + e.getMessage());
         }
     }
-    
+
     // Send request to tiffin provider
     @PostMapping("/tiffins/{tiffinId}/request")
     public ResponseEntity<?> sendTiffinRequest(@PathVariable Long tiffinId) {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
-            
-            // Get user ID from username (you might need to adjust this based on your auth setup)
+
+            // Get user ID from username (you might need to adjust this based on your auth
+            // setup)
             Long userId = getUserIdFromUsername(username);
-            
+
             UserTiffinDTO request = tiffinService.createUserRequest(userId, tiffinId);
             return ResponseEntity.ok(request);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error sending request: " + e.getMessage());
         }
     }
-    
+
     // Get user's tiffin requests
     @GetMapping("/requests")
     public ResponseEntity<?> getUserRequests(@RequestParam(required = false) String status) {
@@ -336,19 +336,19 @@ public class UserController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
             Long userId = getUserIdFromUsername(username);
-            
+
             UserTiffin.RequestStatus requestStatus = null;
             if (status != null && !status.isEmpty()) {
                 requestStatus = UserTiffin.RequestStatus.valueOf(status.toUpperCase());
             }
-            
+
             List<UserTiffinDTO> requests = tiffinService.getUserRequests(userId, requestStatus);
             return ResponseEntity.ok(requests);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching requests: " + e.getMessage());
         }
     }
-    
+
     // Cancel tiffin request
     @DeleteMapping("/requests/{requestId}")
     public ResponseEntity<?> cancelRequest(@PathVariable Long requestId) {
@@ -359,7 +359,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("Error cancelling request: " + e.getMessage());
         }
     }
-    
+
     // Get user's active tiffin service
     @GetMapping("/active-service")
     public ResponseEntity<?> getActiveService() {
@@ -367,32 +367,32 @@ public class UserController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
             Long userId = getUserIdFromUsername(username);
-            
-            List<UserTiffinDTO> activeRequests = tiffinService.getUserRequests(userId, UserTiffin.RequestStatus.ACCEPTED);
-            
+
+            List<UserTiffinDTO> activeRequests = tiffinService.getUserRequests(userId,
+                    UserTiffin.RequestStatus.ACCEPTED);
+
             if (activeRequests.isEmpty()) {
                 return ResponseEntity.ok(Map.of("message", "No active tiffin service"));
             }
-            
+
             // Get the most recent accepted request
             UserTiffinDTO activeService = activeRequests.get(0);
-            
+
             // Get tiffin details and menu
             Tiffin tiffin = tiffinService.getTiffinById(activeService.getTiffinId()).orElse(null);
             List<MenuDTO> menus = tiffinService.getWeeklyMenu(activeService.getTiffinId());
-            
+
             Map<String, Object> response = Map.of(
-                "activeService", activeService,
-                "tiffin", tiffin,
-                "menus", menus
-            );
-            
+                    "activeService", activeService,
+                    "tiffin", tiffin,
+                    "menus", menus);
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching active service: " + e.getMessage());
         }
     }
-    
+
     // Get all user bookings (PG interests, tiffin requests, maid requests)
     @GetMapping("/bookings")
     public ResponseEntity<?> getAllBookings() {
@@ -400,36 +400,36 @@ public class UserController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
             Long userId = getUserIdFromUsername(username);
-            
+
             // Get maid requests
             List<UserMaid> maidRequests = userMaidRepository.findByUserId(userId);
-            
+
             // Get tiffin requests
             List<UserTiffinDTO> tiffinRequests = tiffinService.getUserRequests(userId, null);
-            
-            // Get PG interests (you'll need to implement this based on your PG interest entity)
+
+            // Get PG interests (you'll need to implement this based on your PG interest
+            // entity)
             // For now, I'll create an empty list
             List<Object> pgInterests = new ArrayList<>();
-            
+
             Map<String, Object> bookings = Map.of(
-                "maidRequests", maidRequests,
-                "tiffinRequests", tiffinRequests,
-                "pgInterests", pgInterests
-            );
-            
+                    "maidRequests", maidRequests,
+                    "tiffinRequests", tiffinRequests,
+                    "pgInterests", pgInterests);
+
             return ResponseEntity.ok(bookings);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error fetching bookings: " + e.getMessage());
         }
     }
-    
+
     // Get user's PG interests
     @GetMapping("/pgs")
     public ResponseEntity<?> getUserPGInterests() {
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             String username = auth.getName();
-            
+
             // Get user's room interests from the database
             List<RoomInterest> interests = roomInterestRepository.findByUsername(username);
             return ResponseEntity.ok(interests);
@@ -437,7 +437,7 @@ public class UserController {
             return ResponseEntity.badRequest().body("Error fetching PG interests: " + e.getMessage());
         }
     }
-    
+
     // Helper method to get user ID from username
     private Long getUserIdFromUsername(String username) {
         try {

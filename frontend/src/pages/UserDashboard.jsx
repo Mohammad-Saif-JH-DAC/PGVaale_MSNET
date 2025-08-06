@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import api from '../api';
 import './UserDashboard.css';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { FaRupeeSign, FaMapMarkerAlt, FaCheckCircle, FaImages, FaUser } from 'react-icons/fa';
+
+const MyBookedPGs = ({ bookedPGs }) => {
+  // This component is not used, but if needed, define defaultIcon here.
+}
 
 // Dashboard Home Component
 const DashboardHome = () => {
@@ -85,7 +93,7 @@ const DashboardHome = () => {
             <div className="card-body">
               <div className="row">
                 <div className="col-md-3 mb-3">
-                  <a href="/user-dashboard/pgs" className="btn btn-outline-primary w-100">
+                  <a href="/pgrooms" className="btn btn-outline-primary w-100">
                     🏠 Browse PG Rooms
                   </a>
                 </div>
@@ -121,32 +129,45 @@ const DashboardHome = () => {
   );
 };
 
-// PG Interests Component
+// PG Interests Component (User's Booked PGs)
 const PGInterests = () => {
-  const [interests, setInterests] = useState([]);
+  const [bookedPGs, setBookedPGs] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchInterests();
-  }, []);
+  const defaultIcon = new L.Icon({
+    iconUrl: 'https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+  });
 
-  const fetchInterests = async () => {
+  const fetchBookedPGs = async () => {
     try {
-      const response = await api.get('/api/user/pgs');
-      setInterests(response.data);
+      const response = await api.get('/api/pg/user/booked');
+      setBookedPGs(response.data);
     } catch (error) {
-      console.error('Error fetching PG interests:', error);
+      console.error('Error fetching booked PGs:', error);
       if (error.response?.status === 401) {
-        // Authentication failed - redirect to login
         localStorage.removeItem('token');
         window.location.href = '/login';
       } else {
-        // Other errors - show empty state
-        setInterests([]);
+        setBookedPGs([]);
       }
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchBookedPGs();
+  }, []);
+
+  const getImageUrl = (imgPath) => {
+    if (!imgPath || typeof imgPath !== 'string') return '/placeholder.png';
+    const trimmed = imgPath.trim();
+    if (trimmed === '') return '/placeholder.png';
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) return trimmed;
+    if (trimmed.startsWith('/')) return `${window.location.origin.replace('3000', '8080')}${trimmed}`;
+    return `https://${trimmed}`;
   };
 
   if (loading) {
@@ -163,61 +184,111 @@ const PGInterests = () => {
 
   return (
     <div className="container mt-4">
-      <div className="row">
-        <div className="col-12">
-          <h2 className="mb-4">🏠 My PG Interests</h2>
-        </div>
-      </div>
+      <h2 className="mb-4 text-center">
+        <FaCheckCircle className="text-success me-2" /> My Booked PGs
+      </h2>
 
-      <div className="row">
-        <div className="col-12">
-          {interests.length > 0 ? (
-            <div className="card">
-              <div className="card-body">
-                <div className="table-responsive">
-                  <table className="table table-hover">
-                    <thead>
-                      <tr>
-                        <th>PG Name</th>
-                        <th>Room Type</th>
-                        <th>Location</th>
-                        <th>Price</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {interests.map((interest) => (
-                        <tr key={interest.id}>
-                          <td>{interest.room?.pg?.name || 'Unknown PG'}</td>
-                          <td>{interest.room?.roomType || 'N/A'}</td>
-                          <td>{interest.room?.pg?.location || 'N/A'}</td>
-                          <td>₹{interest.room?.price || 'N/A'}</td>
-                          <td>
-                            <span className="badge bg-info">Interested</span>
-                          </td>
-                        </tr>
+      {bookedPGs.length > 0 ? (
+        <div className="row g-4">
+          {bookedPGs.map((pg) => (
+            <div className="col-12" key={pg.id}>
+              <div className="card shadow-sm h-100 border-primary">
+                <div className="card-header bg-primary text-white d-flex justify-content-between">
+                  <span>
+                    <FaMapMarkerAlt /> #{pg.id} - {pg.region}
+                  </span>
+                  <span>
+                    <FaUser /> {pg.owner?.name || 'N/A'}
+                  </span>
+                </div>
+
+                <div className="card-body">
+                  {/* Images */}
+                  {pg.imagePaths?.length > 0 ? (
+                    <div className="d-flex flex-wrap justify-content-start gap-2 mb-3">
+                      {pg.imagePaths.map((imgPath, index) => (
+                        <img
+                          key={index}
+                          src={getImageUrl(imgPath)}
+                          alt={`pg-img-${index}`}
+                          style={{
+                            width: '100px',
+                            height: '80px',
+                            objectFit: 'cover',
+                            borderRadius: '8px',
+                          }}
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = '/placeholder.png';
+                          }}
+                        />
                       ))}
-                    </tbody>
-                  </table>
+                    </div>
+                  ) : (
+                    <p className="text-muted">
+                      <FaImages className="me-1" /> No images available
+                    </p>
+                  )}
+
+                  {/* Map */}
+                  {pg.latitude && pg.longitude && (
+                    <MapContainer
+                      center={[pg.latitude, pg.longitude]}
+                      zoom={13}
+                      scrollWheelZoom={false}
+                      style={{ height: '250px', borderRadius: '10px' }}
+                    >
+                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                      <Marker position={[pg.latitude, pg.longitude]} icon={defaultIcon}>
+                        <Popup>PG #{pg.id} - {pg.region}</Popup>
+                      </Marker>
+                    </MapContainer>
+                  )}
+
+                  {/* PG Details */}
+                  <ul className="list-group list-group-flush mt-3">
+                    <li className="list-group-item">
+                      <FaRupeeSign className="me-2" />
+                      Rent: ₹{pg.rent || 'N/A'}
+                    </li>
+                    <li className="list-group-item">
+                      Amenities: <span className="text-muted">{pg.amenities || 'N/A'}</span>
+                    </li>
+                    <li className="list-group-item">
+                      General Preference: <span className="text-muted">{pg.generalPreference || 'N/A'}</span>
+                    </li>
+                    <li className="list-group-item">
+                      Nearby Resources: <span className="text-muted">{pg.nearbyResources || 'N/A'}</span>
+                    </li>
+                    <li className="list-group-item">
+                      Availability: <span className="text-muted">{pg.availability || 'N/A'}</span>
+                    </li>
+                    <li className="list-group-item">
+                      Coordinates: <span className="text-muted">{pg.latitude}, {pg.longitude}</span>
+                    </li>
+                    <li className="list-group-item">
+                      <span className="badge bg-success">
+                        <FaCheckCircle className="me-1" /> Booked
+                      </span>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </div>
-          ) : (
-            <div className="card">
-              <div className="card-body text-center">
-                <div className="mb-3">
-                  <span style={{fontSize: '3rem'}}>🏠</span>
-                </div>
-                <h5 className="text-muted">No PG Interests Yet</h5>
-                <p className="text-muted">Start browsing PG rooms to express your interest!</p>
-                <a href="/pgrooms" className="btn btn-primary">
-                  Browse PG Rooms
-                </a>
-              </div>
-            </div>
-          )}
+          ))}
         </div>
-      </div>
+      ) : (
+        <div className="card text-center shadow-sm p-4">
+          <div className="card-body">
+            <div style={{ fontSize: '4rem' }}>😴</div>
+            <h5 className="text-muted mt-3">No Booked PGs Yet</h5>
+            <p className="text-muted">Start browsing and find a PG that suits you.</p>
+            <a href="/pgrooms" className="btn btn-outline-primary mt-2">
+              Browse PG Rooms
+            </a>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -762,7 +833,7 @@ const MyBookings = () => {
                 className={`nav-link ${activeTab === 'pg' ? 'active' : ''}`}
                 onClick={() => setActiveTab('pg')}
               >
-                🏠 PG Interests
+                🏠 My PG 
               </button>
             </li>
             <li className="nav-item" role="presentation">
@@ -820,7 +891,7 @@ const MyBookings = () => {
               ) : (
                 <div className="card">
                   <div className="card-body text-center">
-                    <h5 className="text-muted">No PG Interests</h5>
+                    <h5 className="text-muted">Try Finding your suitable PG 🏠</h5>
                     <p className="text-muted">You haven't expressed interest in any PG rooms yet.</p>
                   </div>
                 </div>

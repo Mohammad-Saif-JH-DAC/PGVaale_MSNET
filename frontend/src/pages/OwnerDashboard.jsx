@@ -45,7 +45,7 @@ function OwnerDashboard() {
     rent: '',
     generalPreference: '',
     region: '',
-    availability: 'available', // Default to available
+    availability: 'Available', // Default to available
   });
   const [editingId, setEditingId] = useState(null);
   const preferenceOptions = ['Male', 'Female', 'Any'];
@@ -201,7 +201,7 @@ const handleSaveProfile = async () => {
       rent: parseFloat(form.rent),
       generalPreference: form.generalPreference,
       region: form.region,
-      availability: form.availability || 'available',
+      availability: form.availability || 'Available',
     };
 
     try {
@@ -227,7 +227,7 @@ const handleSaveProfile = async () => {
         rent: '',
         generalPreference: '',
         region: '',
-        availability: 'available',
+        availability: 'Available',
       });
       setEditingId(null);
       setActiveTab('list');
@@ -250,7 +250,7 @@ const handleSaveProfile = async () => {
       rent: pg.rent?.toString() || '',
       generalPreference: pg.generalPreference || '',
       region: pg.region || '',
-      availability: pg.availability || 'available',
+      availability: pg.availability || 'Available',
     });
     setEditingId(pg.id);
     setError('');
@@ -818,8 +818,8 @@ const handleDeleteAccount = async () => {
                     onChange={handleChange}
                     required
                   >
-                    <option value="available">Available</option>
-                    <option value="not_available">Not Available</option>
+                    <option value="Available">Available</option>
+                    <option value="Not Available">Not Available</option>
                   </select>
                 </div>
 
@@ -840,7 +840,7 @@ const handleDeleteAccount = async () => {
                           rent: '',
                           generalPreference: '',
                           region: '',
-                          availability: 'available',
+                          availability: 'Available',
                         });
                       }}
                     >
@@ -878,14 +878,15 @@ const handleDeleteAccount = async () => {
                 <table className="table table-striped table-hover align-middle">
                   <thead className="table-dark">
                     <tr>
-                      <th scope="col" style={{ width: '5%' }}>ID</th>
-                      <th scope="col" style={{ width: '15%' }}>Images</th>
-                      <th scope="col" style={{ width: '10%' }}>Region</th>
-                      <th scope="col" style={{ width: '20%' }}>Location</th>
-                      <th scope="col" style={{ width: '10%' }}>Rent</th>
-                      <th scope="col" style={{ width: '10%' }}>Preference</th>
-                      <th scope="col" style={{ width: '10%' }}>Availability</th>
-                      <th scope="col" style={{ width: '10%' }}>Actions</th>
+                      <th scope="col" style={{ width: '5%' , color: 'white'}}>ID</th>
+                      <th scope="col" style={{ width: '15%', color: 'white' }}>Images</th>
+                      <th scope="col" style={{ width: '10%', color: 'white' }}>Region</th>
+                      <th scope="col" style={{ width: '20%', color: 'white' }}>Location</th>
+                      <th scope="col" style={{ width: '10%', color: 'white' }}>Rent</th>
+                      <th scope="col" style={{ width: '10%', color: 'white' }}>Preference</th>
+                      <th scope="col" style={{ width: '10%', color: 'white' }}>Availability</th>
+                      <th scope="col" style={{ width: '10%', color: 'white' }}>Actions</th>
+                      <th scope="col" style={{ width: '20%', color: 'white' }}>Current User</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -920,10 +921,10 @@ const handleDeleteAccount = async () => {
                         <td>
                           <span
                             className={`badge ${
-                              pg.availability === 'available' ? 'bg-success' : 'bg-danger'
+                              pg.availability == 'Available' ? 'bg-success' : 'bg-danger'
                             }`}
                           >
-                            {pg.availability === 'available' ? 'Available' : 'Not Available'}
+                            {pg.availability == 'Available' ? 'Available' : 'Not Available'}
                           </span>
                         </td>
                         <td>
@@ -943,6 +944,15 @@ const handleDeleteAccount = async () => {
                               <i className="bi bi-trash"></i>
                             </button>
                           </div>
+                        </td>
+                        <td>
+                          <span
+                            className={`badge ${
+                              pg.registeredUser?.name == null ? 'bg-danger' : 'bg-success'
+                            }`}
+                          >
+                            {pg.registeredUser?.name == null ? 'Vacant' : pg.registeredUser.name}
+                          </span>
                         </td>
                       </tr>
                     ))}
