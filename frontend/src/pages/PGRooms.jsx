@@ -92,6 +92,7 @@ function PGRooms() {
     setBookingStatus((prev) => ({ ...prev, [roomId]: 'booking' }));
 
     try {
+      // Backend will automatically set username from authenticated user
       await api.post('/api/room-interests', { roomId, message: 'Interested in this PG room' });
       setBookingStatus((prev) => ({ ...prev, [roomId]: 'booked' }));
     } catch (error) {
@@ -102,7 +103,7 @@ function PGRooms() {
     // Reset status after 3 seconds
     setTimeout(() => {
       setBookingStatus((prev) => ({ ...prev, [roomId]: null }));
-    }, 3000);
+    }, 5000);
   };
 
   // Image Gallery with Auto-Slideshow

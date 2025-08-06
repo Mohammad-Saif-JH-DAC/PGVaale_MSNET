@@ -17,6 +17,13 @@ public class RoomInterestController {
 
     @PostMapping
     public RoomInterest expressInterest(@RequestBody RoomInterest interest) {
+        // Get the authenticated username from security context
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        
+        // Ensure the username is set from the authenticated user, not from request body
+        interest.setUsername(username);
+        
         return repo.save(interest);
     }
 

@@ -9,17 +9,9 @@ function RoomDetailsModal({ show, onClose, room }) {
   const [interestMsg, setInterestMsg] = useState('');
   const [interestSuccess, setInterestSuccess] = useState('');
 
-  // Get user info for interest functionality
+  // Check if user is authenticated for interest functionality
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-  let username = '';
-  if (token) {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      username = payload.sub || payload.username || '';
-    } catch (e) {
-      console.error('Failed to decode token:', e);
-    }
-  }
+  const isAuthenticated = !!token;
 
   // Reset image index when room changes
   useEffect(() => {
@@ -35,7 +27,6 @@ function RoomDetailsModal({ show, onClose, room }) {
     try {
       await api.post('/api/room-interests', {
         roomId: room.id,
-        username,
         message: interestMsg,
       });
       setInterestSuccess('Interest/request sent successfully!');
