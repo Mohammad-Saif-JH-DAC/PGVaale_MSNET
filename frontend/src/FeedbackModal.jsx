@@ -7,7 +7,7 @@ function FeedbackModal({ show, onClose, onSubmit }) {
   const [feedback, setFeedback] = useState('');
   
   // Check if user is authenticated
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   const isAuthenticated = !!token;
 
   const emojiMap = {

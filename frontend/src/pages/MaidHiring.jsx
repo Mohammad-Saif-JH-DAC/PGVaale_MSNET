@@ -14,7 +14,7 @@ const MaidHiring = () => {
   useEffect(() => {
     fetchMaids();
     // Get user ID from JWT token
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
@@ -47,7 +47,7 @@ const MaidHiring = () => {
   };
 
   const handleHireMaid = (maid) => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (!token) {
       setError('Please log in to hire a maid');
       return;

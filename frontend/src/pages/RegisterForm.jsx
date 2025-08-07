@@ -269,7 +269,7 @@ function RegisterForm() {
     // --- End Timing Validation Logic ---
 
     // Clear any existing token before registration
-    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
 
     // Prepare data for submission, including combined timing for maid
     let dataToSubmit;

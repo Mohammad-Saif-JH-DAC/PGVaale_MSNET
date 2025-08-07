@@ -11,7 +11,7 @@ const socialLinks = [
 
 // Helper to decode JWT and get user role
 function getUserRole() {
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   if (!token) return null;
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));

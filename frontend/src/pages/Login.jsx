@@ -19,7 +19,7 @@ function Login() {
 
   // ✅ Redirect to appropriate dashboard if already logged in
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
@@ -39,8 +39,8 @@ function Login() {
         else navigate('/');
       } catch (e) {
         console.error('Invalid token');
-        localStorage.removeItem('token');
-        localStorage.removeItem('userRole');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('userRole');
       }
     }
   }, [navigate]);
@@ -55,7 +55,7 @@ function Login() {
     setLoading(true);
 
     try {
-      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
 
       const res = await authApi.post(`/api/${form.role}/login`, {
         username: form.username,
@@ -64,15 +64,15 @@ function Login() {
 
       const token = res.data.token;
       if (token) {
-        localStorage.setItem('token', token);
-        localStorage.setItem('userRole', form.role);
+        sessionStorage.setItem('token', token);
+        sessionStorage.setItem('userRole', form.role);
 
         // ✅ Toast on success
         toast.success('Login successful!');
 
         setTimeout(() => {
-          localStorage.removeItem('token');
-          localStorage.removeItem('userRole');
+          sessionStorage.removeItem('token');
+          sessionStorage.removeItem('userRole');
           console.log('Token cleared after 1 hour');
         }, 60 * 60 * 1000);
 

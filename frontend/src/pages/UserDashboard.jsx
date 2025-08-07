@@ -25,7 +25,7 @@ const DashboardHome = () => {
   const fetchDashboardData = async () => {
     try {
       // Debug: Check if token exists
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token');
       console.log('Token exists:', !!token);
       
       // Fetch user profile to get real name
@@ -167,7 +167,7 @@ const PGInterests = () => {
     } catch (error) {
       console.error('Error fetching booked PGs:', error);
       if (error.response?.status === 401) {
-        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
         window.location.href = '/login';
       } else {
         setBookedPGs([]);
@@ -653,7 +653,7 @@ const MaidServices = () => {
     e.preventDefault();
     try {
              // Get user ID from token
-       const token = localStorage.getItem('token');
+       const token = sessionStorage.getItem('token');
        if (!token) {
          setMessage('Please log in to hire a maid');
          return;

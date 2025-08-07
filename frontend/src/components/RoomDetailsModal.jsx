@@ -10,7 +10,7 @@ function RoomDetailsModal({ show, onClose, room }) {
   const [interestSuccess, setInterestSuccess] = useState('');
 
   // Check if user is authenticated for interest functionality
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   const isAuthenticated = !!token;
 
   // Reset image index when room changes

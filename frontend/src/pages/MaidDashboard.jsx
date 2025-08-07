@@ -212,8 +212,8 @@ const Profile = () => {
       await api.delete('/api/maid/profile');
       
       // Clear session
-      localStorage.removeItem('token');
-      localStorage.removeItem('userRole');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('userRole');
       
       // Show success and redirect
       setMessage('Your account has been deleted successfully.');

@@ -4,7 +4,7 @@ import axios from 'axios';
 const allowedRegions = ['Mumbai', 'Delhi', 'Pune', 'Bangalore', 'Hyderabad'];
 
 function Chat() {
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   let username = '';
   let userRole = '';
 

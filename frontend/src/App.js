@@ -23,7 +23,7 @@ import PrivacyPolicy from './components/PrivacyPolicy';
 
 // Helper to decode JWT and get user role
 function getUserRole() {
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   if (!token) return null;
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
@@ -35,8 +35,8 @@ function getUserRole() {
 
 // Logout function
 function handleLogout(navigate) {
-  localStorage.removeItem('token');
-  localStorage.removeItem('userRole');
+  sessionStorage.removeItem('token');
+  sessionStorage.removeItem('userRole');
   navigate('/');
 }
 
@@ -51,7 +51,7 @@ function PrivateRoute({ element, allowedRoles }) {
 // Navigation component with logout functionality
 function Navigation() {
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   const userRole = getUserRole();
 
   return (

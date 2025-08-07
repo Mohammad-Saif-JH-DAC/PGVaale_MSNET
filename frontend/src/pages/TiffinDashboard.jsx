@@ -206,8 +206,8 @@ const Profile = () => {
       await api.delete('/api/tiffin/profile');
       
       // Clear session
-      localStorage.removeItem('token');
-      localStorage.removeItem('userRole');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('userRole');
       
       // Show success and redirect
       setMessage('Your account has been deleted successfully.');
@@ -979,8 +979,8 @@ const TiffinNavigation = () => {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userRole');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('userRole');
     navigate('/login');
   };
 

@@ -83,7 +83,7 @@ function PGRooms() {
 
   // Handle booking room
   const handleBookRoom = async (roomId) => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (!token) {
       alert('Please log in to send interest.');
       return;
@@ -273,7 +273,7 @@ function PGRooms() {
       </div>
 
       {/* Info Alert for Guests */}
-      {!localStorage.getItem('token') && !sessionStorage.getItem('token') && (
+      {!sessionStorage.getItem('token') && (
         <div className="alert alert-info mb-4">
           <strong>💡 Tip:</strong> <Link to="/login">Log in</Link> to send interest and chat with owners!
         </div>
@@ -360,7 +360,7 @@ function PGRooms() {
                     >
                       View Details
                     </button>
-                    {localStorage.getItem('token') || sessionStorage.getItem('token') ? (
+                    {sessionStorage.getItem('token') ? (
                       <button
                         className={`btn btn-sm ${
                           bookingStatus[room.id] === 'booking'

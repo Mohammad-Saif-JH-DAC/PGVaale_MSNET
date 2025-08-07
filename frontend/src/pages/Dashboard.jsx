@@ -1,7 +1,7 @@
 import React from 'react';
 
 function Dashboard() {
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   let role = '';
   if (token) {
     try {
