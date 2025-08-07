@@ -28,7 +28,7 @@ public class DashboardService {
     private PGRepository pgRepository;
 
     @Autowired
-    private FeedbackRepository feedbackRepository; // ← Add this
+    private Feedback_WebRepository feedback_webRepository; // ← Add this
 
     public DashboardStatsDTO getDashboardStats() {
         long totalUsers = userRepository.count();
@@ -42,7 +42,7 @@ public class DashboardService {
         long totalAccounts = totalUsers + totalOwners + totalTiffinProviders + totalMaids;
 
         // 🔴 Calculate average feedback rating
-        Double avg = feedbackRepository.averageFeedbackRating();
+        Double avg = feedback_webRepository.averageFeedbackRating();
         BigDecimal averageFeedbackRating = avg != null
                 ? BigDecimal.valueOf(avg).setScale(1, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
