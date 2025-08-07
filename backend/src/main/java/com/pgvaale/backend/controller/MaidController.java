@@ -301,4 +301,36 @@ public class MaidController {
             return ResponseEntity.status(500).body("Error fetching maid details: " + e.getMessage());
         }
     }
+
+    // Delete maid account
+    @DeleteMapping("/profile")
+    public ResponseEntity<?> deleteAccount() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            
+            Optional<Maid> maidOptional = maidRepository.findByUsername(username);
+            if (!maidOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Maid maid = maidOptional.get();
+            Long maidId = maid.getId();
+            
+            // Delete all feedback for this maid
+            List<Feedback> maidFeedback = feedbackRepository.findByMaidId(maidId);
+            feedbackRepository.deleteAll(maidFeedback);
+            
+            // Delete all user-maid relationships for this maid
+            List<UserMaid> userMaidRelations = userMaidRepository.findByMaidId(maidId);
+            userMaidRepository.deleteAll(userMaidRelations);
+            
+            // Delete the maid account
+            maidRepository.delete(maid);
+            
+            return ResponseEntity.ok("Account deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error deleting account: " + e.getMessage());
+        }
+    }
 } 

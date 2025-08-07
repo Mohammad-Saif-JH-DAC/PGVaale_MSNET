@@ -1208,14 +1208,17 @@ const ActiveMaidServices = () => {
   );
 };
 
-// Feedback Component
+// Feedback Component for Maid 
 const Feedback = () => {
   const [feedback, setFeedback] = useState([]);
   const [maids, setMaids] = useState([]);
+  const [tiffins, setTiffins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [feedbackType, setFeedbackType] = useState('maid'); // 'maid' or 'tiffin'
   const [formData, setFormData] = useState({
     maidId: '',
+    tiffinId: '',
     rating: 5,
     feedback: ''
   });
@@ -1227,15 +1230,20 @@ const Feedback = () => {
 
   const fetchData = async () => {
     try {
-      const [feedbackResponse, maidsResponse] = await Promise.all([
+      const [maidFeedbackRes, maidsRes, tiffinFeedbackRes, tiffinsRes] = await Promise.all([
         api.get('/api/user/feedback'),
-        api.get('/api/maid/available') // Use the available maids endpoint instead
+        api.get('/api/maid/available'),
+        api.get('/api/user/tiffin-feedback'),
+        api.get('/api/user/tiffins')
       ]);
-      setFeedback(feedbackResponse.data);
-      setMaids(maidsResponse.data);
-      console.log('Fetched maids for feedback:', maidsResponse.data); // Debug log
+      // Combine feedbacks with a type property
+      const maidFeedback = (maidFeedbackRes.data || []).map(f => ({...f, type: 'maid'}));
+      const tiffinFeedback = (tiffinFeedbackRes.data || []).map(f => ({...f, type: 'tiffin'}));
+      setFeedback([...maidFeedback, ...tiffinFeedback].sort((a, b) => b.id - a.id));
+      setMaids(maidsRes.data);
+      setTiffins(tiffinsRes.data);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error fetching feedback data:', error);
     } finally {
       setLoading(false);
     }
@@ -1244,11 +1252,23 @@ const Feedback = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-              await api.post('/api/user/feedback', formData);
+      if (feedbackType === 'maid') {
+        await api.post('/api/user/feedback', {
+          maidId: formData.maidId,
+          rating: formData.rating,
+          feedback: formData.feedback
+        });
+      } else {
+        await api.post('/api/user/tiffin-feedback', {
+          tiffinId: formData.tiffinId,
+          rating: formData.rating,
+          feedback: formData.feedback
+        });
+      }
       setMessage('Feedback submitted successfully!');
       setShowForm(false);
-      setFormData({ maidId: '', rating: 5, feedback: '' });
-      fetchData(); // Refresh the list
+      setFormData({ maidId: '', tiffinId: '', rating: 5, feedback: '' });
+      fetchData();
     } catch (error) {
       setMessage('Error submitting feedback: ' + error.response?.data);
     }
@@ -1278,18 +1298,13 @@ const Feedback = () => {
           )}
         </div>
       </div>
-
       <div className="row mb-4">
         <div className="col-12">
-          <button 
-            className="btn btn-primary"
-            onClick={() => setShowForm(true)}
-          >
+          <button className="btn btn-primary" onClick={() => setShowForm(true)}>
             + Give New Feedback
           </button>
         </div>
       </div>
-
       {/* Feedback Form Modal */}
       {showForm && (
         <div className="card mb-4">
@@ -1299,27 +1314,58 @@ const Feedback = () => {
           <div className="card-body">
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label className="form-label">Select Maid</label>
+                <label className="form-label">Feedback For</label>
                 <select
                   className="form-control"
-                  value={formData.maidId}
-                  onChange={(e) => setFormData({...formData, maidId: e.target.value})}
+                  value={feedbackType}
+                  onChange={e => setFeedbackType(e.target.value)}
                   required
                 >
-                  <option value="">Choose a maid...</option>
-                  {maids.map((maid) => (
-                    <option key={maid.id} value={maid.id}>
-                      {maid.name || `Maid ${maid.id}`} - {maid.services || 'Services not specified'} ({maid.region || 'Region not specified'})
-                    </option>
-                  ))}
+                  <option value="maid">Maid</option>
+                  <option value="tiffin">Tiffin</option>
                 </select>
               </div>
+              {feedbackType === 'maid' ? (
+                <div className="mb-3">
+                  <label className="form-label">Select Maid</label>
+                  <select
+                    className="form-control"
+                    value={formData.maidId}
+                    onChange={e => setFormData({ ...formData, maidId: e.target.value })}
+                    required
+                  >
+                    <option value="">Choose a maid...</option>
+                    {maids.map(maid => (
+                      <option key={maid.id} value={maid.id}>
+                        {maid.name || `Maid ${maid.id}`} - {maid.services || 'Services not specified'} ({maid.region || 'Region not specified'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div className="mb-3">
+                  <label className="form-label">Select Tiffin Provider</label>
+                  <select
+                    className="form-control"
+                    value={formData.tiffinId}
+                    onChange={e => setFormData({ ...formData, tiffinId: e.target.value })}
+                    required
+                  >
+                    <option value="">Choose a tiffin provider...</option>
+                    {tiffins.map(tiffin => (
+                      <option key={tiffin.id} value={tiffin.id}>
+                        {tiffin.name || `Tiffin ${tiffin.id}`} - {tiffin.foodCategory || 'Category not specified'} ({tiffin.region || 'Region not specified'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="mb-3">
                 <label className="form-label">Rating</label>
                 <select
                   className="form-control"
                   value={formData.rating}
-                  onChange={(e) => setFormData({...formData, rating: parseInt(e.target.value)})}
+                  onChange={e => setFormData({ ...formData, rating: parseInt(e.target.value) })}
                   required
                 >
                   <option value={5}>⭐⭐⭐⭐⭐ (5 stars)</option>
@@ -1335,7 +1381,7 @@ const Feedback = () => {
                   className="form-control"
                   rows="3"
                   value={formData.feedback}
-                  onChange={(e) => setFormData({...formData, feedback: e.target.value})}
+                  onChange={e => setFormData({ ...formData, feedback: e.target.value })}
                   required
                 ></textarea>
               </div>
@@ -1343,8 +1389,8 @@ const Feedback = () => {
                 <button type="submit" className="btn btn-success">
                   Submit Feedback
                 </button>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="btn btn-secondary"
                   onClick={() => setShowForm(false)}
                 >
@@ -1355,7 +1401,6 @@ const Feedback = () => {
           </div>
         </div>
       )}
-
       {/* Feedback List */}
       <div className="row">
         <div className="col-12">
@@ -1363,15 +1408,18 @@ const Feedback = () => {
           {feedback.length > 0 ? (
             <div className="card">
               <div className="card-body">
-                {feedback.map((item) => (
-                  <div key={item.id} className="border-bottom pb-3 mb-3">
+                {feedback.map(item => (
+                  <div key={item.id + '-' + item.type} className="border-bottom pb-3 mb-3">
                     <div className="d-flex justify-content-between align-items-start">
                       <div>
-                        <h6>{item.maid?.name || 'Unknown Maid'}</h6>
-                        <div className="text-warning">
-                          {'⭐'.repeat(item.rating)}
-                        </div>
+                        <h6>
+                          {item.type === 'maid'
+                            ? (item.maid?.name || 'Unknown Maid')
+                            : (item.tiffin?.name || 'Unknown Tiffin')}
+                        </h6>
+                        <div className="text-warning">{'⭐'.repeat(item.rating)}</div>
                         <p className="mt-2">{item.feedback}</p>
+                        <span className="badge bg-info text-dark">{item.type === 'maid' ? 'Maid' : 'Tiffin'}</span>
                       </div>
                       <small className="text-muted">
                         {new Date(item.id).toLocaleDateString()}
@@ -1394,6 +1442,10 @@ const Feedback = () => {
     </div>
   );
 };
+
+
+
+
 
 
 

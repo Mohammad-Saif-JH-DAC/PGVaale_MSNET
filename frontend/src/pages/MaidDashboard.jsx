@@ -159,6 +159,8 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({});
   const [message, setMessage] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   useEffect(() => {
     fetchProfile();
@@ -196,6 +198,32 @@ const Profile = () => {
     } catch (error) {
 
       setMessage('Error updating profile: ' + error.response?.data);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') {
+      setMessage('Please type DELETE to confirm account deletion.');
+      return;
+    }
+
+    try {
+      // Delete maid account
+      await api.delete('/api/maid/profile');
+      
+      // Clear session
+      localStorage.removeItem('token');
+      localStorage.removeItem('userRole');
+      
+      // Show success and redirect
+      setMessage('Your account has been deleted successfully.');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 2000);
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      setMessage('Failed to delete account. Please try again.');
+      setShowDeleteModal(false);
     }
   };
 
@@ -366,10 +394,71 @@ const Profile = () => {
                 </span>
                 <span>{profile?.approved ? 'Approved' : 'Pending Approval'}</span>
               </div>
+              <hr />
+              <div className="d-grid">
+                <button
+                  className="btn btn-danger"
+                  onClick={() => setShowDeleteModal(true)}
+                >
+                  🗑️ Delete Account
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <div className="modal fade show" style={{display: 'block'}}>
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title text-danger">⚠️ Delete Account</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowDeleteModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <div className="alert alert-danger">
+                  <strong>Warning:</strong> This action cannot be undone. All your data will be permanently deleted.
+                </div>
+                <p>To confirm deletion, please type <strong>DELETE</strong> in the box below:</p>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  placeholder="Type DELETE to confirm"
+                />
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  onClick={handleDeleteAccount}
+                >
+                  Delete Account
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Backdrop */}
+      {showDeleteModal && (
+        <div className="modal-backdrop fade show"></div>
+      )}
     </div>
   );
 };

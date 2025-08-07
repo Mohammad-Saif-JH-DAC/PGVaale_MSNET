@@ -9,11 +9,13 @@ import com.pgvaale.backend.entity.Tiffin;
 import com.pgvaale.backend.entity.User;
 import com.pgvaale.backend.entity.UserMaid;
 import com.pgvaale.backend.entity.UserTiffin;
+import com.pgvaale.backend.entity.Feedback_Tiffin;
 import com.pgvaale.backend.repository.FeedbackRepository;
 import com.pgvaale.backend.repository.MaidRepository;
 import com.pgvaale.backend.repository.RoomInterestRepository;
 import com.pgvaale.backend.repository.UserMaidRepository;
 import com.pgvaale.backend.repository.UserRepository;
+import com.pgvaale.backend.repository.Feedback_TiffinRepository;
 import com.pgvaale.backend.service.TiffinService;
 import com.pgvaale.backend.service.UserService;
 import com.pgvaale.backend.service.UserMaidService;
@@ -59,6 +61,9 @@ public class UserController {
     
     @Autowired
     private FeedbackRepository feedbackRepository;
+    
+    @Autowired
+    private Feedback_TiffinRepository feedbackTiffinRepository;
     
     // Get all available maids
     @GetMapping("/maids")
@@ -522,6 +527,36 @@ public class UserController {
             return ResponseEntity.ok(savedFeedback);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error submitting feedback: " + e.getMessage());
+        }
+    }
+    
+    // --- Tiffin Feedback ---
+    @GetMapping("/tiffin-feedback")
+    public ResponseEntity<?> getUserTiffinFeedback() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            Long userId = getUserIdFromUsername(username);
+            List<Feedback_Tiffin> feedback = tiffinService.getTiffinFeedbackByUser(userId);
+            return ResponseEntity.ok(feedback);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error fetching tiffin feedback: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/tiffin-feedback")
+    public ResponseEntity<?> submitTiffinFeedback(@RequestBody Map<String, Object> feedbackData) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            Long userId = getUserIdFromUsername(username);
+            Long tiffinId = Long.valueOf(feedbackData.get("tiffinId").toString());
+            Integer rating = Integer.valueOf(feedbackData.get("rating").toString());
+            String feedback = (String) feedbackData.get("feedback");
+            Feedback_Tiffin savedFeedback = tiffinService.submitTiffinFeedback(userId, tiffinId, rating, feedback);
+            return ResponseEntity.ok(savedFeedback);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error submitting tiffin feedback: " + e.getMessage());
         }
     }
     
