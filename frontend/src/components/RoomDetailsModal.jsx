@@ -20,20 +20,23 @@ function RoomDetailsModal({ show, onClose, room }) {
     }
   }, [show, room]);
 
-  // Handle sending interest
+  // Handle booking PG
   const handleInterest = async (e) => {
     e.preventDefault();
     setInterestSuccess('');
     try {
-      await api.post('/api/room-interests', {
-        roomId: room.id,
-        message: interestMsg,
-      });
-      setInterestSuccess('Interest/request sent successfully!');
+      await api.post(`/api/pg/${room.id}/book`);
+      setInterestSuccess('PG booked successfully! This room is now reserved for you.');
       setInterestMsg('');
+      
+      // Close modal after successful booking
+      setTimeout(() => {
+        onClose();
+      }, 2000);
     } catch (error) {
-      console.error('Error sending interest:', error);
-      setInterestSuccess('Failed to send request. Please try again.');
+      console.error('Error booking PG:', error);
+      const errorMessage = error.response?.data || 'Failed to book PG. Please try again.';
+      setInterestSuccess(errorMessage);
     }
   };
 
