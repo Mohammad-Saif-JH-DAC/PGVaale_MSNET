@@ -64,33 +64,37 @@ function Login() {
 
       const token = res.data.token;
       if (token) {
-        localStorage.setItem('token', token);
-        localStorage.setItem('userRole', form.role);
-
-        // ✅ Toast on success
-        toast.success('Login successful!');
-
-        setTimeout(() => {
-          localStorage.removeItem('token');
-          localStorage.removeItem('userRole');
-          console.log('Token cleared after 1 hour');
-        }, 60 * 60 * 1000);
-
-        const payload = JSON.parse(atob(token.split('.')[1]));
-
         let userRole = '';
-        if (payload.role) {
-          userRole = payload.role.replace('ROLE_', '').toLowerCase();
-        } else if (payload.authorities && payload.authorities.length > 0) {
-          userRole = payload.authorities[0].authority.replace('ROLE_', '').toLowerCase();
-        }
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          if (payload.role) {
+            userRole = payload.role.replace('ROLE_', '').toLowerCase();
+          } else if (payload.authorities && payload.authorities.length > 0) {
+            userRole = payload.authorities[0].authority.replace('ROLE_', '').toLowerCase();
+          }
+          localStorage.setItem('token', token);
+          localStorage.setItem('userRole', form.role);
 
-        if (userRole === 'admin') navigate('/admin');
-        else if (userRole === 'owner') navigate('/owner-dashboard');
-        else if (userRole === 'user') navigate('/user-dashboard');
-        else if (userRole === 'tiffin') navigate('/tiffin-dashboard');
-        else if (userRole === 'maid') navigate('/maid-dashboard');
-        else navigate('/');
+          toast.success('Login successful!');
+
+          setTimeout(() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userRole');
+            console.log('Token cleared after 1 hour');
+          }, 60 * 60 * 1000);
+
+          // Redirect
+          if (userRole === 'admin') navigate('/admin');
+          else if (userRole === 'owner') navigate('/owner-dashboard');
+          else if (userRole === 'user') navigate('/user-dashboard');
+          else if (userRole === 'tiffin') navigate('/tiffin-dashboard');
+          else if (userRole === 'maid') navigate('/maid-dashboard');
+          else navigate('/');
+        } catch (e) {
+          // Token is not valid or role missing
+          toast.error('Login failed. Please try again.');
+          setError('Login failed. Please try again.');
+        }
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -110,7 +114,6 @@ function Login() {
         errorMessage = 'Network error. Please check your connection.';
       }
 
-      // ✅ Toast on error
       toast.error(errorMessage);
       setError(errorMessage);
     } finally {

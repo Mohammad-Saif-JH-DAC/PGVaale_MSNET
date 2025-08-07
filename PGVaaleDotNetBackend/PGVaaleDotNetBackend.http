@@ -1,0 +1,6 @@
+@PGVaaleDotNetBackend_HostAddress = http://localhost:5261
+
+GET {{PGVaaleDotNetBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
