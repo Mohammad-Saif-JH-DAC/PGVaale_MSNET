@@ -514,37 +514,6 @@ public class UserController {
         return userOptional.map(User::getId).orElse(null);
     }
 
-    // Get current user profile
-    @GetMapping("/profile")
-    public ResponseEntity<?> getUserProfile() {
-        try {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String username = auth.getName();
-
-            Optional<User> userOptional = userRepository.findByUsername(username);
-            if (!userOptional.isPresent()) {
-                return ResponseEntity.notFound().build();
-            }
-
-            User user = userOptional.get();
-            // Create a response object without password
-            Map<String, Object> userProfile = Map.of(
-                    "id", user.getId(),
-                    "name", user.getName(),
-                    "email", user.getEmail(),
-                    "username", user.getUsername(),
-                    "aadhaar", user.getAadhaar(),
-                    "mobileNumber", user.getMobileNumber(),
-                    "age", user.getAge(),
-                    "gender", user.getGender(),
-                    "uniqueId", user.getUniqueId());
-
-            return ResponseEntity.ok(userProfile);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error fetching user profile: " + e.getMessage());
-        }
-    }
-
     // Update user profile
     @PutMapping("/profile")
     public ResponseEntity<?> updateUserProfile(@RequestBody Map<String, Object> updateData) {
