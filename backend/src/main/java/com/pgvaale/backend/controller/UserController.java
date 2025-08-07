@@ -2,12 +2,14 @@ package com.pgvaale.backend.controller;
 
 import com.pgvaale.backend.dto.MenuDTO;
 import com.pgvaale.backend.dto.UserTiffinDTO;
+import com.pgvaale.backend.entity.Feedback;
 import com.pgvaale.backend.entity.Maid;
 import com.pgvaale.backend.entity.RoomInterest;
 import com.pgvaale.backend.entity.Tiffin;
 import com.pgvaale.backend.entity.User;
 import com.pgvaale.backend.entity.UserMaid;
 import com.pgvaale.backend.entity.UserTiffin;
+import com.pgvaale.backend.repository.FeedbackRepository;
 import com.pgvaale.backend.repository.MaidRepository;
 import com.pgvaale.backend.repository.RoomInterestRepository;
 import com.pgvaale.backend.repository.UserMaidRepository;
@@ -54,6 +56,9 @@ public class UserController {
     
     @Autowired
     private UserMaidService userMaidService;
+    
+    @Autowired
+    private FeedbackRepository feedbackRepository;
     
     // Get all available maids
     @GetMapping("/maids")
@@ -468,6 +473,57 @@ public class UserController {
             return ResponseEntity.ok(profile);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error fetching profile: " + e.getMessage());
+        }
+    }
+    
+    // Get user's feedback
+    @GetMapping("/feedback")
+    public ResponseEntity<?> getUserFeedback() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            Long userId = getUserIdFromUsername(username);
+            
+            // Get user's feedback from repository
+            List<Feedback> userFeedback = feedbackRepository.findByUserId(userId);
+            return ResponseEntity.ok(userFeedback);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error fetching feedback: " + e.getMessage());
+        }
+    }
+    
+    // Submit feedback
+    @PostMapping("/feedback")
+    public ResponseEntity<?> submitFeedback(@RequestBody Map<String, Object> feedbackData) {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            Long userId = getUserIdFromUsername(username);
+            
+            // Get user and maid entities
+            Optional<User> userOptional = userRepository.findById(userId);
+            Optional<Maid> maidOptional = maidRepository.findById(Long.valueOf(feedbackData.get("maidId").toString()));
+            
+            if (!userOptional.isPresent()) {
+                return ResponseEntity.badRequest().body("User not found");
+            }
+            
+            if (!maidOptional.isPresent()) {
+                return ResponseEntity.badRequest().body("Maid not found");
+            }
+            
+            // Create feedback object
+            Feedback feedback = new Feedback();
+            feedback.setUser(userOptional.get());
+            feedback.setMaid(maidOptional.get());
+            feedback.setRating(Integer.valueOf(feedbackData.get("rating").toString()));
+            feedback.setFeedback((String) feedbackData.get("feedback"));
+            
+            // Save feedback
+            Feedback savedFeedback = feedbackRepository.save(feedback);
+            return ResponseEntity.ok(savedFeedback);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error submitting feedback: " + e.getMessage());
         }
     }
     
