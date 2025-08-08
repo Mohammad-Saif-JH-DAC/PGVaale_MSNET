@@ -114,16 +114,31 @@ namespace PGVaaleDotNetBackend.Security
             if (string.IsNullOrEmpty(path))
                 return false;
 
-            return path.StartsWith("/api/auth/login") ||
-                   path.StartsWith("/api/auth/register") ||
-                   path.StartsWith("/api/user/register") ||
+            // Public endpoints (matching Java Spring Security configuration)
+            return path.StartsWith("/api/user/register") ||
                    path.StartsWith("/api/user/login") ||
-                   // path.StartsWith("/api/user/pgs") ||
-                   path.StartsWith("/api/user/dashboard") ||
+                   path.StartsWith("/api/admin/register") ||
+                   path.StartsWith("/api/admin/login") ||
+                   path.StartsWith("/api/admin/test") ||
+                   path.StartsWith("/api/admin/test-password") ||
+                   path.StartsWith("/api/owner/register") ||
+                   path.StartsWith("/api/owner/login") ||
+                   path.StartsWith("/api/maid/register") ||
+                   path.StartsWith("/api/maid/login") ||
+                   path.StartsWith("/api/tiffin/register") ||
+                   path.StartsWith("/api/tiffin/login") ||
+                   path.StartsWith("/api/auth/register") ||
+                   path.StartsWith("/api/auth/login") ||
+                   path.StartsWith("/api/public") ||
                    path.StartsWith("/api/pg/all") ||
                    path.StartsWith("/api/pg/region") ||
+                   path.StartsWith("/api/pgrooms") ||
+                   path.StartsWith("/api/room-interests") ||
+                   path.StartsWith("/api/pdf") ||
+                   path.StartsWith("/api/contactUs") ||
                    path.StartsWith("/swagger-ui") ||
-                   path.StartsWith("/v3/api-docs");
+                   path.StartsWith("/v3/api-docs") ||
+                   path.StartsWith("/api/"); // Allow all /api/ endpoints for now (adjust as needed)
         }
     }
 }
