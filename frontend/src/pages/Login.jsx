@@ -22,23 +22,12 @@ function Login() {
     const token = sessionStorage.getItem('token');
     if (token) {
       try {
-        const tokenParts = token.split('.');
-        if (tokenParts.length !== 3) {
-          console.error('Invalid JWT token format');
-          throw new Error('Invalid token format');
-        }
-        
-        const payload = JSON.parse(atob(tokenParts[1]));
-        console.log('JWT Payload:', payload);
-        
+        const payload = JSON.parse(atob(token.split('.')[1]));
         let userRole = '';
         if (payload.role) {
           userRole = payload.role.replace('ROLE_', '').toLowerCase();
         } else if (payload.authorities && payload.authorities.length > 0) {
           userRole = payload.authorities[0].authority.replace('ROLE_', '').toLowerCase();
-        } else {
-          // Fallback to stored userRole
-          userRole = sessionStorage.getItem('userRole') || 'user';
         }
 
         // Redirect to role-specific dashboard
@@ -49,7 +38,7 @@ function Login() {
         else if (userRole === 'maid') navigate('/maid-dashboard');
         else navigate('/');
       } catch (e) {
-        console.error('Invalid token:', e);
+        console.error('Invalid token');
         sessionStorage.removeItem('token');
         sessionStorage.removeItem('userRole');
       }
@@ -73,7 +62,6 @@ function Login() {
         password: form.password
       });
 
-      console.log('Login response:', res.data);
       const token = res.data.token;
       if (token) {
         sessionStorage.setItem('token', token);
@@ -88,30 +76,13 @@ function Login() {
           console.log('Token cleared after 1 hour');
         }, 60 * 60 * 1000);
 
-        // Parse JWT token payload with error handling
+        const payload = JSON.parse(atob(token.split('.')[1]));
+
         let userRole = '';
-        try {
-          const tokenParts = token.split('.');
-          if (tokenParts.length !== 3) {
-            console.error('Invalid JWT token format');
-            throw new Error('Invalid token format');
-          }
-          
-          const payload = JSON.parse(atob(tokenParts[1]));
-          console.log('JWT Payload:', payload);
-          
-          if (payload.role) {
-            userRole = payload.role.replace('ROLE_', '').toLowerCase();
-          } else if (payload.authorities && payload.authorities.length > 0) {
-            userRole = payload.authorities[0].authority.replace('ROLE_', '').toLowerCase();
-          } else {
-            // Fallback to the role from the form
-            userRole = form.role;
-          }
-        } catch (parseError) {
-          console.error('Error parsing JWT token:', parseError);
-          // Fallback to the role from the form
-          userRole = form.role;
+        if (payload.role) {
+          userRole = payload.role.replace('ROLE_', '').toLowerCase();
+        } else if (payload.authorities && payload.authorities.length > 0) {
+          userRole = payload.authorities[0].authority.replace('ROLE_', '').toLowerCase();
         }
 
         if (userRole === 'admin') navigate('/admin');
@@ -304,7 +275,7 @@ function Login() {
       </div>
 
       {/* Custom Styles */}
-      <style>{`
+      <style jsx>{`
         .form-control:focus, .form-select:focus {
           border-color: #6366F1;
           box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);

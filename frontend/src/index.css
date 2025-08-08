@@ -46,10 +46,10 @@ code {
 /* Color extensions */
 .bg-gray-800 { background-color: #1f2937; }
 .bg-gray-900 { background-color: #111827; }
-.text-gray-100 { color: #f3f4f6; }
-.text-gray-300 { color: #d1d5db; }
+.text-gray-100 { color: #1445a5; }
+.text-gray-300 { color: #185dc4; }
 .text-gray-400 { color: #9ca3af; }
-.text-gray-500 { color: #6b7280; }
+.text-gray-500 { color: #14326e; }
 .text-gray-600 { color: #4b5563; }
 .text-gray-700 { color: #374151; }
 .border-gray-800 { border-color: #1f2937; }
@@ -61,3 +61,189 @@ code {
 .hover\:bg-amber-500:hover { background-color: #f59e0b; }
 .border-amber-400 { border-color: #fbbf24; }
 .focus\:ring-amber-400:focus { --tw-ring-color: #fbbf24; }
+
+/* Reduced horizontal spacing for all containers */
+.container {
+  max-width: 95% !important;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+.container-fluid {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+/* Reduce spacing for smaller screens */
+@media (max-width: 768px) {
+  .container {
+    max-width: 98% !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  
+  .container-fluid {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+}
+
+/* Reduce card and section padding */
+.card {
+  margin-left: 0.5rem !important;
+  margin-right: 0.5rem !important;
+}
+
+.section {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+
+/* Reduce row gutters */
+.row {
+  margin-left: -0.5rem !important;
+  margin-right: -0.5rem !important;
+}
+
+.col, .col-1, .col-2, .col-3, .col-4, .col-5, .col-6, 
+.col-7, .col-8, .col-9, .col-10, .col-11, .col-12,
+.col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6,
+.col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12,
+.col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6,
+.col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12 {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+
+/* Additional spacing reductions for specific components */
+.navbar {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+
+.navbar-nav {
+  margin-left: 0.5rem !important;
+  margin-right: 0.5rem !important;
+}
+
+.nav-item {
+  margin-left: 0.25rem !important;
+  margin-right: 0.25rem !important;
+}
+
+/* Reduce padding in form sections */
+.form-section {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+
+/* Reduce spacing in hero sections */
+.hero-section {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+
+/* Reduce modal padding */
+.modal-body {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+.modal-header {
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+/* Reduce table spacing */
+.table-responsive {
+  padding-left: 0.5rem !important;
+  padding-right: 0.5rem !important;
+}
+
+/* Reduce list group spacing */
+.list-group {
+  margin-left: 0.5rem !important;
+  margin-right: 0.5rem !important;
+}
+
+/* Reduce alert spacing */
+.alert {
+  margin-left: 0.5rem !important;
+  margin-right: 0.5rem !important;
+}
+
+/* Reduce button group spacing */
+.btn-group {
+  margin-left: 0.25rem !important;
+  margin-right: 0.25rem !important;
+}
+
+/* Reduce input group spacing */
+.input-group {
+  margin-left: 0.5rem !important;
+  margin-right: 0.5rem !important;
+}
+
+/* Shortened font sizes for headers */
+.display-4 {
+  font-size: 2.5rem !important;
+}
+
+.display-5 {
+  font-size: 2rem !important;
+}
+
+.display-6 {
+  font-size: 1.75rem !important;
+}
+
+h1 {
+  font-size: 2rem !important;
+}
+
+h2 {
+  font-size: 1.75rem !important;
+}
+
+h3 {
+  font-size: 1.5rem !important;
+}
+
+h4 {
+  font-size: 1.25rem !important;
+}
+
+h5 {
+  font-size: 1.125rem !important;
+}
+
+h6 {
+  font-size: 1rem !important;
+}
+
+/* Responsive font sizes for mobile */
+@media (max-width: 768px) {
+  .display-4 {
+    font-size: 2rem !important;
+  }
+  
+  .display-5 {
+    font-size: 1.75rem !important;
+  }
+  
+  .display-6 {
+    font-size: 1.5rem !important;
+  }
+  
+  h1 {
+    font-size: 1.75rem !important;
+  }
+  
+  h2 {
+    font-size: 1.5rem !important;
+  }
+  
+  h3 {
+    font-size: 1.25rem !important;
+  }
+}

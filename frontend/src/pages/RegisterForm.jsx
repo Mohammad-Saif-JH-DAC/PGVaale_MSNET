@@ -921,7 +921,7 @@ function RegisterForm() {
       </div>
 
       {/* Inline Styles for Focus and Active States */}
-      <style>{`
+      <style jsx>{`
         .bg-gradient {
           background: linear-gradient(135deg, #2C3E50 0%, #1ABC9C 100%);
         }

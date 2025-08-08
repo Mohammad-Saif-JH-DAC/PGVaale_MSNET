@@ -155,7 +155,7 @@ const UserProfile = () => {
                             <FaUser className="me-2 text-primary" />
                             Full Name
                           </label>
-                          <div className="profile-value">{userProfile.name}</div>
+                          <div className="profile-value">{userProfile.name || 'N/A'}</div>
                         </div>
                       </div>
 
@@ -165,7 +165,7 @@ const UserProfile = () => {
                             <FaEnvelope className="me-2 text-primary" />
                             Email
                           </label>
-                          <div className="profile-value">{userProfile.email}</div>
+                          <div className="profile-value">{userProfile.email || 'N/A'}</div>
                         </div>
                       </div>
 
@@ -175,7 +175,7 @@ const UserProfile = () => {
                             <FaUser className="me-2 text-primary" />
                             Username
                           </label>
-                          <div className="profile-value">{userProfile.username}</div>
+                          <div className="profile-value">{userProfile.username || 'N/A'}</div>
                         </div>
                       </div>
 
@@ -185,7 +185,7 @@ const UserProfile = () => {
                             <FaPhone className="me-2 text-primary" />
                             Mobile Number
                           </label>
-                          <div className="profile-value">{userProfile.mobileNumber}</div>
+                          <div className="profile-value">{userProfile.mobileNumber || 'N/A'}</div>
                         </div>
                       </div>
 
@@ -195,7 +195,7 @@ const UserProfile = () => {
                             <FaBirthdayCake className="me-2 text-primary" />
                             Age
                           </label>
-                          <div className="profile-value">{userProfile.age} years</div>
+                          <div className="profile-value">{userProfile.age ? `${userProfile.age} years` : 'N/A'}</div>
                         </div>
                       </div>
 
@@ -216,20 +216,12 @@ const UserProfile = () => {
                             Aadhaar Number
                           </label>
                           <div className="profile-value">
-                            {userProfile.aadhaar.replace(/(\d{4})(\d{4})(\d{4})/, '$1 $2 $3')}
+                            {userProfile.aadhaar ? userProfile.aadhaar.replace(/(\d{4})(\d{4})(\d{4})/, '$1 $2 $3') : 'N/A'}
                           </div>
                         </div>
                       </div>
 
-                      <div className="col-md-6 mb-3">
-                        <div className="profile-field">
-                          <label className="form-label fw-bold">
-                            <FaIdCard className="me-2 text-primary" />
-                            Unique ID
-                          </label>
-                          <div className="profile-value">{userProfile.uniqueId}</div>
-                        </div>
-                      </div>
+
                     </div>
                   ) : (
                     // Edit Mode

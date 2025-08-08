@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Net.Mail;
 using System.Net;
@@ -14,15 +15,15 @@ namespace PGVaaleDotNetBackend.Services
         private readonly string _smtpPassword;
         private readonly bool _enableSsl;
 
-        public EmailService(ILogger<EmailService> logger)
+        public EmailService(ILogger<EmailService> logger, IConfiguration configuration)
         {
             _logger = logger;
-            // These should be configured in appsettings.json
-            _smtpServer = "smtp.gmail.com"; // Default, should be configurable
-            _smtpPort = 587;
-            _smtpUsername = ""; // Should be configured
-            _smtpPassword = ""; // Should be configured
-            _enableSsl = true;
+            // Get SMTP settings from configuration
+            _smtpServer = configuration["Email:SmtpServer"] ?? "smtp.gmail.com";
+            _smtpPort = int.TryParse(configuration["Email:SmtpPort"], out var port) ? port : 587;
+            _smtpUsername = configuration["Email:SmtpUsername"] ?? "";
+            _smtpPassword = configuration["Email:SmtpPassword"] ?? "";
+            _enableSsl = bool.TryParse(configuration["Email:EnableSsl"], out var ssl) ? ssl : true;
         }
 
         /// <summary>
@@ -265,7 +266,9 @@ This is an automated message. Please do not reply to this email.";
                 // Check if SMTP credentials are configured
                 if (string.IsNullOrEmpty(_smtpUsername) || string.IsNullOrEmpty(_smtpPassword))
                 {
-                    _logger.LogWarning("SMTP credentials not configured. Email not sent to: {Email}", toEmail);
+                    _logger.LogWarning("SMTP credentials not configured. Email would be sent to: {Email}", toEmail);
+                    _logger.LogInformation("Email Subject: {Subject}", subject);
+                    _logger.LogInformation("Email Body: {Message}", message);
                     return; // Don't throw exception, just log and return
                 }
 

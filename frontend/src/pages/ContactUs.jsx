@@ -87,7 +87,7 @@ function ContactUs() {
     <div className="form-section container">
       <div className="contact-form-box">
         <form onSubmit={handleSubmit} noValidate>
-          <h2 className="mb-3">📩 Contact Us</h2>
+          <h2 className="mb-3">📩 Fill Your Queries</h2>
 
           <div className="mb-3">
             <label className="form-label">Full Name *</label>
@@ -147,7 +147,7 @@ function ContactUs() {
             </div>
           )}
           */}
-          <button type="submit" className="btn btn-danger w-100">Submit Contact Us Form</button>
+          <button type="submit" className="btn btn-danger w-100">Submit</button>
         </form>
       </div>
 
@@ -157,6 +157,22 @@ function ContactUs() {
           <p>We help you connect with verified users.</p>
           <a href="/register/owner">List Now</a>
         </div>
+       <div className="side-box p-3 rounded shadow-sm" style={{ background: '#f8fafc' }}>
+  <h5 className="mb-3">📩 Contact Us</h5>
+<p>Your trusted partner for finding the right connections.</p>
+
+  {/* Phone */}
+  <p className="mb-1">
+    <i className="bi bi-telephone-fill me-2" style={{ color: '#2C3E50' }}></i>
+    +91 98765 43210
+  </p>
+
+  {/* Email */}
+  <p className="mb-3">
+    <i className="bi bi-envelope-fill me-2" style={{ color: '#2C3E50' }}></i>
+support@pgvaale.com  </p>
+</div>
+
 
         {/* <div className="side-box">
           <h5>⚠️ Report Safety Concern</h5>

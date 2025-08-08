@@ -36,3 +36,10 @@
     transform: rotate(360deg);
   }
 }
+.nav-link {
+  color: black !important; /* base color */
+}
+
+.nav-link:hover {
+  color: gold !important; /* your desired hover color */
+}

@@ -80,15 +80,15 @@ const DashboardStats = () => {
     ...(stats.totalMaids > 0 ? [{ name: 'Maids', value: stats.totalMaids, color: '#ff7300' }] : []),
   ];
 
-  // Bar Chart Data
+  // Bar Chart Data (only include non-zero values)
   const barData = [
-    { name: 'Users', count: stats.totalUsers, color: '#8884d8' },
-    { name: 'Owners', count: stats.totalOwners, color: '#82ca9d' },
-    { name: 'Tiffin Providers', count: stats.totalTiffinProviders, color: '#ffc658' },
-    { name: 'Maids', count: stats.totalMaids, color: '#ff7300' },
-    { name: 'PGs', count: stats.totalPGs, color: '#8dd1e1' },
-    { name: 'Pending Maids', count: stats.pendingMaids, color: '#d084d0' },
-    { name: 'Pending Tiffins', count: stats.pendingTiffins, color: '#ff8042' },
+    ...(stats.totalUsers > 0 ? [{ name: 'Users', count: stats.totalUsers, color: '#8884d8' }] : []),
+    ...(stats.totalOwners > 0 ? [{ name: 'Owners', count: stats.totalOwners, color: '#82ca9d' }] : []),
+    ...(stats.totalTiffinProviders > 0 ? [{ name: 'Tiffin Providers', count: stats.totalTiffinProviders, color: '#ffc658' }] : []),
+    ...(stats.totalMaids > 0 ? [{ name: 'Maids', count: stats.totalMaids, color: '#ff7300' }] : []),
+    ...(stats.totalPGs > 0 ? [{ name: 'PGs', count: stats.totalPGs, color: '#8dd1e1' }] : []),
+    ...(stats.pendingMaids > 0 ? [{ name: 'Pending Maids', count: stats.pendingMaids, color: '#d084d0' }] : []),
+    ...(stats.pendingTiffins > 0 ? [{ name: 'Pending Tiffins', count: stats.pendingTiffins, color: '#ff8042' }] : []),
   ];
 
   return (
@@ -176,25 +176,17 @@ const DashboardStats = () => {
       </div>
       <div className="card-body">
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={barData} barSize={40} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <XAxis dataKey="name" axisLine={false} tickLine={false} />
-            <YAxis allowDecimals={false} axisLine={false} tickLine={false} />
-            <Tooltip
-              contentStyle={{ borderRadius: '8px', border: 'none', backgroundColor: '#000', color: '#fff' }}
-              labelStyle={{ fontWeight: 'bold' }}
-            />
-            <Legend
-              wrapperStyle={{
-                padding: '10px 0',
-                textAlign: 'center',
-              }}
-            />
-            <Bar dataKey="count" radius={[8, 8, 0, 0]}>
-              {barData.map((entry, index) => (
-                <Cell key={`cell-bar-${index}`} fill={entry.color} />
-              ))}
-            </Bar>
-          </BarChart>
+        <BarChart data={barData} barSize={40} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+  <XAxis dataKey="name" axisLine={false} tickLine={false} />
+  <YAxis allowDecimals={false} axisLine={false} tickLine={false} />
+  <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', backgroundColor: '#000', color: '#fff' }} />
+  <Legend wrapperStyle={{ padding: '10px 0', textAlign: 'center' }} />
+  <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+    {barData.map((entry, index) => (
+      <Cell key={`cell-${index}`} fill={entry.color} />
+    ))}
+  </Bar>
+</BarChart>
         </ResponsiveContainer>
       </div>
     </div>

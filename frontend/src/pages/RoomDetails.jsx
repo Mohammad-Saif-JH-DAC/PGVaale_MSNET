@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../api';
+import Toast from '../utils/Toast';
+
+
+
 
 function RoomDetails() {
   const { id } = useParams();
@@ -8,7 +12,7 @@ function RoomDetails() {
   const [message, setMessage] = useState('');
   const [interestMsg, setInterestMsg] = useState('');
   const [success, setSuccess] = useState('');
-  const token = sessionStorage.getItem('token');
+  const token = localStorage.getItem('token');
   let username = '';
   if (token) {
     try {
@@ -31,9 +35,11 @@ function RoomDetails() {
         message: interestMsg
       });
       setSuccess('Interest/request sent!');
+      Toast.success('Interest/request sent!');
       setInterestMsg('');
     } catch {
-      setSuccess('Failed to send request');
+      setSuccess('Interest/request sent!');
+      Toast.error('Failed to send request');
     }
   };
 

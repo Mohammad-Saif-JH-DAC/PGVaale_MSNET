@@ -5,6 +5,9 @@ import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import RoomDetailsModal from '../components/RoomDetailsModal';
+import Toast from '../utils/Toast';
+
+
 
 // Fix for Leaflet default icons
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -71,6 +74,7 @@ function PGRooms() {
   // Handle opening room details modal
   const handleViewDetails = (room) => {
     console.log('Selected Room:', room);
+    Toast.log('Selected Room:', room);
     setSelectedRoom(room);
     setShowModal(true);
   };
@@ -81,23 +85,57 @@ function PGRooms() {
     setSelectedRoom(null);
   };
 
-  // Handle booking room
-  const handleBookRoom = async (roomId) => {
+  //PDF Download
+  const downloadPdf = async (roomId) => {
     const token = sessionStorage.getItem('token');
     if (!token) {
-      alert('Please log in to book PG.');
+      Toast.error('Please log in to download contract.');
+      return;
+    }
+
+    try {
+      const response = await api.get(`/api/pdf/generate/${roomId}`, {
+        responseType: 'blob', // Important for handling binary data
+      });
+      
+      const file = new Blob([response.data], { type: 'application/pdf' });
+      const fileURL = URL.createObjectURL(file);
+  
+      // Option 1: Open PDF in new tab
+      // window.open(fileURL);
+  
+      // Option 2: Download PDF
+      const link = document.createElement('a');
+      link.href = fileURL;
+      link.setAttribute('download', `booking_contract_room_${roomId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      
+      Toast.success('Contract downloaded successfully!');
+    } catch (error) {
+      console.error('Error downloading PDF', error);
+      Toast.error('Failed to download contract. Please try again.');
+    }
+  }
+
+  // Handle booking room
+  const handleBookRoom = async (roomId) => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!token) {
+      //alert('Please log in to book PG.');
+      Toast.warn('Please login to send interest.');
       return;
     }
 
     setBookingStatus((prev) => ({ ...prev, [roomId]: 'booking' }));
 
     try {
-      // Call the new PG booking endpoint that updates user_id and availability
-      await api.post(`/api/pg/${roomId}/book`);
+      // Backend will automatically set username from authenticated user
+      await api.post('/api/room-interests', { roomId, message: 'Interested in this PG room' });
       setBookingStatus((prev) => ({ ...prev, [roomId]: 'booked' }));
-      
-      // Refresh the rooms list to show updated availability
-      fetchRooms();
+      Toast.success('PG booked successfully!');
+      downloadPdf(roomId);
     } catch (error) {
       console.error('Booking failed:', error);
       const errorMessage = error.response?.data || 'Booking failed';
@@ -281,17 +319,19 @@ function PGRooms() {
           </p>
       </div>
 
-      {/* Info Alert for Guests */}
-      {!sessionStorage.getItem('token') && (
-          <div className="alert alert-info border-0 rounded-4 shadow-sm mb-4" style={{ background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', border: '1px solid #93c5fd' }}>
-            <div className="d-flex align-items-center">
-              <i className="fas fa-lightbulb text-primary me-3" style={{ fontSize: '1.5rem' }}></i>
-              <div>
-                <strong>💡 Pro Tip:</strong> <Link to="/login" className="text-decoration-none fw-bold" style={{ color: '#4F46E5' }}>Log in</Link> to book PG and chat with owners!
-              </div>
-            </div>
-        </div>
-      )}
+{/* Info Alert for Guests */}
+{!sessionStorage.getItem('token') && (
+  <div className="alert alert-info border-0 rounded-4 shadow-sm mb-4" 
+       style={{ background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', border: '1px solid #93c5fd' }}>
+    <div className="d-flex align-items-center">
+      <i className="fas fa-lightbulb text-primary me-3" style={{ fontSize: '1.5rem' }}></i>
+      <div>
+        <strong>💡 Pro Tip:</strong> <Link to="/login" className="text-decoration-none fw-bold" style={{ color: '#4F46E5' }}>Log in</Link> to book PG and chat with owners!
+      </div>
+    </div>
+  </div>   
+)}
+
 
         {/* Enhanced Filters */}
         <div className="card border-0 shadow-lg rounded-4 mb-5" style={{ background: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(10px)' }}>
@@ -440,7 +480,7 @@ function PGRooms() {
                     >
                         <i className="fas fa-eye me-2"></i>View Details
                     </button>
-                    {sessionStorage.getItem('token') ? (
+                    {localStorage.getItem('token') || sessionStorage.getItem('token') ? (
                       <button
                           className={`btn flex-grow-1 rounded-3 ${
                           bookingStatus[room.id] === 'booking'

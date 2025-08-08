@@ -88,6 +88,7 @@ builder.Services.AddScoped<PGVaaleDotNetBackend.Services.TiffinService>();
 builder.Services.AddScoped<PGVaaleDotNetBackend.Services.DashboardService>();
 builder.Services.AddScoped<PGVaaleDotNetBackend.Services.EmailService>();
 builder.Services.AddScoped<PGVaaleDotNetBackend.Services.JwtService>();
+builder.Services.AddScoped<PGVaaleDotNetBackend.Services.PdfGeneratorService>();
 
 // Register Repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();

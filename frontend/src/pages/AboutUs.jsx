@@ -196,77 +196,142 @@ function AboutUs() {
       {/* Team Section */}
       <section className="container py-5">
         <div className="row text-center mb-5">
-          <div className="col">
+          <div className="col-12">
             <h2 className="fw-bold mb-3" style={{ color: '#2C3E50' }}>Meet Our Team</h2>
             <p className="text-muted mb-0">The passionate people behind PGVaale</p>
           </div>
         </div>
+        
+        {/* Project Lead */}
+        <div className="row justify-content-center mb-5">
+          <div className="col-md-6 col-lg-5">
+            <div className="card shadow-lg border-0 rounded-4 text-center" style={{ 
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 248, 255, 0.95) 100%)', 
+              backdropFilter: 'blur(15px)',
+              border: '2px solid rgba(59, 130, 246, 0.2)'
+            }}>
+              <div className="card-body p-5">
+                <div className="mb-4">
+                  <img
+                    src="/image/Saif_Image.jpg"
+                    alt="Project Lead"
+                    className="rounded-circle border border-4 border-primary shadow"
+                    style={{ width: '150px', height: '150px', objectFit: 'cover' }}
+                  />
+                </div>
+                <h3 className="fw-bold mb-2" style={{ color: '#2C3E50' }}>Mohammad Saif</h3>
+                <p className="text-primary fw-bold mb-3 fs-5">Project Lead</p>
+                <p className="text-muted">
+                Saif is a full-stack developer and project lead of PGVaale, a platform connecting students with verified PG accommodations. He specializes in Spring Boot, React, and RESTful APIs, and has led the end-to-end development of the application — from database design to frontend implementation. Passionate about solving real-world problems through technology, Saif ensures robust architecture and seamless user experience.
+                </p>
+                <div className="d-flex justify-content-center gap-3 mt-3">
+                  <a href="https://www.linkedin.com/in/mohammadsaif25" className="text-primary" target='_blank'><i className="fab fa-linkedin fs-4"></i></a>
+                  {/* <a href="#" className="text-dark"><i className="fab fa-github fs-4"></i></a>
+                  <a href="#" className="text-info"><i className="fab fa-twitter fs-4"></i></a> */}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Team Members */}
         <div className="row g-4 justify-content-center">
-          <div className="col-md-4">
-            <div className="card shadow border-0 rounded-4 text-center" style={{ 
+          <div className="col-md-6 col-lg-3">
+            <div className="card shadow border-0 rounded-4 text-center h-100" style={{ 
               background: 'rgba(255, 255, 255, 0.9)', 
               backdropFilter: 'blur(10px)' 
             }}>
               <div className="card-body p-4">
                 <div className="mb-3">
                   <img
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80"
+                    src="/image/Sarika_Image.jpg"
                     alt="Team Member"
-                    className="rounded-circle border border-3 border-primary"
+                    className="rounded-circle border border-3 border-success"
                     style={{ width: '100px', height: '100px', objectFit: 'cover' }}
                   />
                 </div>
-                <h5 className="fw-bold mb-2" style={{ color: '#2C3E50' }}>Rajesh Kumar</h5>
-                <p className="text-primary fw-semibold mb-2">Founder & CEO</p>
+                <h5 className="fw-bold mb-2" style={{ color: '#2C3E50' }}>Sarika Yadav</h5>
+                <p className="text-success fw-semibold mb-2">Team Member</p>
                 <p className="text-muted small">
-                  Passionate about solving real-world problems through technology and building 
-                  communities that make a difference.
+                Sarika worked on the backend development of PGVaale, focusing on creating robust APIs and 
+                integrating them with the frontend. While her primary role was server-side programming, she 
+                also explored frontend concepts to ensure smooth data flow and UI responsiveness.
+                 This project allowed her to enhance her problem-solving skills and gain hands-on 
+                 experience with collaborative software development.
                 </p>
               </div>
             </div>
           </div>
-          <div className="col-md-4">
-            <div className="card shadow border-0 rounded-4 text-center" style={{ 
+          
+          <div className="col-md-6 col-lg-3">
+            <div className="card shadow border-0 rounded-4 text-center h-100" style={{ 
               background: 'rgba(255, 255, 255, 0.9)', 
               backdropFilter: 'blur(10px)' 
             }}>
               <div className="card-body p-4">
                 <div className="mb-3">
                   <img
-                    src="https://images.unsplash.com/photo-1494790108755-2616b612b1e5?auto=format&fit=crop&w=150&h=150&q=80"
+                    src="/image/Pallavi.jpg"
                     alt="Team Member"
-                    className="rounded-circle border border-3 border-primary"
+                    className="rounded-circle border border-3 border-info"
                     style={{ width: '100px', height: '100px', objectFit: 'cover' }}
                   />
                 </div>
-                <h5 className="fw-bold mb-2" style={{ color: '#2C3E50' }}>Priya Sharma</h5>
-                <p className="text-success fw-semibold mb-2">Head of Operations</p>
+                <h5 className="fw-bold mb-2" style={{ color: '#2C3E50' }}>Pallavi Singhote</h5>
+                <p className="text-info fw-semibold mb-2">Team Member</p>
                 <p className="text-muted small">
-                  Ensures smooth operations and maintains the highest quality standards 
-                  across all our services and partnerships.
+                Pallavi worked on the database design and optimization for PGVaale, ensuring efficient 
+                data storage and retrieval. Although her main responsibility was database management, she also 
+                participated in debugging frontend-backend integration issues. Through this work, 
+                she strengthened her understanding of SQL, data modeling, and teamwork in a real-world project setting.
                 </p>
               </div>
             </div>
           </div>
-          <div className="col-md-4">
-            <div className="card shadow border-0 rounded-4 text-center" style={{ 
+          
+          <div className="col-md-6 col-lg-3">
+            <div className="card shadow border-0 rounded-4 text-center h-100" style={{ 
               background: 'rgba(255, 255, 255, 0.9)', 
               backdropFilter: 'blur(10px)' 
             }}>
               <div className="card-body p-4">
                 <div className="mb-3">
                   <img
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&h=150&q=80"
+                    src="/image/Mansi.jpg"
                     alt="Team Member"
-                    className="rounded-circle border border-3 border-primary"
+                    className="rounded-circle border border-3 border-warning"
                     style={{ width: '100px', height: '100px', objectFit: 'cover' }}
                   />
                 </div>
-                <h5 className="fw-bold mb-2" style={{ color: '#2C3E50' }}>Amit Patel</h5>
-                <p className="text-info fw-semibold mb-2">Lead Developer</p>
+                <h5 className="fw-bold mb-2" style={{ color: '#2C3E50' }}>Mansi Kamble</h5>
+                <p className="text-warning fw-semibold mb-2">Team Member</p>
                 <p className="text-muted small">
-                  Builds and maintains the technology that powers PGVaale, ensuring a 
-                  seamless experience for all our users.
+                Mansi played a key role in testing and quality assurance for PGVaale, focusing on identifying and fixing UI and functional bugs. While her core role was in QA, she also learned basic frontend coding to better understand the application’s workflow. 
+                The project gave her valuable experience in maintaining software quality and collaborating effectively in a development team.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="col-md-6 col-lg-3">
+            <div className="card shadow border-0 rounded-4 text-center h-100" style={{ 
+              background: 'rgba(255, 255, 255, 0.9)', 
+              backdropFilter: 'blur(10px)' 
+            }}>
+              <div className="card-body p-4">
+                <div className="mb-3">
+                  <img
+                    src="/image/Prashant.jpg"
+                    alt="Team Member"
+                    className="rounded-circle border border-3 border-danger"
+                    style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                  />
+                </div>
+                <h5 className="fw-bold mb-2" style={{ color: '#2C3E50' }}>Prashant Musale</h5>
+                <p className="text-danger fw-semibold mb-2">Team Member</p>
+                <p className="text-muted small">
+                  
+Prashant contributed to the frontend development of PGVaale, focusing on designing and implementing key UI elements like the header and footer. While his main role was on the UI side, he also has a good understanding of backend technologies. Through this project, he gained practical experience in building user-friendly web interfaces as part of a collaborative college team effort.
                 </p>
               </div>
             </div>
