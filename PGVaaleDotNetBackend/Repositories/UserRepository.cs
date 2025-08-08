@@ -13,57 +13,49 @@ namespace PGVaaleDotNetBackend.Repositories
             _context = context;
         }
 
-        public IEnumerable<User> GetAll()
+        public async Task<List<User>> GetAllAsync()
         {
-            return _context.Users.ToList();
+            return await _context.Users.ToListAsync();
         }
 
-        public User? GetById(long id)
+        public async Task<User?> GetByIdAsync(long id)
         {
-            return _context.Users.Find(id);
+            return await _context.Users.FindAsync(id);
         }
 
-        public User? GetByUsername(string username)
+        public async Task<User?> FindByUsernameAsync(string username)
         {
-            return _context.Users.FirstOrDefault(u => u.Username == username);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
         }
 
-        public User? GetByEmail(string email)
+        public async Task<User?> FindByEmailAsync(string email)
         {
-            return _context.Users.FirstOrDefault(u => u.Email == email);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
-        public void Add(User user)
+        public async Task<User> SaveAsync(User user)
         {
             if (user.Id == 0)
             {
-                // Generate a new ID since the database doesn't have auto-increment
-                var maxId = _context.Users.Max(u => (long?)u.Id) ?? 0;
-                user.Id = maxId + 1;
+                _context.Users.Add(user);
             }
-            _context.Users.Add(user);
-            _context.SaveChanges();
+            else
+            {
+                _context.Users.Update(user);
+            }
+            
+            await _context.SaveChangesAsync();
+            return user;
         }
 
-        public void Update(User user)
+        public async Task DeleteAsync(long id)
         {
-            _context.Users.Update(user);
-            _context.SaveChanges();
-        }
-
-        public void Delete(long id)
-        {
-            var user = _context.Users.Find(id);
+            var user = await _context.Users.FindAsync(id);
             if (user != null)
             {
                 _context.Users.Remove(user);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
-        }
-
-        public async Task<User?> GetUserByIdAsync(long id)
-        {
-            return await _context.Users.FindAsync(id);
         }
     }
 }

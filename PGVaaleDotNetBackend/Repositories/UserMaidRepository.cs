@@ -55,7 +55,7 @@ namespace PGVaaleDotNetBackend.Repositories
             }
         }
 
-        public async Task<List<UserMaid>> GetByMaidIdAsync(long maidId)
+        public async Task<List<UserMaid>> FindByMaidIdAsync(long maidId)
         {
             return await _context.UserMaids
                 .Include(um => um.User)
@@ -64,7 +64,7 @@ namespace PGVaaleDotNetBackend.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<UserMaid>> GetByUserIdAsync(long userId)
+        public async Task<List<UserMaid>> FindByUserIdAsync(long userId)
         {
             return await _context.UserMaids
                 .Include(um => um.User)
@@ -79,7 +79,7 @@ namespace PGVaaleDotNetBackend.Repositories
                 .CountAsync(um => um.UserId == userId);
         }
 
-        public async Task<List<UserMaid>> GetByMaidIdAndStatusAsync(long maidId, UserMaid.RequestStatus status)
+        public async Task<List<UserMaid>> FindByMaidIdAndStatusAsync(long maidId, UserMaid.RequestStatus status)
         {
             return await _context.UserMaids
                 .Include(um => um.User)
@@ -88,7 +88,7 @@ namespace PGVaaleDotNetBackend.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<UserMaid>> GetByUserIdAndStatusAsync(long userId, UserMaid.RequestStatus status)
+        public async Task<List<UserMaid>> FindByUserIdAndStatusAsync(long userId, UserMaid.RequestStatus status)
         {
             return await _context.UserMaids
                 .Include(um => um.User)
@@ -97,7 +97,7 @@ namespace PGVaaleDotNetBackend.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<UserMaid>> GetByUserIdAndMaidIdAndStatusAsync(long userId, long maidId, UserMaid.RequestStatus status)
+        public async Task<List<UserMaid>> FindByUserIdAndMaidIdAndStatusAsync(long userId, long maidId, UserMaid.RequestStatus status)
         {
             return await _context.UserMaids
                 .Include(um => um.User)
@@ -106,7 +106,7 @@ namespace PGVaaleDotNetBackend.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<UserMaid>> GetActiveRequestsByMaidIdAsync(long maidId)
+        public async Task<List<UserMaid>> FindActiveRequestsByMaidIdAsync(long maidId)
         {
             return await _context.UserMaids
                 .Include(um => um.User)
@@ -115,7 +115,7 @@ namespace PGVaaleDotNetBackend.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<UserMaid>> GetActiveRequestsByUserIdAsync(long userId)
+        public async Task<List<UserMaid>> FindActiveRequestsByUserIdAsync(long userId)
         {
             return await _context.UserMaids
                 .Include(um => um.User)
@@ -124,7 +124,7 @@ namespace PGVaaleDotNetBackend.Repositories
                 .ToListAsync();
         }
 
-        public async Task<List<UserMaid>> GetAcceptedRequestsByUserIdAsync(long userId)
+        public async Task<List<UserMaid>> FindAcceptedRequestsByUserIdAsync(long userId)
         {
             return await _context.UserMaids
                 .Include(um => um.User)
@@ -157,7 +157,7 @@ namespace PGVaaleDotNetBackend.Repositories
                 .AnyAsync(um => um.UserId == userId && um.DeletionDateTime == null);
         }
 
-        public async Task<List<UserMaid>> GetAllRequestsByMaidIdAsync(long maidId)
+        public async Task<List<UserMaid>> FindAllRequestsByMaidIdAsync(long maidId)
         {
             return await _context.UserMaids
                 .Include(um => um.User)

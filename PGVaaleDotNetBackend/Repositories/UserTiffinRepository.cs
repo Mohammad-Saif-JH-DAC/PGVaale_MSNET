@@ -13,45 +13,7 @@ namespace PGVaaleDotNetBackend.Repositories
             _context = context;
         }
 
-        public IEnumerable<UserTiffin> GetAll()
-        {
-            return _context.UserTiffins
-                .Include(ut => ut.User)
-                .Include(ut => ut.Tiffin)
-                .ToList();
-        }
-
-        public UserTiffin? GetById(long id)
-        {
-            return _context.UserTiffins
-                .Include(ut => ut.User)
-                .Include(ut => ut.Tiffin)
-                .FirstOrDefault(ut => ut.Id == id);
-        }
-
-        public void Add(UserTiffin userTiffin)
-        {
-            _context.UserTiffins.Add(userTiffin);
-            _context.SaveChanges();
-        }
-
-        public void Update(UserTiffin userTiffin)
-        {
-            _context.UserTiffins.Update(userTiffin);
-            _context.SaveChanges();
-        }
-
-        public void Delete(long id)
-        {
-            var userTiffin = _context.UserTiffins.Find(id);
-            if (userTiffin != null)
-            {
-                _context.UserTiffins.Remove(userTiffin);
-                _context.SaveChanges();
-            }
-        }
-
-        public async Task<IEnumerable<UserTiffin>> GetAllAsync()
+        public async Task<List<UserTiffin>> GetAllAsync()
         {
             return await _context.UserTiffins
                 .Include(ut => ut.User)
@@ -67,27 +29,43 @@ namespace PGVaaleDotNetBackend.Repositories
                 .FirstOrDefaultAsync(ut => ut.Id == id);
         }
 
-        public async Task<IEnumerable<UserTiffin>> GetByUserIdAsync(long userId)
-        {
-            return await _context.UserTiffins
-                .Include(ut => ut.User)
-                .Include(ut => ut.Tiffin)
-                .Where(ut => ut.UserId == userId)
-                .OrderByDescending(ut => ut.AssignedDateTime)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<UserTiffin>> GetByTiffinIdAsync(long tiffinId)
+        public async Task<List<UserTiffin>> FindByTiffinIdAsync(long tiffinId)
         {
             return await _context.UserTiffins
                 .Include(ut => ut.User)
                 .Include(ut => ut.Tiffin)
                 .Where(ut => ut.TiffinId == tiffinId)
-                .OrderByDescending(ut => ut.AssignedDateTime)
                 .ToListAsync();
         }
 
-        public async Task<UserTiffin?> GetByUserIdAndTiffinIdAsync(long userId, long tiffinId)
+        public async Task<List<UserTiffin>> FindByUserIdAsync(long userId)
+        {
+            return await _context.UserTiffins
+                .Include(ut => ut.User)
+                .Include(ut => ut.Tiffin)
+                .Where(ut => ut.UserId == userId)
+                .ToListAsync();
+        }
+
+        public async Task<List<UserTiffin>> FindByTiffinIdAndStatusAsync(long tiffinId, UserTiffin.RequestStatus status)
+        {
+            return await _context.UserTiffins
+                .Include(ut => ut.User)
+                .Include(ut => ut.Tiffin)
+                .Where(ut => ut.TiffinId == tiffinId && ut.Status == status)
+                .ToListAsync();
+        }
+
+        public async Task<List<UserTiffin>> FindByUserIdAndStatusAsync(long userId, UserTiffin.RequestStatus status)
+        {
+            return await _context.UserTiffins
+                .Include(ut => ut.User)
+                .Include(ut => ut.Tiffin)
+                .Where(ut => ut.UserId == userId && ut.Status == status)
+                .ToListAsync();
+        }
+
+        public async Task<UserTiffin?> FindByUserIdAndTiffinIdAsync(long userId, long tiffinId)
         {
             return await _context.UserTiffins
                 .Include(ut => ut.User)
@@ -95,7 +73,17 @@ namespace PGVaaleDotNetBackend.Repositories
                 .FirstOrDefaultAsync(ut => ut.UserId == userId && ut.TiffinId == tiffinId);
         }
 
-        public async Task<IEnumerable<UserTiffin>> GetByUserIdAndStatusAsync(long userId, UserTiffin.RequestStatus status)
+        public async Task<List<UserTiffin>> FindByTiffinIdAndStatusOrderByAssignedDateTimeDescAsync(long tiffinId, UserTiffin.RequestStatus status)
+        {
+            return await _context.UserTiffins
+                .Include(ut => ut.User)
+                .Include(ut => ut.Tiffin)
+                .Where(ut => ut.TiffinId == tiffinId && ut.Status == status)
+                .OrderByDescending(ut => ut.AssignedDateTime)
+                .ToListAsync();
+        }
+
+        public async Task<List<UserTiffin>> FindByUserIdAndStatusOrderByAssignedDateTimeDescAsync(long userId, UserTiffin.RequestStatus status)
         {
             return await _context.UserTiffins
                 .Include(ut => ut.User)
@@ -105,21 +93,36 @@ namespace PGVaaleDotNetBackend.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<UserTiffin>> GetByTiffinIdAndStatusAsync(long tiffinId, UserTiffin.RequestStatus status)
-        {
-            return await _context.UserTiffins
-                .Include(ut => ut.User)
-                .Include(ut => ut.Tiffin)
-                .Where(ut => ut.TiffinId == tiffinId && ut.Status == status)
-                .OrderByDescending(ut => ut.AssignedDateTime)
-                .ToListAsync();
-        }
-
         public async Task<long> CountByTiffinIdAndStatusAsync(long tiffinId, UserTiffin.RequestStatus status)
         {
             return await _context.UserTiffins
                 .Where(ut => ut.TiffinId == tiffinId && ut.Status == status)
                 .CountAsync();
+        }
+
+        public async Task<UserTiffin> SaveAsync(UserTiffin userTiffin)
+        {
+            if (userTiffin.Id == 0)
+            {
+                _context.UserTiffins.Add(userTiffin);
+            }
+            else
+            {
+                _context.UserTiffins.Update(userTiffin);
+            }
+            
+            await _context.SaveChangesAsync();
+            return userTiffin;
+        }
+
+        public async Task DeleteAsync(long id)
+        {
+            var userTiffin = await _context.UserTiffins.FindAsync(id);
+            if (userTiffin != null)
+            {
+                _context.UserTiffins.Remove(userTiffin);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

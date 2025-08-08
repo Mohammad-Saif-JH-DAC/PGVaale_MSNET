@@ -4,16 +4,14 @@ namespace PGVaaleDotNetBackend.Repositories
 {
     public interface IMenuRepository
     {
-        IEnumerable<Menu> GetAll();
-        Menu? GetById(long id);
-        void Add(Menu menu);
-        void Update(Menu menu);
-        void Delete(long id);
-        Task<IEnumerable<Menu>> GetAllAsync();
+        Task<List<Menu>> GetAllAsync();
         Task<Menu?> GetByIdAsync(long id);
-        Task<IEnumerable<Menu>> GetByTiffinIdAsync(long tiffinId);
-        Task<IEnumerable<Menu>> GetByTiffinIdAndIsActiveAsync(long tiffinId, bool isActive);
-        Task<Menu?> GetByTiffinIdAndDayOfWeekAsync(long tiffinId, string dayOfWeek);
-        Task<Menu?> GetByTiffinIdAndDayOfWeekAndIsActiveAsync(long tiffinId, string dayOfWeek, bool isActive);
+        Task<List<Menu>> FindByTiffinIdAndIsActiveTrueAsync(long tiffinId);
+        Task<List<Menu>> FindByTiffinIdAsync(long tiffinId);
+        Task<Menu?> FindByTiffinIdAndDayOfWeekAndIsActiveTrueAsync(long tiffinId, string dayOfWeek);
+        Task<Menu?> FindByTiffinIdAndMenuDateAndIsActiveTrueAsync(long tiffinId, DateTime menuDate);
+        Task<List<Menu>> FindByTiffinIdAndDateRangeAsync(long tiffinId, DateTime startDate, DateTime endDate);
+        Task<Menu> SaveAsync(Menu menu);
+        Task DeleteAsync(long id);
     }
 }

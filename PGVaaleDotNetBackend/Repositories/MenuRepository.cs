@@ -13,43 +13,7 @@ namespace PGVaaleDotNetBackend.Repositories
             _context = context;
         }
 
-        public IEnumerable<Menu> GetAll()
-        {
-            return _context.Menus
-                .Include(m => m.Tiffin)
-                .ToList();
-        }
-
-        public Menu? GetById(long id)
-        {
-            return _context.Menus
-                .Include(m => m.Tiffin)
-                .FirstOrDefault(m => m.Id == id);
-        }
-
-        public void Add(Menu menu)
-        {
-            _context.Menus.Add(menu);
-            _context.SaveChanges();
-        }
-
-        public void Update(Menu menu)
-        {
-            _context.Menus.Update(menu);
-            _context.SaveChanges();
-        }
-
-        public void Delete(long id)
-        {
-            var menu = _context.Menus.Find(id);
-            if (menu != null)
-            {
-                _context.Menus.Remove(menu);
-                _context.SaveChanges();
-            }
-        }
-
-        public async Task<IEnumerable<Menu>> GetAllAsync()
+        public async Task<List<Menu>> GetAllAsync()
         {
             return await _context.Menus
                 .Include(m => m.Tiffin)
@@ -63,7 +27,15 @@ namespace PGVaaleDotNetBackend.Repositories
                 .FirstOrDefaultAsync(m => m.Id == id);
         }
 
-        public async Task<IEnumerable<Menu>> GetByTiffinIdAsync(long tiffinId)
+        public async Task<List<Menu>> FindByTiffinIdAndIsActiveTrueAsync(long tiffinId)
+        {
+            return await _context.Menus
+                .Include(m => m.Tiffin)
+                .Where(m => m.TiffinId == tiffinId && m.IsActive == true)
+                .ToListAsync();
+        }
+
+        public async Task<List<Menu>> FindByTiffinIdAsync(long tiffinId)
         {
             return await _context.Menus
                 .Include(m => m.Tiffin)
@@ -71,26 +43,54 @@ namespace PGVaaleDotNetBackend.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Menu>> GetByTiffinIdAndIsActiveAsync(long tiffinId, bool isActive)
+        public async Task<Menu?> FindByTiffinIdAndDayOfWeekAndIsActiveTrueAsync(long tiffinId, string dayOfWeek)
         {
             return await _context.Menus
                 .Include(m => m.Tiffin)
-                .Where(m => m.TiffinId == tiffinId && m.IsActive == isActive)
+                .FirstOrDefaultAsync(m => m.TiffinId == tiffinId && m.DayOfWeek == dayOfWeek && m.IsActive == true);
+        }
+
+        public async Task<Menu?> FindByTiffinIdAndMenuDateAndIsActiveTrueAsync(long tiffinId, DateTime menuDate)
+        {
+            return await _context.Menus
+                .Include(m => m.Tiffin)
+                .FirstOrDefaultAsync(m => m.TiffinId == tiffinId && m.MenuDate.Date == menuDate.Date && m.IsActive == true);
+        }
+
+        public async Task<List<Menu>> FindByTiffinIdAndDateRangeAsync(long tiffinId, DateTime startDate, DateTime endDate)
+        {
+            return await _context.Menus
+                .Include(m => m.Tiffin)
+                .Where(m => m.TiffinId == tiffinId && 
+                           m.MenuDate.Date >= startDate.Date && 
+                           m.MenuDate.Date <= endDate.Date && 
+                           m.IsActive == true)
                 .ToListAsync();
         }
 
-        public async Task<Menu?> GetByTiffinIdAndDayOfWeekAsync(long tiffinId, string dayOfWeek)
+        public async Task<Menu> SaveAsync(Menu menu)
         {
-            return await _context.Menus
-                .Include(m => m.Tiffin)
-                .FirstOrDefaultAsync(m => m.TiffinId == tiffinId && m.DayOfWeek == dayOfWeek);
+            if (menu.Id == 0)
+            {
+                _context.Menus.Add(menu);
+            }
+            else
+            {
+                _context.Menus.Update(menu);
+            }
+            
+            await _context.SaveChangesAsync();
+            return menu;
         }
 
-        public async Task<Menu?> GetByTiffinIdAndDayOfWeekAndIsActiveAsync(long tiffinId, string dayOfWeek, bool isActive)
+        public async Task DeleteAsync(long id)
         {
-            return await _context.Menus
-                .Include(m => m.Tiffin)
-                .FirstOrDefaultAsync(m => m.TiffinId == tiffinId && m.DayOfWeek == dayOfWeek && m.IsActive == isActive);
+            var menu = await _context.Menus.FindAsync(id);
+            if (menu != null)
+            {
+                _context.Menus.Remove(menu);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

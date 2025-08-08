@@ -1,17 +1,14 @@
 using PGVaaleDotNetBackend.Entities;
-using System.Collections.Generic;
 
 namespace PGVaaleDotNetBackend.Repositories
 {
     public interface IUserRepository
     {
-        IEnumerable<User> GetAll();
-        User? GetById(long id);
-        User? GetByUsername(string username);
-        User? GetByEmail(string email);
-        void Add(User user);
-        void Update(User user);
-        void Delete(long id);
-        Task<User?> GetUserByIdAsync(long id);
+        Task<List<User>> GetAllAsync();
+        Task<User?> GetByIdAsync(long id);
+        Task<User?> FindByUsernameAsync(string username);
+        Task<User?> FindByEmailAsync(string email);
+        Task<User> SaveAsync(User user);
+        Task DeleteAsync(long id);
     }
 }
