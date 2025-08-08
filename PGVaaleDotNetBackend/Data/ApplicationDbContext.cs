@@ -19,6 +19,12 @@ namespace PGVaaleDotNetBackend.Data
         public DbSet<Feedback_Tiffin> Feedback_Tiffins { get; set; }
         public DbSet<PgDetails> PgDetails { get; set; }
         public DbSet<Booking> Bookings { get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<ContactUs> ContactUs { get; set; }
+        public DbSet<Feedback_Web> Feedback_Web { get; set; }
+        public DbSet<Feedback> Feedback { get; set; }
+        public DbSet<Owner> Owners { get; set; }
+        public DbSet<PG> PGs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -47,20 +53,20 @@ namespace PGVaaleDotNetBackend.Data
             {
                 entity.ToTable("maids");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedNever(); // Since DB doesn't have AUTO_INCREMENT
+                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd(); // Using auto-increment
                 entity.Property(e => e.Username).HasColumnName("username");
                 entity.Property(e => e.Password).HasColumnName("password");
                 entity.Property(e => e.Email).HasColumnName("email");
                 entity.Property(e => e.Name).HasColumnName("name");
-                entity.Property(e => e.Aadhaar).HasColumnName("aadhaar");
-                entity.Property(e => e.Approved).HasColumnName("approved");
-                entity.Property(e => e.Gender).HasColumnName("gender");
-                entity.Property(e => e.MonthlySalary).HasColumnName("monthly_salary");
+                entity.Property(e => e.UniqueId).HasColumnName("unique_id");
                 entity.Property(e => e.PhoneNumber).HasColumnName("phone_number");
-                entity.Property(e => e.Region).HasColumnName("region");
+                entity.Property(e => e.Aadhaar).HasColumnName("aadhaar");
                 entity.Property(e => e.Services).HasColumnName("services");
+                entity.Property(e => e.MonthlySalary).HasColumnName("monthly_salary");
+                entity.Property(e => e.Gender).HasColumnName("gender");
                 entity.Property(e => e.Timing).HasColumnName("timing");
-                entity.Property(e => e.Active).HasColumnName("active");
+                entity.Property(e => e.Region).HasColumnName("region");
+                entity.Property(e => e.Approved).HasColumnName("approved");
             });
 
             // Configure UserMaid entity
@@ -154,6 +160,11 @@ namespace PGVaaleDotNetBackend.Data
                 entity.ToTable("menus");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+                entity.Property(e => e.Username).HasColumnName("username");
+                entity.Property(e => e.Password).HasColumnName("password");
+                entity.Property(e => e.Email).HasColumnName("email");
+                entity.Property(e => e.Name).HasColumnName("name");
+                entity.Property(e => e.UniqueId).HasColumnName("unique_id");
                 entity.Property(e => e.TiffinId).HasColumnName("tiffin_id");
                 entity.Property(e => e.DayOfWeek).HasColumnName("day_of_week");
                 entity.Property(e => e.Breakfast).HasColumnName("breakfast");
@@ -174,14 +185,13 @@ namespace PGVaaleDotNetBackend.Data
             // Configure Feedback_Tiffin entity
             modelBuilder.Entity<Feedback_Tiffin>(entity =>
             {
-                entity.ToTable("feedback_tiffins");
+                entity.ToTable("feedback_tiffin");
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
                 entity.Property(e => e.UserId).HasColumnName("user_id");
                 entity.Property(e => e.TiffinId).HasColumnName("tiffin_id");
-                entity.Property(e => e.Rating).HasColumnName("rating");
                 entity.Property(e => e.Feedback).HasColumnName("feedback");
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+                entity.Property(e => e.Rating).HasColumnName("rating");
 
                 // Configure relationships
                 entity.HasOne(f => f.User)
@@ -241,6 +251,123 @@ namespace PGVaaleDotNetBackend.Data
                 entity.HasOne(b => b.Pg)
                     .WithMany(pg => pg.Bookings)
                     .HasForeignKey(b => b.PgId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure ChatMessage entity
+            modelBuilder.Entity<ChatMessage>(entity =>
+            {
+                entity.ToTable("chat_messages");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+                entity.Property(e => e.SenderId).HasColumnName("sender_id");
+                entity.Property(e => e.ReceiverId).HasColumnName("receiver_id");
+                entity.Property(e => e.Username).HasColumnName("username");
+                entity.Property(e => e.Region).HasColumnName("region");
+                entity.Property(e => e.Message).HasColumnName("message");
+                entity.Property(e => e.Timestamp).HasColumnName("timestamp");
+
+                // Configure relationships
+                entity.HasOne(cm => cm.Sender)
+                    .WithMany()
+                    .HasForeignKey(cm => cm.SenderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(cm => cm.Receiver)
+                    .WithMany()
+                    .HasForeignKey(cm => cm.ReceiverId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure ContactUs entity
+            modelBuilder.Entity<ContactUs>(entity =>
+            {
+                entity.ToTable("contactUs");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+                entity.Property(e => e.Name).HasColumnName("name");
+                entity.Property(e => e.Email).HasColumnName("email");
+                entity.Property(e => e.Phone).HasColumnName("phone");
+                entity.Property(e => e.Message).HasColumnName("message");
+            });
+
+            // Configure Feedback_Web entity
+            modelBuilder.Entity<Feedback_Web>(entity =>
+            {
+                entity.ToTable("feedback_web");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+                entity.Property(e => e.Feedback).HasColumnName("feedback");
+                entity.Property(e => e.Rating).HasColumnName("rating");
+            });
+
+            // Configure Feedback entity
+            modelBuilder.Entity<Feedback>(entity =>
+            {
+                entity.ToTable("feedback");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+                entity.Property(e => e.MaidId).HasColumnName("maid_id");
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+                entity.Property(e => e.FeedbackText).HasColumnName("feedback");
+                entity.Property(e => e.Rating).HasColumnName("rating");
+
+                // Configure relationships
+                entity.HasOne(f => f.Maid)
+                    .WithMany()
+                    .HasForeignKey(f => f.MaidId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(f => f.User)
+                    .WithMany()
+                    .HasForeignKey(f => f.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure Owner entity
+            modelBuilder.Entity<Owner>(entity =>
+            {
+                entity.ToTable("owners");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+                entity.Property(e => e.Username).HasColumnName("username");
+                entity.Property(e => e.Password).HasColumnName("password");
+                entity.Property(e => e.Email).HasColumnName("email");
+                entity.Property(e => e.Name).HasColumnName("name");
+                entity.Property(e => e.UniqueId).HasColumnName("unique_id");
+                entity.Property(e => e.Age).HasColumnName("age");
+                entity.Property(e => e.Aadhaar).HasColumnName("aadhaar");
+                entity.Property(e => e.MobileNumber).HasColumnName("mobile_number");
+                entity.Property(e => e.Region).HasColumnName("region");
+            });
+
+            // Configure PG entity
+            modelBuilder.Entity<PG>(entity =>
+            {
+                entity.ToTable("pgs");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+                entity.Property(e => e.OwnerId).HasColumnName("owner_id");
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+                entity.Property(e => e.ImagePaths).HasColumnName("image_paths");
+                entity.Property(e => e.Latitude).HasColumnName("latitude");
+                entity.Property(e => e.Longitude).HasColumnName("longitude");
+                entity.Property(e => e.Amenities).HasColumnName("amenities");
+                entity.Property(e => e.NearbyResources).HasColumnName("nearby_resources");
+                entity.Property(e => e.Rent).HasColumnName("rent");
+                entity.Property(e => e.GeneralPreference).HasColumnName("general_preference");
+                entity.Property(e => e.Region).HasColumnName("region");
+                entity.Property(e => e.Availability).HasColumnName("availability");
+
+                // Configure relationships
+                entity.HasOne(pg => pg.Owner)
+                    .WithMany()
+                    .HasForeignKey(pg => pg.OwnerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(pg => pg.RegisteredUser)
+                    .WithMany()
+                    .HasForeignKey(pg => pg.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }

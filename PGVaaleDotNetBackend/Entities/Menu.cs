@@ -2,15 +2,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PGVaaleDotNetBackend.Entities
 {
-    public class Menu
+    public class Menu : BaseEntity
     {
+        [Key]
         public long Id { get; set; }
 
         [Required]
         public long TiffinId { get; set; }
 
         [Required]
-        public string DayOfWeek { get; set; } = string.Empty;
+        public string DayOfWeek { get; set; } = string.Empty; // Monday, Tuesday, etc.
 
         [Required]
         public string Breakfast { get; set; } = string.Empty;
@@ -21,14 +22,11 @@ namespace PGVaaleDotNetBackend.Entities
         [Required]
         public string Dinner { get; set; } = string.Empty;
 
-        [Required]
-        public DateTime MenuDate { get; set; }
+        public DateTime MenuDate { get; set; } // Specific date for this menu
 
-        [Required]
-        public string FoodCategory { get; set; } = string.Empty;
+        public string FoodCategory { get; set; } = string.Empty; // Veg, Non-Veg, Both
 
-        [Required]
-        public double Price { get; set; }
+        public double Price { get; set; } // Price per meal
 
         public bool IsActive { get; set; } = true;
 

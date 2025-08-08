@@ -2,23 +2,23 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PGVaaleDotNetBackend.Entities
 {
-    public class Feedback_Tiffin
+    public class Feedback
     {
         [Key]
         public long Id { get; set; }
 
         [Required]
-        public long UserId { get; set; }
+        public long MaidId { get; set; }
 
         [Required]
-        public long TiffinId { get; set; }
+        public long UserId { get; set; }
 
-        public string Feedback { get; set; } = string.Empty;
+        public string FeedbackText { get; set; } = string.Empty;
 
         public int Rating { get; set; }
 
         // Navigation properties
+        public Maid Maid { get; set; } = null!;
         public User User { get; set; } = null!;
-        public Tiffin Tiffin { get; set; } = null!;
     }
 }

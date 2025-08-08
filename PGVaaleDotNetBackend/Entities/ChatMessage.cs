@@ -27,4 +27,3 @@ namespace PGVaaleDotNetBackend.Entities
         public User Receiver { get; set; } = null!;
     }
 }
-
