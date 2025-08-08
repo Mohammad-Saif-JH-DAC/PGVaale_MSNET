@@ -13,38 +13,38 @@ namespace PGVaaleDotNetBackend.Repositories
             _context = context;
         }
 
-        public async Task<List<ServiceProvider>> GetAllAsync()
+        public async Task<List<Entities.ServiceProvider>> GetAllAsync()
         {
             return await _context.ServiceProviders.ToListAsync();
         }
 
-        public async Task<ServiceProvider?> GetByIdAsync(long id)
+        public async Task<Entities.ServiceProvider?> GetByIdAsync(long id)
         {
             return await _context.ServiceProviders.FindAsync(id);
         }
 
-        public async Task<List<ServiceProvider>> FindByTypeAsync(string type)
+        public async Task<List<Entities.ServiceProvider>> FindByTypeAsync(string type)
         {
             return await _context.ServiceProviders
                 .Where(sp => sp.Type == type)
                 .ToListAsync();
         }
 
-        public async Task<List<ServiceProvider>> FindByRegionAsync(string region)
+        public async Task<List<Entities.ServiceProvider>> FindByRegionAsync(string region)
         {
             return await _context.ServiceProviders
                 .Where(sp => sp.Region == region)
                 .ToListAsync();
         }
 
-        public async Task<List<ServiceProvider>> FindByApprovedAsync(bool approved)
+        public async Task<List<Entities.ServiceProvider>> FindByApprovedAsync(bool approved)
         {
             return await _context.ServiceProviders
                 .Where(sp => sp.Approved == approved)
                 .ToListAsync();
         }
 
-        public async Task<ServiceProvider> SaveAsync(ServiceProvider serviceProvider)
+        public async Task<Entities.ServiceProvider> SaveAsync(Entities.ServiceProvider serviceProvider)
         {
             if (serviceProvider.Id == 0)
             {

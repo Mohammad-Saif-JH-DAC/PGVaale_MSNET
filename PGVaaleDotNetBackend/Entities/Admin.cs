@@ -11,6 +11,8 @@ namespace PGVaaleDotNetBackend.Entities
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public override long Id { get; set; }
+        public new long Id { get; set; }
+        
+        // All other properties (Username, Password, Email, Name, UniqueId) are inherited from BaseEntity
     }
 }

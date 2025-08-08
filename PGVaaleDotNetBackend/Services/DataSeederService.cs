@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity;
 using PGVaaleDotNetBackend.Entities;
 using PGVaaleDotNetBackend.Repositories;
 
@@ -22,9 +21,8 @@ namespace PGVaaleDotNetBackend.Services
             using (var scope = _serviceProvider.CreateScope())
             {
                 var adminRepository = scope.ServiceProvider.GetRequiredService<IAdminRepository>();
-                var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<Admin>>();
                 
-                await CreateDefaultAdminAsync(adminRepository, passwordHasher);
+                await CreateDefaultAdminAsync(adminRepository);
             }
             
             _logger.LogInformation("=== Data Initialization Complete ===");
@@ -35,7 +33,7 @@ namespace PGVaaleDotNetBackend.Services
             return Task.CompletedTask;
         }
 
-        private async Task CreateDefaultAdminAsync(IAdminRepository adminRepository, IPasswordHasher<Admin> passwordHasher)
+        private async Task CreateDefaultAdminAsync(IAdminRepository adminRepository)
         {
             _logger.LogInformation("Checking for default admin...");
             
@@ -50,12 +48,11 @@ namespace PGVaaleDotNetBackend.Services
                 {
                     Name = "System Admin",
                     Email = "admin@pgvaale.com",
-                    Username = "admin",
-                    UniqueId = Guid.NewGuid().ToString()
+                    Username = "admin"
                 };
                 
-                // Hash the password
-                string encodedPassword = passwordHasher.HashPassword(defaultAdmin, "admin123");
+                // Hash the password using BCrypt
+                string encodedPassword = BCrypt.Net.BCrypt.HashPassword("admin123");
                 defaultAdmin.Password = encodedPassword;
                 
                 _logger.LogInformation("Admin details:");
@@ -91,18 +88,28 @@ namespace PGVaaleDotNetBackend.Services
                 
                 // Check if password needs to be updated
                 string expectedPassword = "admin123";
-                var passwordVerificationResult = passwordHasher.VerifyHashedPassword(existingAdmin, existingAdmin.Password, expectedPassword);
-                
-                if (passwordVerificationResult == PasswordVerificationResult.Failed)
+                try
                 {
-                    _logger.LogInformation("Updating admin password to: {ExpectedPassword}", expectedPassword);
-                    existingAdmin.Password = passwordHasher.HashPassword(existingAdmin, expectedPassword);
+                    bool passwordIsValid = BCrypt.Net.BCrypt.Verify(expectedPassword, existingAdmin.Password);
+                    
+                    if (!passwordIsValid)
+                    {
+                        _logger.LogInformation("Updating admin password to: {ExpectedPassword}", expectedPassword);
+                        existingAdmin.Password = BCrypt.Net.BCrypt.HashPassword(expectedPassword);
+                        await adminRepository.SaveAsync(existingAdmin);
+                        _logger.LogInformation("Admin password updated successfully");
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Admin password is already correct");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("Existing admin password is not in correct format. Updating to BCrypt format with password: {ExpectedPassword}", expectedPassword);
+                    existingAdmin.Password = BCrypt.Net.BCrypt.HashPassword(expectedPassword);
                     await adminRepository.SaveAsync(existingAdmin);
                     _logger.LogInformation("Admin password updated successfully");
-                }
-                else
-                {
-                    _logger.LogInformation("Admin password is already correct");
                 }
                 
                 _logger.LogInformation("- Default Password: admin123");

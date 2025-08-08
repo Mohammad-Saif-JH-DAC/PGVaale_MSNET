@@ -25,7 +25,7 @@ namespace PGVaaleDotNetBackend.Data
         public DbSet<Feedback> Feedback { get; set; }
         public DbSet<Owner> Owners { get; set; }
         public DbSet<PG> PGs { get; set; }
-        public DbSet<ServiceProvider> ServiceProviders { get; set; }
+        public DbSet<Entities.ServiceProvider> ServiceProviders { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -41,7 +41,6 @@ namespace PGVaaleDotNetBackend.Data
                 entity.Property(e => e.Password).HasColumnName("password");
                 entity.Property(e => e.Email).HasColumnName("email");
                 entity.Property(e => e.Name).HasColumnName("name");
-                entity.Property(e => e.UniqueId).HasColumnName("unique_id");
                 entity.Property(e => e.Aadhaar).HasColumnName("aadhaar");
                 entity.Property(e => e.MobileNumber).HasColumnName("mobile_number");
                 entity.Property(e => e.Age).HasColumnName("age");
@@ -58,7 +57,6 @@ namespace PGVaaleDotNetBackend.Data
                 entity.Property(e => e.Password).HasColumnName("password");
                 entity.Property(e => e.Email).HasColumnName("email");
                 entity.Property(e => e.Name).HasColumnName("name");
-                entity.Property(e => e.UniqueId).HasColumnName("unique_id");
                 entity.Property(e => e.PhoneNumber).HasColumnName("phone_number");
                 entity.Property(e => e.Aadhaar).HasColumnName("aadhaar");
                 entity.Property(e => e.Services).HasColumnName("services");
@@ -103,12 +101,11 @@ namespace PGVaaleDotNetBackend.Data
             {
                 entity.ToTable("admins");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedNever(); // Since DB doesn't have AUTO_INCREMENT
+                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd(); // Changed to auto-increment
                 entity.Property(e => e.Username).HasColumnName("username");
                 entity.Property(e => e.Password).HasColumnName("password");
                 entity.Property(e => e.Email).HasColumnName("email");
                 entity.Property(e => e.Name).HasColumnName("name");
-                entity.Property(e => e.UniqueId).HasColumnName("unique_id");
             });
 
             // Configure Tiffin entity
@@ -121,7 +118,6 @@ namespace PGVaaleDotNetBackend.Data
                 entity.Property(e => e.Password).HasColumnName("password");
                 entity.Property(e => e.Email).HasColumnName("email");
                 entity.Property(e => e.Name).HasColumnName("name");
-                entity.Property(e => e.UniqueId).HasColumnName("unique_id");
                 entity.Property(e => e.PhoneNumber).HasColumnName("phone_number");
                 entity.Property(e => e.Aadhaar).HasColumnName("aadhaar");
                 entity.Property(e => e.Price).HasColumnName("price");
@@ -141,7 +137,6 @@ namespace PGVaaleDotNetBackend.Data
                 entity.Property(e => e.Password).HasColumnName("password");
                 entity.Property(e => e.Email).HasColumnName("email");
                 entity.Property(e => e.Name).HasColumnName("name");
-                entity.Property(e => e.UniqueId).HasColumnName("unique_id");
                 entity.Property(e => e.UserId).HasColumnName("user_id");
                 entity.Property(e => e.TiffinId).HasColumnName("tiffin_id");
                 entity.Property(e => e.AssignedDateTime).HasColumnName("assigned_date_time");
@@ -170,7 +165,6 @@ namespace PGVaaleDotNetBackend.Data
                 entity.Property(e => e.Password).HasColumnName("password");
                 entity.Property(e => e.Email).HasColumnName("email");
                 entity.Property(e => e.Name).HasColumnName("name");
-                entity.Property(e => e.UniqueId).HasColumnName("unique_id");
                 entity.Property(e => e.TiffinId).HasColumnName("tiffin_id");
                 entity.Property(e => e.DayOfWeek).HasColumnName("day_of_week");
                 entity.Property(e => e.Breakfast).HasColumnName("breakfast");
@@ -240,7 +234,7 @@ namespace PGVaaleDotNetBackend.Data
                     .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasOne(b => b.Pg)
-                    .WithMany(pg => pg.Bookings)
+                    .WithMany()
                     .HasForeignKey(b => b.PgId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
@@ -325,7 +319,6 @@ namespace PGVaaleDotNetBackend.Data
                 entity.Property(e => e.Password).HasColumnName("password");
                 entity.Property(e => e.Email).HasColumnName("email");
                 entity.Property(e => e.Name).HasColumnName("name");
-                entity.Property(e => e.UniqueId).HasColumnName("unique_id");
                 entity.Property(e => e.Age).HasColumnName("age");
                 entity.Property(e => e.Aadhaar).HasColumnName("aadhaar");
                 entity.Property(e => e.MobileNumber).HasColumnName("mobile_number");
@@ -363,7 +356,7 @@ namespace PGVaaleDotNetBackend.Data
             });
 
             // Configure ServiceProvider entity
-            modelBuilder.Entity<ServiceProvider>(entity =>
+            modelBuilder.Entity<Entities.ServiceProvider>(entity =>
             {
                 entity.ToTable("service_providers");
                 entity.HasKey(e => e.Id);

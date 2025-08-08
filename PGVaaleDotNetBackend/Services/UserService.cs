@@ -1,6 +1,5 @@
 using PGVaaleDotNetBackend.Entities;
 using PGVaaleDotNetBackend.Repositories;
-using System.Collections.Generic;
 
 namespace PGVaaleDotNetBackend.Services
 {
@@ -13,42 +12,34 @@ namespace PGVaaleDotNetBackend.Services
             _userRepository = userRepository;
         }
 
-        public IEnumerable<User> GetAllUsers()
+        public async Task<List<User>> GetAllUsersAsync()
         {
-            return _userRepository.GetAll();
+            return await _userRepository.GetAllAsync();
         }
 
-        public User? GetUserById(int id)
+        public async Task<User?> GetUserByIdAsync(long id)
         {
-            return _userRepository.GetById(id);
+            return await _userRepository.GetByIdAsync(id);
         }
 
-        public User? GetUserByUsername(string username)
+        public async Task<User?> GetUserByUsernameAsync(string username)
         {
-            return _userRepository.GetByUsername(username);
+            return await _userRepository.FindByUsernameAsync(username);
         }
 
-        public User? GetUserByEmail(string email)
+        public async Task<User?> GetUserByEmailAsync(string email)
         {
-            return _userRepository.GetByEmail(email);
+            return await _userRepository.FindByEmailAsync(email);
         }
 
-        public User SaveUser(User user)
+        public async Task<User> SaveUserAsync(User user)
         {
-            if (user.Id == 0)
-            {
-                _userRepository.Add(user);
-            }
-            else
-            {
-                _userRepository.Update(user);
-            }
-            return user;
+            return await _userRepository.SaveAsync(user);
         }
 
-        public void DeleteUser(int id)
+        public async Task DeleteUserAsync(long id)
         {
-            _userRepository.Delete(id);
+            await _userRepository.DeleteAsync(id);
         }
     }
 }

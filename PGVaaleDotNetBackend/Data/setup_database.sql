@@ -41,6 +41,16 @@ CREATE TABLE IF NOT EXISTS maids (
     unique_id VARCHAR(255) NOT NULL UNIQUE
 );
 
+-- Create admins table
+CREATE TABLE IF NOT EXISTS admins (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    unique_id VARCHAR(255) NOT NULL UNIQUE
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
@@ -48,6 +58,9 @@ CREATE INDEX IF NOT EXISTS idx_maids_username ON maids(username);
 CREATE INDEX IF NOT EXISTS idx_maids_email ON maids(email);
 CREATE INDEX IF NOT EXISTS idx_maids_approved ON maids(approved);
 CREATE INDEX IF NOT EXISTS idx_maids_region ON maids(region);
+CREATE INDEX IF NOT EXISTS idx_admins_username ON admins(username);
+CREATE INDEX IF NOT EXISTS idx_admins_email ON admins(email);
+CREATE INDEX IF NOT EXISTS idx_admins_unique_id ON admins(unique_id);
 
 -- Insert sample data (optional)
 -- INSERT INTO users (username, password, email, name, aadhaar, age, gender, mobile_number, unique_id) 

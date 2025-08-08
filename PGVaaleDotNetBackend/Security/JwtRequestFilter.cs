@@ -68,9 +68,9 @@ namespace PGVaaleDotNetBackend.Security
             {
                 try
                 {
-                                         // Extract role from token
-                     var role = _jwtUtil.ExtractClaim(jwt, claims => claims.Claims.FirstOrDefault(c => c.Type == "role")?.Value);
-                     _logger.LogInformation("Extracted role: {Role}", role);
+                    // Extract role from token
+                    var role = _jwtUtil.ExtractClaim(jwt!, claims => claims.Claims.FirstOrDefault(c => c.Type == "role")?.Value);
+                    _logger.LogInformation("Extracted role: {Role}", role);
 
                     if (string.IsNullOrEmpty(role))
                     {

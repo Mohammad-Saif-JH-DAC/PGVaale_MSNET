@@ -30,7 +30,7 @@ namespace PGVaaleDotNetBackend.Controllers
         }
 
         [HttpPost("register")]
-        public IActionResult Register([FromBody] RegisterRequest request)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
             try
             {
@@ -65,14 +65,14 @@ namespace PGVaaleDotNetBackend.Controllers
                 }
 
                 // Check if username exists
-                var existingUser = _userService.GetUserByUsername(request.Username);
+                var existingUser = await _userService.GetUserByUsernameAsync(request.Username);
                 if (existingUser != null)
                 {
                     return BadRequest("Username already exists");
                 }
 
                 // Check if email exists
-                var existingEmail = _userService.GetUserByEmail(request.Email);
+                var existingEmail = await _userService.GetUserByEmailAsync(request.Email);
                 if (existingEmail != null)
                 {
                     return BadRequest("Email already exists");
@@ -89,11 +89,11 @@ namespace PGVaaleDotNetBackend.Controllers
                     MobileNumber = request.MobileNumber,
                     Age = request.Age ?? 0,
                     Gender = request.Gender,
-                    UniqueId = "USER_" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+                    // UniqueId removed as it doesn't exist in database schema
                 };
 
                 // Save user
-                var savedUser = _userService.SaveUser(user);
+                var savedUser = await _userService.SaveUserAsync(user);
 
                 // Send welcome email
                 try
@@ -116,7 +116,7 @@ namespace PGVaaleDotNetBackend.Controllers
         }
 
         [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
             try
             {
@@ -134,7 +134,7 @@ namespace PGVaaleDotNetBackend.Controllers
                 }
 
                 // Check if user exists and is a USER
-                var user = _userService.GetUserByUsername(request.Username);
+                var user = await _userService.GetUserByUsernameAsync(request.Username);
                 if (user == null)
                 {
                     _logger.LogWarning("Login failed: User not found for username: {Username}", request.Username);

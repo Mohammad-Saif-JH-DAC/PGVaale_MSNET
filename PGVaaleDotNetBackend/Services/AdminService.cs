@@ -39,12 +39,12 @@ namespace PGVaaleDotNetBackend.Services
         // Additional methods for authentication
         public async Task<Admin?> GetAdminByUsernameAsync(string username)
         {
-            return await _adminRepository.FindByUsernameAsync(username);
+            return await _adminRepository.GetByUsernameAsync(username);
         }
 
         public async Task<Admin?> GetAdminByEmailAsync(string email)
         {
-            return await _adminRepository.FindByEmailAsync(email);
+            return await _adminRepository.GetByEmailAsync(email);
         }
     }
 }

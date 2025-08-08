@@ -41,16 +41,13 @@ namespace PGVaaleDotNetBackend.Security
         {
             try
             {
-                return ExtractClaim(token, claims =>
+                return ExtractClaim<long?>(token, claims =>
                 {
-                    if (claims.TryGetValue("userId", out var userIdObj))
+                    if (claims.Claims.FirstOrDefault(c => c.Type == "userId")?.Value is string userIdStr)
                     {
-                        if (userIdObj is JsonElement element)
+                        if (long.TryParse(userIdStr, out long userId))
                         {
-                            if (element.ValueKind == JsonValueKind.Number)
-                            {
-                                return element.GetInt64();
-                            }
+                            return userId;
                         }
                     }
                     return null;
@@ -67,7 +64,7 @@ namespace PGVaaleDotNetBackend.Security
         {
             try
             {
-                return ExtractClaim(token, claims => claims.Expiration);
+                return ExtractClaim(token, claims => claims.ValidTo);
             }
             catch (Exception e)
             {

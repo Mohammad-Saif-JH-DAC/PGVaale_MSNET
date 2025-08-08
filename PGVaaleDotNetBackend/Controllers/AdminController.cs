@@ -189,14 +189,14 @@ namespace PGVaaleDotNetBackend.Controllers
         {
             try
             {
-                var tiffin = _tiffinService.GetTiffinById(id);
+                var tiffin = await _tiffinService.GetTiffinByIdAsync(id);
                 if (tiffin == null)
                 {
                     return NotFound();
                 }
 
                 tiffin.Approved = true;
-                var savedTiffin = _tiffinService.SaveTiffin(tiffin);
+                var savedTiffin = await _tiffinService.SaveTiffinAsync(tiffin);
 
                 // Send approval confirmation email
                 try
@@ -223,13 +223,13 @@ namespace PGVaaleDotNetBackend.Controllers
         {
             try
             {
-                var tiffin = _tiffinService.GetTiffinById(id);
+                var tiffin = await _tiffinService.GetTiffinByIdAsync(id);
                 if (tiffin == null)
                 {
                     return NotFound();
                 }
 
-                _tiffinService.DeleteTiffin(id);
+                await _tiffinService.DeleteTiffinAsync(id);
                 return Ok("Tiffin rejected and removed successfully");
             }
             catch (Exception e)

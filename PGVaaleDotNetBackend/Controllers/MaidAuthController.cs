@@ -84,8 +84,7 @@ namespace PGVaaleDotNetBackend.Controllers
                     Gender = request.Gender,
                     Timing = request.Timing,
                     Region = request.Region,
-                    Approved = false, // Default to false, needs admin approval
-                    Active = true
+                    Approved = false // Default to false, needs admin approval
                 };
 
                 // Save maid

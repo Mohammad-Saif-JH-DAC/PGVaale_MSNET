@@ -20,8 +20,5 @@ namespace PGVaaleDotNetBackend.Entities
 
         [Required]
         public string Gender { get; set; } = string.Empty;
-
-        [Required]
-        public string UniqueId { get; set; } = string.Empty;
     }
 }

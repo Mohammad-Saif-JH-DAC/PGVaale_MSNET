@@ -20,13 +20,13 @@ namespace PGVaaleDotNetBackend.Services
         public async Task<UserMaid> CreateHiringRequestAsync(long userId, long maidId, string userAddress, 
                                                            DateTime? startDate, DateTime? endDate, string timeSlot)
         {
-            var user = await _userRepository.GetUserByIdAsync(userId);
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
             {
                 throw new InvalidOperationException("User not found");
             }
 
-            var maid = await _maidRepository.GetMaidByIdAsync(maidId);
+            var maid = await _maidRepository.GetByIdAsync(maidId);
             if (maid == null)
             {
                 throw new InvalidOperationException("Maid not found");
@@ -56,13 +56,13 @@ namespace PGVaaleDotNetBackend.Services
         // Get all requests for a specific maid
         public async Task<List<UserMaid>> GetRequestsByMaidIdAsync(long maidId)
         {
-            return await _userMaidRepository.GetActiveRequestsByMaidIdAsync(maidId);
+            return await _userMaidRepository.FindActiveRequestsByMaidIdAsync(maidId);
         }
 
         // Get all requests for a specific user
         public async Task<List<UserMaid>> GetRequestsByUserIdAsync(long userId)
         {
-            return await _userMaidRepository.GetActiveRequestsByUserIdAsync(userId);
+            return await _userMaidRepository.FindActiveRequestsByUserIdAsync(userId);
         }
 
         // Update request status
@@ -120,13 +120,13 @@ namespace PGVaaleDotNetBackend.Services
         // Get pending requests for a maid
         public async Task<List<UserMaid>> GetPendingRequestsByMaidIdAsync(long maidId)
         {
-            return await _userMaidRepository.GetByMaidIdAndStatusAsync(maidId, UserMaid.RequestStatus.PENDING);
+            return await _userMaidRepository.FindByMaidIdAndStatusAsync(maidId, UserMaid.RequestStatus.PENDING);
         }
 
         // Get accepted requests for a user
         public async Task<List<UserMaid>> GetAcceptedRequestsByUserIdAsync(long userId)
         {
-            return await _userMaidRepository.GetAcceptedRequestsByUserIdAsync(userId);
+            return await _userMaidRepository.FindAcceptedRequestsByUserIdAsync(userId);
         }
 
         // Count pending requests for a maid

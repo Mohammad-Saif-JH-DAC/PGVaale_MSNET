@@ -77,14 +77,14 @@ namespace PGVaaleDotNetBackend.Controllers
                 }
 
                 // Check if username exists
-                var existingTiffin = await _tiffinRepository.GetByUsernameAsync(request.Username);
+                var existingTiffin = await _tiffinRepository.FindByUsernameAsync(request.Username);
                 if (existingTiffin != null)
                 {
                     return BadRequest("Username already exists");
                 }
 
                 // Check if email exists
-                var existingEmail = await _tiffinRepository.GetByEmailAsync(request.Email);
+                var existingEmail = await _tiffinRepository.FindByEmailAsync(request.Email);
                 if (existingEmail != null)
                 {
                     return BadRequest("Email already exists");
@@ -103,12 +103,11 @@ namespace PGVaaleDotNetBackend.Controllers
                     FoodCategory = request.FoodCategory,
                     Region = request.Region,
                     MaidAddress = request.MaidAddress,
-                    Approved = false, // Default to false, needs admin approval
-                    UniqueId = Guid.NewGuid().ToString()
+                    Approved = false // Default to false, needs admin approval
                 };
 
                 // Save tiffin
-                var savedTiffin = _tiffinService.SaveTiffin(tiffin);
+                var savedTiffin = await _tiffinService.SaveTiffinAsync(tiffin);
 
                 // Send pending approval email
                 try
@@ -149,7 +148,7 @@ namespace PGVaaleDotNetBackend.Controllers
                 }
 
                 // Check if tiffin exists
-                var tiffin = await _tiffinRepository.GetByUsernameAsync(request.Username);
+                var tiffin = await _tiffinRepository.FindByUsernameAsync(request.Username);
                 if (tiffin == null)
                 {
                     _logger.LogWarning("Tiffin login failed: Tiffin not found for username: {Username}", request.Username);

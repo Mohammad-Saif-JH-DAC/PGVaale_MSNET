@@ -55,8 +55,7 @@ builder.Services.AddScoped<IJwtUtil, JwtUtil>();
 builder.Services.AddScoped<JwtRequestFilter>();
 builder.Services.AddScoped<IUserDetailsService, CustomUserDetailsService>();
 
-// Register Password Encoder (BCrypt equivalent)
-builder.Services.AddScoped<IPasswordHasher<BaseEntity>, PasswordHasher<BaseEntity>>();
+// Using BCrypt for password hashing instead of ASP.NET Core Identity
 
 // Add Authorization Policies
 builder.Services.AddAuthorization(options =>

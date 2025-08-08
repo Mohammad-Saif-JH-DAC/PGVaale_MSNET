@@ -45,7 +45,7 @@ namespace PGVaaleDotNetBackend.Services
                 new Claim(ClaimTypes.Name, entity.Username),
                 new Claim(ClaimTypes.Email, entity.Email),
                 new Claim("role", role),
-                new Claim("uniqueId", entity.UniqueId)
+                new Claim("uniqueId", entity.Id.ToString())
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -105,7 +105,7 @@ namespace PGVaaleDotNetBackend.Services
                 new Claim(ClaimTypes.Name, tiffin.Username ?? ""),
                 new Claim(ClaimTypes.Email, tiffin.Email ?? ""),
                 new Claim("role", role),
-                new Claim("uniqueId", tiffin.UniqueId ?? tiffin.Id.ToString())
+                new Claim("uniqueId", tiffin.Id.ToString())
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor

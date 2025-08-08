@@ -38,7 +38,7 @@ namespace PGVaaleDotNetBackend.Controllers
             {
                 // TODO: Get tiffin ID from authentication context
                 // For now, we'll use a placeholder - you'll need to implement proper authentication
-                var tiffinId = GetTiffinIdFromUsername("placeholder_username");
+                var tiffinId = await GetTiffinIdFromUsernameAsync("placeholder_username");
                 var dashboard = await _tiffinService.GetTiffinDashboardAsync(tiffinId);
                 return Ok(dashboard);
             }
@@ -55,9 +55,9 @@ namespace PGVaaleDotNetBackend.Controllers
             try
             {
                 // TODO: Get tiffin ID from authentication context
-                var tiffinId = GetTiffinIdFromUsername("placeholder_username");
+                var tiffinId = await GetTiffinIdFromUsernameAsync("placeholder_username");
                 menuDTO.TiffinId = tiffinId;
-                var createdMenu = _tiffinService.CreateMenu(menuDTO);
+                var createdMenu = await _tiffinService.CreateMenuAsync(menuDTO);
                 return Ok(createdMenu);
             }
             catch (Exception e)
@@ -71,7 +71,7 @@ namespace PGVaaleDotNetBackend.Controllers
         {
             try
             {
-                var updatedMenu = _tiffinService.UpdateMenu(menuId, menuDTO);
+                var updatedMenu = await _tiffinService.UpdateMenuAsync(menuId, menuDTO);
                 return Ok(updatedMenu);
             }
             catch (Exception e)
@@ -85,7 +85,7 @@ namespace PGVaaleDotNetBackend.Controllers
         {
             try
             {
-                _tiffinService.DeleteMenu(menuId);
+                await _tiffinService.DeleteMenuAsync(menuId);
                 return Ok("Menu deleted successfully");
             }
             catch (Exception e)
@@ -100,7 +100,7 @@ namespace PGVaaleDotNetBackend.Controllers
             try
             {
                 // TODO: Get tiffin ID from authentication context
-                var tiffinId = GetTiffinIdFromUsername("placeholder_username");
+                var tiffinId = await GetTiffinIdFromUsernameAsync("placeholder_username");
                 var menus = await _tiffinService.GetWeeklyMenuAsync(tiffinId);
                 return Ok(menus);
             }
@@ -116,7 +116,7 @@ namespace PGVaaleDotNetBackend.Controllers
             try
             {
                 // TODO: Get tiffin ID from authentication context
-                var tiffinId = GetTiffinIdFromUsername("placeholder_username");
+                var tiffinId = await GetTiffinIdFromUsernameAsync("placeholder_username");
                 var menu = await _tiffinService.GetMenuByDayAsync(tiffinId, dayOfWeek);
                 if (menu != null)
                 {
@@ -140,7 +140,7 @@ namespace PGVaaleDotNetBackend.Controllers
             try
             {
                 // TODO: Get tiffin ID from authentication context
-                var tiffinId = GetTiffinIdFromUsername("placeholder_username");
+                var tiffinId = await GetTiffinIdFromUsernameAsync("placeholder_username");
                 UserTiffin.RequestStatus? requestStatus = null;
                 if (!string.IsNullOrEmpty(status))
                 {
@@ -166,7 +166,7 @@ namespace PGVaaleDotNetBackend.Controllers
                 var status = request["status"];
                 if (Enum.TryParse<UserTiffin.RequestStatus>(status.ToUpper(), out var requestStatus))
                 {
-                    var updatedRequest = _tiffinService.UpdateRequestStatus(requestId, requestStatus);
+                    var updatedRequest = await _tiffinService.UpdateRequestStatusAsync(requestId, requestStatus);
                     return Ok(updatedRequest);
                 }
                 else
@@ -218,7 +218,7 @@ namespace PGVaaleDotNetBackend.Controllers
             {
                 // TODO: Get username from authentication context
                 var username = "placeholder_username";
-                var tiffinOptional = await _tiffinRepository.GetByUsernameAsync(username);
+                var tiffinOptional = await _tiffinRepository.FindByUsernameAsync(username);
                 if (tiffinOptional == null)
                 {
                     return NotFound();
@@ -235,21 +235,21 @@ namespace PGVaaleDotNetBackend.Controllers
                 }
 
                 // Delete all user-tiffin relationships for this tiffin
-                var userTiffinRelations = await _userTiffinRepository.GetByTiffinIdAsync(tiffinId);
+                var userTiffinRelations = await _userTiffinRepository.FindByTiffinIdAsync(tiffinId);
                 foreach (var relation in userTiffinRelations)
                 {
-                    _userTiffinRepository.Delete(relation.Id);
+                    await _userTiffinRepository.DeleteAsync(relation.Id);
                 }
 
                 // Delete all menus for this tiffin
-                var tiffinMenus = await _menuRepository.GetByTiffinIdAsync(tiffinId);
+                var tiffinMenus = await _menuRepository.FindByTiffinIdAndIsActiveTrueAsync(tiffinId);
                 foreach (var menu in tiffinMenus)
                 {
-                    _menuRepository.Delete(menu.Id);
+                    await _menuRepository.DeleteAsync(menu.Id);
                 }
 
                 // Delete the tiffin account
-                _tiffinRepository.Delete(tiffinId);
+                await _tiffinRepository.DeleteAsync(tiffinId);
 
                 return Ok("Account deleted successfully");
             }
@@ -260,11 +260,11 @@ namespace PGVaaleDotNetBackend.Controllers
         }
 
         // Helper method to get tiffin ID from username
-        private long GetTiffinIdFromUsername(string username)
+        private async Task<long> GetTiffinIdFromUsernameAsync(string username)
         {
             try
             {
-                var tiffin = _tiffinRepository.GetByUsername(username);
+                var tiffin = await _tiffinRepository.FindByUsernameAsync(username);
                 if (tiffin != null)
                 {
                     return tiffin.Id;

@@ -36,7 +36,7 @@ namespace PGVaaleDotNetBackend.Security
                 return CreateUserDetails(user, "ROLE_USER");
             }
 
-            var admin = await _adminRepository.FindByUsernameAsync(username);
+            var admin = await _adminRepository.GetByUsernameAsync(username);
             if (admin != null)
             {
                 return CreateUserDetails(admin, "ROLE_ADMIN");

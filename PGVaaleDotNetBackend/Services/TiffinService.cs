@@ -27,43 +27,30 @@ namespace PGVaaleDotNetBackend.Services
         }
 
         // CRUD Operations
-        public IEnumerable<Tiffin> GetAllTiffins()
-        {
-            return _tiffinRepository.GetAll();
-        }
-
         public async Task<IEnumerable<Tiffin>> GetAllTiffinsAsync()
         {
-            return await Task.FromResult(_tiffinRepository.GetAll());
+            return await _tiffinRepository.GetAllAsync();
         }
 
-        public Tiffin? GetTiffinById(long id)
+        public async Task<Tiffin?> GetTiffinByIdAsync(long id)
         {
-            return _tiffinRepository.GetById(id);
+            return await _tiffinRepository.GetByIdAsync(id);
         }
 
-        public Tiffin SaveTiffin(Tiffin tiffin)
+        public async Task<Tiffin> SaveTiffinAsync(Tiffin tiffin)
         {
-            if (tiffin.Id == 0)
-            {
-                _tiffinRepository.Add(tiffin);
-            }
-            else
-            {
-                _tiffinRepository.Update(tiffin);
-            }
-            return tiffin;
+            return await _tiffinRepository.SaveAsync(tiffin);
         }
 
-        public void DeleteTiffin(long id)
+        public async Task DeleteTiffinAsync(long id)
         {
-            _tiffinRepository.Delete(id);
+            await _tiffinRepository.DeleteAsync(id);
         }
 
         // Menu Management
-        public MenuDTO CreateMenu(MenuDTO menuDTO)
+        public async Task<MenuDTO> CreateMenuAsync(MenuDTO menuDTO)
         {
-            var tiffin = _tiffinRepository.GetById(menuDTO.TiffinId);
+            var tiffin = await _tiffinRepository.GetByIdAsync(menuDTO.TiffinId);
             if (tiffin == null)
                 throw new InvalidOperationException("Tiffin not found");
 
@@ -76,17 +63,17 @@ namespace PGVaaleDotNetBackend.Services
                 Dinner = menuDTO.Dinner,
                 MenuDate = menuDTO.MenuDate,
                 FoodCategory = menuDTO.FoodCategory,
-                Price = menuDTO.Price,
+                Price = menuDTO.Price ?? 0.0,
                 IsActive = true
             };
 
-            _menuRepository.Add(menu);
-            return ConvertToDTO(menu);
+            var savedMenu = await _menuRepository.SaveAsync(menu);
+            return ConvertToDTO(savedMenu);
         }
 
-        public MenuDTO UpdateMenu(long menuId, MenuDTO menuDTO)
+        public async Task<MenuDTO> UpdateMenuAsync(long menuId, MenuDTO menuDTO)
         {
-            var menu = _menuRepository.GetById(menuId);
+            var menu = await _menuRepository.GetByIdAsync(menuId);
             if (menu == null)
                 throw new InvalidOperationException("Menu not found");
 
@@ -95,47 +82,47 @@ namespace PGVaaleDotNetBackend.Services
             menu.Dinner = menuDTO.Dinner;
             menu.MenuDate = menuDTO.MenuDate;
             menu.FoodCategory = menuDTO.FoodCategory;
-            menu.Price = menuDTO.Price;
+            menu.Price = menuDTO.Price ?? 0.0;
 
-            _menuRepository.Update(menu);
-            return ConvertToDTO(menu);
+            var updatedMenu = await _menuRepository.SaveAsync(menu);
+            return ConvertToDTO(updatedMenu);
         }
 
-        public void DeleteMenu(long menuId)
+        public async Task DeleteMenuAsync(long menuId)
         {
-            var menu = _menuRepository.GetById(menuId);
+            var menu = await _menuRepository.GetByIdAsync(menuId);
             if (menu == null)
                 throw new InvalidOperationException("Menu not found");
 
             menu.IsActive = false;
-            _menuRepository.Update(menu);
+            await _menuRepository.SaveAsync(menu);
         }
 
         public async Task<IEnumerable<MenuDTO>> GetWeeklyMenuAsync(long tiffinId)
         {
-            var menus = await _menuRepository.GetByTiffinIdAndIsActiveAsync(tiffinId, true);
+            var menus = await _menuRepository.FindByTiffinIdAndIsActiveTrueAsync(tiffinId);
             return menus.Select(ConvertToDTO);
         }
 
         public async Task<MenuDTO?> GetMenuByDayAsync(long tiffinId, string dayOfWeek)
         {
-            var menu = await _menuRepository.GetByTiffinIdAndDayOfWeekAndIsActiveAsync(tiffinId, dayOfWeek, true);
+            var menu = await _menuRepository.FindByTiffinIdAndDayOfWeekAndIsActiveTrueAsync(tiffinId, dayOfWeek);
             return menu != null ? ConvertToDTO(menu) : null;
         }
 
         // User Request Management
-        public UserTiffinDTO CreateUserRequest(long userId, long tiffinId)
+        public async Task<UserTiffinDTO> CreateUserRequestAsync(long userId, long tiffinId)
         {
-            var user = _userRepository.GetById(userId);
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
                 throw new InvalidOperationException("User not found");
 
-            var tiffin = _tiffinRepository.GetById(tiffinId);
+            var tiffin = await _tiffinRepository.GetByIdAsync(tiffinId);
             if (tiffin == null)
                 throw new InvalidOperationException("Tiffin not found");
 
             // Check if request already exists
-            var existingRequest = _userTiffinRepository.GetByUserIdAndTiffinIdAsync(userId, tiffinId).Result;
+            var existingRequest = await _userTiffinRepository.FindByUserIdAndTiffinIdAsync(userId, tiffinId);
             if (existingRequest != null)
                 throw new InvalidOperationException("Request already exists");
 
@@ -147,13 +134,13 @@ namespace PGVaaleDotNetBackend.Services
                 AssignedDateTime = DateTime.UtcNow
             };
 
-            _userTiffinRepository.Add(userTiffin);
-            return UserTiffinDTO.FromEntity(userTiffin);
+            var savedUserTiffin = await _userTiffinRepository.SaveAsync(userTiffin);
+            return UserTiffinDTO.FromEntity(savedUserTiffin);
         }
 
-        public UserTiffinDTO UpdateRequestStatus(long requestId, UserTiffin.RequestStatus status)
+        public async Task<UserTiffinDTO> UpdateRequestStatusAsync(long requestId, UserTiffin.RequestStatus status)
         {
-            var userTiffin = _userTiffinRepository.GetById(requestId);
+            var userTiffin = await _userTiffinRepository.GetByIdAsync(requestId);
             if (userTiffin == null)
                 throw new InvalidOperationException("Request not found");
 
@@ -163,8 +150,8 @@ namespace PGVaaleDotNetBackend.Services
                 userTiffin.DeletionDateTime = DateTime.UtcNow;
             }
 
-            _userTiffinRepository.Update(userTiffin);
-            return UserTiffinDTO.FromEntity(userTiffin);
+            var updatedUserTiffin = await _userTiffinRepository.SaveAsync(userTiffin);
+            return UserTiffinDTO.FromEntity(updatedUserTiffin);
         }
 
         public async Task<IEnumerable<UserTiffinDTO>> GetTiffinRequestsAsync(long tiffinId, UserTiffin.RequestStatus? status)
@@ -172,11 +159,11 @@ namespace PGVaaleDotNetBackend.Services
             IEnumerable<UserTiffin> userTiffins;
             if (status == null)
             {
-                userTiffins = await _userTiffinRepository.GetByTiffinIdAsync(tiffinId);
+                userTiffins = await _userTiffinRepository.FindByTiffinIdAsync(tiffinId);
             }
             else
             {
-                userTiffins = await _userTiffinRepository.GetByTiffinIdAndStatusAsync(tiffinId, status.Value);
+                userTiffins = await _userTiffinRepository.FindByTiffinIdAndStatusAsync(tiffinId, status.Value);
             }
             return userTiffins.Select(UserTiffinDTO.FromEntity);
         }
@@ -186,30 +173,30 @@ namespace PGVaaleDotNetBackend.Services
             IEnumerable<UserTiffin> userTiffins;
             if (status == null)
             {
-                userTiffins = await _userTiffinRepository.GetByUserIdAsync(userId);
+                userTiffins = await _userTiffinRepository.FindByUserIdAsync(userId);
             }
             else
             {
-                userTiffins = await _userTiffinRepository.GetByUserIdAndStatusAsync(userId, status.Value);
+                userTiffins = await _userTiffinRepository.FindByUserIdAndStatusAsync(userId, status.Value);
             }
             return userTiffins.Select(UserTiffinDTO.FromEntity);
         }
 
-        public void CancelUserRequest(long requestId)
+        public async Task CancelUserRequestAsync(long requestId)
         {
-            var userTiffin = _userTiffinRepository.GetById(requestId);
+            var userTiffin = await _userTiffinRepository.GetByIdAsync(requestId);
             if (userTiffin == null)
                 throw new InvalidOperationException("Request not found");
 
             userTiffin.Status = UserTiffin.RequestStatus.REJECTED;
             userTiffin.DeletionDateTime = DateTime.UtcNow;
-            _userTiffinRepository.Update(userTiffin);
+            await _userTiffinRepository.SaveAsync(userTiffin);
         }
 
         // Dashboard
         public async Task<TiffinDashboardDTO> GetTiffinDashboardAsync(long tiffinId)
         {
-            var tiffin = _tiffinRepository.GetById(tiffinId);
+            var tiffin = await _tiffinRepository.GetByIdAsync(tiffinId);
             if (tiffin == null)
                 throw new InvalidOperationException("Tiffin not found");
 
@@ -217,7 +204,7 @@ namespace PGVaaleDotNetBackend.Services
             var acceptedRequests = await _userTiffinRepository.CountByTiffinIdAndStatusAsync(tiffinId, UserTiffin.RequestStatus.ACCEPTED);
             var rejectedRequests = await _userTiffinRepository.CountByTiffinIdAndStatusAsync(tiffinId, UserTiffin.RequestStatus.REJECTED);
 
-            var recentRequests = await _userTiffinRepository.GetByTiffinIdAsync(tiffinId);
+            var recentRequests = await _userTiffinRepository.FindByTiffinIdAsync(tiffinId);
             var recentRequestsDTO = recentRequests.Take(5).Select(UserTiffinDTO.FromEntity).ToList();
 
             // Calculate average rating for this tiffin
@@ -236,13 +223,13 @@ namespace PGVaaleDotNetBackend.Services
         }
 
         // Tiffin Feedback
-        public Feedback_Tiffin SubmitTiffinFeedback(long userId, long tiffinId, int rating, string feedback)
+        public async Task<Feedback_Tiffin> SubmitTiffinFeedbackAsync(long userId, long tiffinId, int rating, string feedback)
         {
-            var user = _userRepository.GetById(userId);
+            var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
                 throw new InvalidOperationException("User not found");
 
-            var tiffin = _tiffinRepository.GetById(tiffinId);
+            var tiffin = await _tiffinRepository.GetByIdAsync(tiffinId);
             if (tiffin == null)
                 throw new InvalidOperationException("Tiffin not found");
 
@@ -251,8 +238,7 @@ namespace PGVaaleDotNetBackend.Services
                 UserId = userId,
                 TiffinId = tiffinId,
                 Rating = rating,
-                Feedback = feedback,
-                CreatedAt = DateTime.UtcNow
+                Feedback = feedback
             };
 
             _feedbackTiffinRepository.Add(feedbackTiffin);
