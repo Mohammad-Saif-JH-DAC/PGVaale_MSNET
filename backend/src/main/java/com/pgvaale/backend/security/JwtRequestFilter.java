@@ -74,8 +74,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                     return;
                 }
 
-                // Create authorities and set authentication
-                List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role));
+                // Create authorities and set authentication - ensure role has ROLE_ prefix
+                String roleWithPrefix = role.startsWith("ROLE_") ? role : "ROLE_" + role.toUpperCase();
+                List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(roleWithPrefix));
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, null,
                         authorities);
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

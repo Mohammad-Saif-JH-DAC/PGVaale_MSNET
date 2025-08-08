@@ -83,9 +83,9 @@ function PGRooms() {
 
   // Handle booking room
   const handleBookRoom = async (roomId) => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (!token) {
-      alert('Please log in to send interest.');
+      alert('Please log in to book PG.');
       return;
     }
 
@@ -264,30 +264,50 @@ function PGRooms() {
   }
 
   return (
-    <div className="container mt-5">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Available PG Rooms</h2>
-        <button className="btn btn-outline-primary" onClick={() => fetchRooms()}>
-          🔄 Refresh
-        </button>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%)',
+      paddingTop: '2rem',
+      paddingBottom: '2rem'
+    }}>
+      <div className="container">
+        {/* Header Section */}
+        <div className="text-center mb-5">
+          <h1 className="display-5 fw-bold mb-3" style={{ color: '#2C3E50' }}>
+            Find Your Perfect <span className="text-primary">PG Room</span>
+          </h1>
+          <p className="lead text-muted mb-4">
+            Discover comfortable accommodations with modern amenities and great locations
+          </p>
       </div>
 
       {/* Info Alert for Guests */}
-      {!localStorage.getItem('token') && !sessionStorage.getItem('token') && (
-        <div className="alert alert-info mb-4">
-          <strong>💡 Tip:</strong> <Link to="/login">Log in</Link> to send interest and chat with owners!
+      {!sessionStorage.getItem('token') && (
+          <div className="alert alert-info border-0 rounded-4 shadow-sm mb-4" style={{ background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', border: '1px solid #93c5fd' }}>
+            <div className="d-flex align-items-center">
+              <i className="fas fa-lightbulb text-primary me-3" style={{ fontSize: '1.5rem' }}></i>
+              <div>
+                <strong>💡 Pro Tip:</strong> <Link to="/login" className="text-decoration-none fw-bold" style={{ color: '#4F46E5' }}>Log in</Link> to book PG and chat with owners!
+              </div>
+            </div>
         </div>
       )}
 
-      {/* Filters */}
-      <form className="row g-3 mb-4">
+        {/* Enhanced Filters */}
+        <div className="card border-0 shadow-lg rounded-4 mb-5" style={{ background: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(10px)' }}>
+          <div className="card-body p-4">
+            <h5 className="fw-bold mb-3" style={{ color: '#2C3E50' }}>
+              <i className="fas fa-filter text-primary me-2"></i>Filter Options
+            </h5>
+            <form className="row g-3">
         <div className="col-md-3">
-          <label className="form-label">Region</label>
+                <label className="form-label fw-semibold" style={{ color: '#374151' }}>Region</label>
           <select
-            className="form-select"
+                  className="form-select border-0 shadow-sm rounded-3"
             name="region"
             value={filters.region}
             onChange={handleChange}
+                  style={{ background: '#f8fafc' }}
           >
             <option value="">All Regions</option>
             {regionOptions.map((r) => (
@@ -299,14 +319,15 @@ function PGRooms() {
         </div>
 
         <div className="col-md-3">
-          <label className="form-label">Preference</label>
+                <label className="form-label fw-semibold" style={{ color: '#374151' }}>Preference</label>
           <select
-            className="form-select"
+                  className="form-select border-0 shadow-sm rounded-3"
             name="generalPreference"
             value={filters.generalPreference}
             onChange={handleChange}
+                  style={{ background: '#f8fafc' }}
           >
-            <option value="">Default</option>
+                  <option value="">Any Preference</option>
             {preferenceOptions.map((opt) => (
               <option key={opt} value={opt}>
                 {opt}
@@ -316,36 +337,94 @@ function PGRooms() {
         </div>
 
         <div className="col-md-3">
-          <label className="form-label">Availability</label>
+                <label className="form-label fw-semibold" style={{ color: '#374151' }}>Availability</label>
           <select
-            className="form-select"
+                  className="form-select border-0 shadow-sm rounded-3"
             name="availability"
             value={filters.availability}
             onChange={handleChange}
+                  style={{ background: '#f8fafc' }}
           >
-            <option value="">All</option>
+                  <option value="">All Rooms</option>
             <option value="available">Available Only</option>
           </select>
         </div>
+
+              <div className="col-md-3 d-flex align-items-end">
+                <button 
+                  className="btn btn-primary w-100 rounded-3 shadow-sm" 
+                  onClick={() => fetchRooms()}
+                  style={{ background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', border: 'none' }}
+                >
+                  <i className="fas fa-sync-alt me-2"></i>Refresh
+                </button>
+              </div>
       </form>
+          </div>
+        </div>
 
       {/* Room List */}
       {rooms.length > 0 ? (
         <div className="row g-4">
           {rooms.map((room) => (
             <div key={room.id} className="col-md-6 col-lg-4">
-              <div className="card shadow h-100 border-0">
+                <div className="card border-0 shadow-lg h-100 rounded-4 overflow-hidden" style={{ 
+                  background: 'rgba(255, 255, 255, 0.9)', 
+                  backdropFilter: 'blur(10px)',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-5px)';
+                  e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.1)';
+                }}>
                 <ImageGallery images={room.imagePaths || []} />
 
-                <div className="card-body d-flex flex-column">
-                  <h5 className="card-title">PG #{room.id}</h5>
-                  <p className="card-text flex-grow-1">
-                    <strong>Region:</strong> {room.region || 'N/A'}<br />
-                    <strong>Rent:</strong> ₹{room.rent}/month<br />
-                    <strong>Preference:</strong> {room.generalPreference || 'Any'}<br />
-                    <strong>Amenities:</strong> {room.amenities || 'N/A'}<br />
-                    <strong>Nearby:</strong> {room.nearbyResources || 'N/A'}
-                  </p>
+                  <div className="card-body d-flex flex-column p-4">
+                    <div className="d-flex justify-content-between align-items-start mb-3">
+                      <h5 className="card-title fw-bold mb-0" style={{ color: '#2C3E50' }}>
+                        PG #{room.id}
+                      </h5>
+                      <span className="badge bg-primary rounded-pill px-3 py-2" style={{ 
+                        background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)' 
+                      }}>
+                        ₹{room.rent}/month
+                      </span>
+                    </div>
+                    
+                    <div className="flex-grow-1">
+                      <div className="row g-2 mb-3">
+                        <div className="col-6">
+                          <div className="d-flex align-items-center">
+                            <i className="fas fa-map-marker-alt text-primary me-2"></i>
+                            <span className="text-muted small">{room.region || 'N/A'}</span>
+                          </div>
+                        </div>
+                        <div className="col-6">
+                          <div className="d-flex align-items-center">
+                            <i className="fas fa-users text-primary me-2"></i>
+                            <span className="text-muted small">{room.generalPreference || 'Any'}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="mb-3">
+                        <h6 className="fw-semibold mb-2" style={{ color: '#374151' }}>
+                          <i className="fas fa-star text-warning me-2"></i>Amenities
+                        </h6>
+                        <p className="text-muted small mb-0">{room.amenities || 'N/A'}</p>
+                      </div>
+                      
+                      <div className="mb-3">
+                        <h6 className="fw-semibold mb-2" style={{ color: '#374151' }}>
+                          <i className="fas fa-location-arrow text-info me-2"></i>Nearby
+                        </h6>
+                        <p className="text-muted small mb-0">{room.nearbyResources || 'N/A'}</p>
+                      </div>
+                    </div>
 
                   <MapComponent
                     lat={room.latitude}
@@ -353,41 +432,56 @@ function PGRooms() {
                     region={room.region}
                   />
 
-                  <div className="mt-3 d-flex justify-content-between">
+                    <div className="mt-4 d-flex gap-2">
                     <button 
-                      className="btn btn-sm btn-primary"
+                        className="btn btn-outline-primary flex-grow-1 rounded-3"
                       onClick={() => handleViewDetails(room)}
+                        style={{ borderColor: '#6366F1', color: '#6366F1' }}
                     >
-                      View Details
+                        <i className="fas fa-eye me-2"></i>View Details
                     </button>
-                    {localStorage.getItem('token') || sessionStorage.getItem('token') ? (
+                    {sessionStorage.getItem('token') ? (
                       <button
-                        className={`btn btn-sm ${
+                          className={`btn flex-grow-1 rounded-3 ${
                           bookingStatus[room.id] === 'booking'
                             ? 'btn-warning'
                             : bookingStatus[room.id] === 'booked'
                             ? 'btn-success'
                             : bookingStatus[room.id] === 'error'
                             ? 'btn-danger'
-                            : 'btn-outline-success'
+                              : 'btn-primary'
                         }`}
                         onClick={() => handleBookRoom(room.id)}
                         disabled={bookingStatus[room.id] === 'booking'}
-                      >
-                        {bookingStatus[room.id] === 'booking'
-                          ? 'Sending...'
-                          : bookingStatus[room.id] === 'booked'
-                          ? 'Sent!'
-                          : bookingStatus[room.id] === 'error'
-                          ? 'Failed'
-                          : 'Send Interest'}
+                          style={bookingStatus[room.id] === 'booked' ? {} : {
+                            background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)',
+                            border: 'none'
+                          }}
+                        >
+                          {bookingStatus[room.id] === 'booking' ? (
+                            <>
+                              <i className="fas fa-spinner fa-spin me-2"></i>Sending...
+                            </>
+                          ) : bookingStatus[room.id] === 'booked' ? (
+                            <>
+                              <i className="fas fa-check me-2"></i>Sent!
+                            </>
+                          ) : bookingStatus[room.id] === 'error' ? (
+                            <>
+                              <i className="fas fa-times me-2"></i>Failed
+                            </>
+                          ) : (
+                            <>
+                              <i className="fas fa-heart me-2"></i>Book PG
+                            </>
+                          )}
                       </button>
                     ) : (
                       <button
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={() => alert('Please log in to send interest.')}
+                          className="btn btn-outline-secondary flex-grow-1 rounded-3"
+                        onClick={() => alert('Please log in to book PG.')}
                       >
-                        Send Interest
+                          <i className="fas fa-heart me-2"></i>book PG
                       </button>
                     )}
                   </div>
@@ -397,12 +491,20 @@ function PGRooms() {
           ))}
         </div>
       ) : (
-        <div className="card text-center">
-          <div className="card-body">
-            <h5>No PG rooms found</h5>
-            <p className="text-muted">Try adjusting your filters or check back later.</p>
-            <button className="btn btn-primary" onClick={() => setFilters({ region: '', generalPreference: '', availability: '' })}>
-              Clear Filters
+          <div className="card border-0 shadow-lg rounded-4 text-center" style={{ 
+            background: 'rgba(255, 255, 255, 0.9)', 
+            backdropFilter: 'blur(10px)' 
+          }}>
+            <div className="card-body p-5">
+              <i className="fas fa-search text-muted mb-3" style={{ fontSize: '3rem' }}></i>
+              <h5 className="fw-bold mb-3" style={{ color: '#2C3E50' }}>No PG rooms found</h5>
+              <p className="text-muted mb-4">Try adjusting your filters or check back later for new listings.</p>
+              <button 
+                className="btn btn-primary rounded-3 px-4"
+                onClick={() => setFilters({ region: '', generalPreference: '', availability: '' })}
+                style={{ background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', border: 'none' }}
+              >
+                <i className="fas fa-times me-2"></i>Clear Filters
             </button>
           </div>
         </div>
@@ -414,6 +516,7 @@ function PGRooms() {
         onClose={handleCloseModal}
         room={selectedRoom}
       />
+      </div>
     </div>
   );
 }

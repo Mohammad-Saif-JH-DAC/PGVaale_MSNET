@@ -93,8 +93,7 @@ public class SecurityConfig {
                                 "/api/room-interests/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/api/contactUs/**",
-                                "/api/**")
+                                "/api/contactUs/**")
                         .permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         // Role-based endpoints

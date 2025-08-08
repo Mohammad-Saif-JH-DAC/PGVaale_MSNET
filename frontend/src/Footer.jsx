@@ -11,7 +11,7 @@ const socialLinks = [
 
 // Helper to decode JWT and get user role
 function getUserRole() {
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   if (!token) return null;
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
@@ -34,55 +34,54 @@ function Footer() {
 
   return (
     <footer
-      className="bg-dark text-light py-2 mt-auto"
-      style={{ position: 'relative', bottom: 0, width: '100%', fontSize: '0.95rem' }}
+      className="text-dark py-2 mt-auto"
+      style={{ background: 'linear-gradient(90deg, #e0e7ff 0%, #f8fafc 100%)', borderTop: '4px solid #6366F1', borderRadius: '1.5rem 1.5rem 0 0', boxShadow: '0 -2px 12px rgba(44,62,80,0.07)', position: 'relative', bottom: 0, width: '100%', fontSize: '0.95rem' }}
     >
       <FeedbackModal show={showFeedback} onClose={() => setShowFeedback(false)} onSubmit={handleFeedbackSubmit} />
       <div className="container">
         <div className="row align-items-center text-center text-md-start">
           {/* PGVaale Column */}
           <div className="col-12 col-md-3 mb-2 mb-md-0">
-            <h6 className="fw-bold text-warning mb-1" style={{ fontSize: '1rem' }}>PGVaale</h6>
-            <div style={{ fontSize: '0.95em' }}>
+            <h6 className="fw-bold mb-1" style={{ fontSize: '1.1rem', color: '#4F46E5' }}>
+              <i className="fas fa-home me-2" style={{ color: '#6366F1' }}></i>PGVaale
+            </h6>
+            <div style={{ fontSize: '0.95em', color: '#6366F1' }}>
               <i className="fas fa-envelope me-2"></i>
-              <a href="mailto:support@pgvaale.com" className="text-light text-decoration-none">support@pgvaale.com</a>
+              <a href="mailto:support@pgvaale.com" className="text-decoration-none" style={{ color: '#4F46E5' }}>support@pgvaale.com</a>
             </div>
           </div>
-
           {/* Quick Links Column */}
           <div className="col-12 col-md-3 mb-2 mb-md-0">
-            <h6 className="fw-bold text-warning mb-1" style={{ fontSize: '1rem' }}>Quick Links</h6>
+            <h6 className="fw-bold mb-1" style={{ fontSize: '1.1rem', color: '#4F46E5' }}>Quick Links</h6>
             <ul className="list-unstyled mb-0" style={{ fontSize: '0.95em' }}>
-              <li><a href="/" className="text-light text-decoration-none">Home</a></li>
-              <li><a href="/about" className="text-light text-decoration-none">About Us</a></li>
-              <li><a href="/contact" className="text-light text-decoration-none">Contact</a></li>
-              <li><a href="/privacy-policy" className="text-light text-decoration-none">Privacy Policy</a></li>
+              <li><a href="/" className="text-decoration-none" style={{ color: '#6366F1' }}>Home</a></li>
+              <li><a href="/about" className="text-decoration-none" style={{ color: '#6366F1' }}>About Us</a></li>
+              <li><a href="/contact" className="text-decoration-none" style={{ color: '#6366F1' }}>Contact</a></li>
+              <li><a href="/privacy-policy" className="text-decoration-none" style={{ color: '#6366F1' }}>Privacy Policy</a></li>
             </ul>
           </div>
-
           {/* Services Column */}
           <div className="col-12 col-md-2 mb-2 mb-md-0">
-            <h6 className="fw-bold text-warning mb-1" style={{ fontSize: '1rem' }}>Services</h6>
+            <h6 className="fw-bold mb-1" style={{ fontSize: '1.1rem', color: '#4F46E5' }}>Services</h6>
             <ul className="list-unstyled mb-0" style={{ fontSize: '0.95em' }}>
-              <li><a href="/" className="text-light text-decoration-none">PG Rooms</a></li>
-              <li><a href="/" className="text-light text-decoration-none">Tiffin Service</a></li>
-              <li><a href="/" className="text-light text-decoration-none">Maid Service</a></li>
+              <li><a href="/" className="text-decoration-none" style={{ color: '#6366F1' }}>PG Rooms</a></li>
+              <li><a href="/" className="text-decoration-none" style={{ color: '#6366F1' }}>Tiffin Service</a></li>
+              <li><a href="/" className="text-decoration-none" style={{ color: '#6366F1' }}>Maid Service</a></li>
               {userRole === 'owner' && (
-                <li><a href="/owner-dashboard" className="text-light text-decoration-none">Owner Dashboard</a></li>
+                <li><a href="/owner-dashboard" className="text-decoration-none" style={{ color: '#6366F1' }}>Owner Dashboard</a></li>
               )}
               {userRole === 'maid' && (
-                <li><a href="/maid-dashboard" className="text-light text-decoration-none">Maid Dashboard</a></li>
+                <li><a href="/maid-dashboard" className="text-decoration-none" style={{ color: '#6366F1' }}>Maid Dashboard</a></li>
               )}
               {userRole === 'tiffin' && (
-                <li><a href="/tiffin-dashboard" className="text-light text-decoration-none">Tiffin Dashboard</a></li>
+                <li><a href="/tiffin-dashboard" className="text-decoration-none" style={{ color: '#6366F1' }}>Tiffin Dashboard</a></li>
               )}
             </ul>
           </div>
-
           {/* Social Media Column */}
           <div className="col-6 col-md-2 mb-2 mb-md-0">
-            <h6 className="fw-bold text-warning mb-1" style={{ fontSize: '1rem' }}>Connect</h6>
-            <div className="mb-1" style={{ fontSize: '0.95em', color: '#bbb' }}>Follow us:</div>
+            <h6 className="fw-bold mb-1" style={{ fontSize: '1.1rem', color: '#4F46E5' }}>Connect</h6>
+            <div className="mb-1" style={{ fontSize: '0.95em', color: '#6366F1' }}>Follow us:</div>
             <div>
               {socialLinks.map(link => (
                 <a
@@ -90,30 +89,28 @@ function Footer() {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-light fs-5 me-3"
+                  className="fs-5 me-3"
                   aria-label={link.label}
-                  style={{ verticalAlign: 'middle' }}
+                  style={{ color: '#6366F1', verticalAlign: 'middle' }}
                 >
                   <i className={link.icon}></i>
                 </a>
               ))}
             </div>
           </div>
-
           {/* Feedback Button Column */}
           <div className="col-6 col-md-2 text-md-end text-center">
             <button
-              className="btn btn-outline-warning btn-sm"
-              style={{ fontSize: '0.95em' }}
+              className="btn btn-outline-primary btn-sm"
+              style={{ fontSize: '0.95em', borderColor: '#6366F1', color: '#6366F1' }}
               onClick={() => setShowFeedback(true)}
             >
               Feedback
             </button>
           </div>
         </div>
-
         <hr className="border-secondary my-2" />
-        <div className="text-center" style={{ fontSize: '0.85rem' }}>
+        <div className="text-center" style={{ fontSize: '0.85rem', color: '#6366F1' }}>
           &copy; {new Date().getFullYear()} PGVaale. All rights reserved.
         </div>
       </div>

@@ -20,7 +20,7 @@ api.interceptors.request.use(
     config.headers['Content-Type'] = 'application/json';
     
     // Add auth token for non-auth endpoints
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
@@ -56,7 +56,7 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
       if (window.location.pathname !== '/login' && !window.location.pathname.includes('/register')) {
         window.location.href = '/login';
       }

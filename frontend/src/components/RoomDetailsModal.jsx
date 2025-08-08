@@ -10,7 +10,7 @@ function RoomDetailsModal({ show, onClose, room }) {
   const [interestSuccess, setInterestSuccess] = useState('');
 
   // Check if user is authenticated for interest functionality
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   const isAuthenticated = !!token;
 
   // Reset image index when room changes
@@ -84,26 +84,28 @@ function RoomDetailsModal({ show, onClose, room }) {
   });
 
   return (
-    <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+    <div className="modal fade show d-block" style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(2px)' }}>
       <div className="modal-dialog modal-xl modal-dialog-scrollable">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title">PG Room #{room.id}</h5>
+        <div className="modal-content border-0 rounded-4 shadow-lg" style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%)', boxShadow: '0 8px 32px rgba(44,62,80,0.12)' }}>
+          <div className="modal-header border-0" style={{ borderTopLeftRadius: '1.5rem', borderTopRightRadius: '1.5rem', background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)' }}>
+            <h5 className="modal-title fw-bold" style={{ color: '#2C3E50' }}>
+              <i className="fas fa-bed text-primary me-2"></i>PG Room #{room.id}
+            </h5>
             <button type="button" className="btn-close" onClick={handleClose} aria-label="Close"></button>
           </div>
           <div className="modal-body">
             <div className="row">
               {/* Images Section */}
               <div className="col-md-6 mb-4">
-                <h6 className="mb-3">📸 Images</h6>
+                <h6 className="mb-3 fw-bold" style={{ color: '#4F46E5' }}><i className="fas fa-images me-2"></i>Images</h6>
                 {normalizedImages.length > 0 ? (
                   <div className="position-relative">
-                    <div className="card">
+                    <div className="card border-0 shadow rounded-4 overflow-hidden" style={{ background: 'rgba(255,255,255,0.85)' }}>
                       <img
                         src={normalizedImages[currentImageIndex]}
                         alt={`Room ${currentImageIndex + 1}`}
                         className="card-img-top"
-                        style={{ height: '300px', objectFit: 'cover' }}
+                        style={{ height: '300px', objectFit: 'cover', borderRadius: '1rem 1rem 0 0' }}
                         onError={(e) => {
                           e.target.onerror = null;
                           e.target.src = '/placeholder.png';
@@ -112,28 +114,27 @@ function RoomDetailsModal({ show, onClose, room }) {
                       {normalizedImages.length > 1 && (
                         <>
                           <button
-                            className="btn btn-dark btn-sm position-absolute top-50 start-0 translate-middle-y ms-2"
+                            className="btn btn-primary btn-sm position-absolute top-50 start-0 translate-middle-y ms-2 rounded-circle shadow"
                             onClick={prevImage}
-                            style={{ opacity: 0.8 }}
+                            style={{ opacity: 0.85 }}
                           >
-                            ‹
+                            <i className="fas fa-chevron-left"></i>
                           </button>
                           <button
-                            className="btn btn-dark btn-sm position-absolute top-50 end-0 translate-middle-y me-2"
+                            className="btn btn-primary btn-sm position-absolute top-50 end-0 translate-middle-y me-2 rounded-circle shadow"
                             onClick={nextImage}
-                            style={{ opacity: 0.8 }}
+                            style={{ opacity: 0.85 }}
                           >
-                            ›
+                            <i className="fas fa-chevron-right"></i>
                           </button>
                           <div className="position-absolute bottom-0 start-50 translate-middle-x mb-2">
-                            <span className="badge bg-dark">
+                            <span className="badge bg-primary rounded-pill px-3 py-2">
                               {currentImageIndex + 1} / {normalizedImages.length}
                             </span>
                           </div>
                         </>
                       )}
                     </div>
-
                     {/* Thumbnails */}
                     {normalizedImages.length > 1 && (
                       <div className="d-flex gap-2 mt-2 overflow-auto" style={{ maxHeight: '80px' }}>
@@ -148,7 +149,8 @@ function RoomDetailsModal({ show, onClose, room }) {
                               height: '60px',
                               objectFit: 'cover',
                               cursor: 'pointer',
-                              border: index === currentImageIndex ? '2px solid #0d6efd' : '1px solid #dee2e6',
+                              border: index === currentImageIndex ? '2px solid #6366F1' : '1px solid #dee2e6',
+                              borderRadius: '0.75rem',
                             }}
                             onClick={() => setCurrentImageIndex(index)}
                             onError={(e) => {
@@ -160,35 +162,35 @@ function RoomDetailsModal({ show, onClose, room }) {
                     )}
                   </div>
                 ) : (
-                  <div className="alert alert-info">
-                    <i className="bi bi-image"></i> No images available for this room.
+                  <div className="alert alert-info rounded-4 shadow-sm">
+                    <i className="fas fa-image me-2"></i> No images available for this room.
                   </div>
                 )}
               </div>
 
               {/* Room Information */}
               <div className="col-md-6 mb-4">
-                <h6 className="mb-3">🏠 Room Information</h6>
-                <div className="card">
+                <h6 className="mb-3 fw-bold" style={{ color: '#4F46E5' }}><i className="fas fa-info-circle me-2"></i>Room Information</h6>
+                <div className="card border-0 shadow rounded-4" style={{ background: 'rgba(255,255,255,0.85)' }}>
                   <div className="card-body">
                     <div className="row g-3">
                       <div className="col-sm-6">
-                        <strong>Region:</strong>
+                        <strong><i className="fas fa-map-marker-alt text-primary me-2"></i>Region:</strong>
                         <p className="mb-2">{room.region || 'N/A'}</p>
                       </div>
                       <div className="col-sm-6">
-                        <strong>Rent:</strong>
+                        <strong><i className="fas fa-rupee-sign text-success me-2"></i>Rent:</strong>
                         <p className="mb-2 text-success fw-bold">₹{room.rent}/month</p>
                       </div>
                       <div className="col-sm-6">
-                        <strong>Preference:</strong>
+                        <strong><i className="fas fa-users text-info me-2"></i>Preference:</strong>
                         <p className="mb-2">{room.generalPreference || 'Any'}</p>
                       </div>
                       <div className="col-sm-6">
-                        <strong>Availability:</strong>
+                        <strong><i className="fas fa-check-circle text-warning me-2"></i>Availability:</strong>
                         <p className="mb-2">
                           <span
-                            className={`badge ${
+                            className={`badge px-3 py-2 rounded-pill ${
                               room.availability === 'Available' || room.availability === true
                                 ? 'bg-success'
                                 : 'bg-danger'
@@ -201,11 +203,11 @@ function RoomDetailsModal({ show, onClose, room }) {
                         </p>
                       </div>
                       <div className="col-12">
-                        <strong>Amenities:</strong>
+                        <strong><i className="fas fa-star text-warning me-2"></i>Amenities:</strong>
                         <p className="mb-2">{room.amenities || 'N/A'}</p>
                       </div>
                       <div className="col-12">
-                        <strong>Nearby:</strong>
+                        <strong><i className="fas fa-location-arrow text-info me-2"></i>Nearby:</strong>
                         <p className="mb-2">{room.nearbyResources || 'N/A'}</p>
                       </div>
                     </div>
@@ -215,8 +217,8 @@ function RoomDetailsModal({ show, onClose, room }) {
 
               {/* Map Section */}
               <div className="col-12 mb-4">
-                <h6 className="mb-3">📍 Location</h6>
-                <div style={{ height: '300px' }}>
+                <h6 className="mb-3 fw-bold" style={{ color: '#4F46E5' }}><i className="fas fa-map-marked-alt me-2"></i>Location</h6>
+                <div className="rounded-4 shadow-sm overflow-hidden" style={{ height: '300px', background: '#e0e7ff' }}>
                   <MapComponent
                     lat={room.latitude}
                     lng={room.longitude}
@@ -228,12 +230,12 @@ function RoomDetailsModal({ show, onClose, room }) {
               {/* Interest Form */}
               {token ? (
                 <div className="col-12">
-                  <h6 className="mb-3">💌 Send Interest</h6>
-                  <div className="card">
+                  <h6 className="mb-3 fw-bold" style={{ color: '#4F46E5' }}><i className="fas fa-envelope me-2"></i>Send Interest</h6>
+                  <div className="card border-0 shadow rounded-4" style={{ background: 'rgba(255,255,255,0.85)' }}>
                     <div className="card-body">
                       {interestSuccess && (
                         <div
-                          className={`alert ${
+                          className={`alert rounded-4 shadow-sm ${
                             interestSuccess.includes('successfully') ? 'alert-success' : 'alert-danger'
                           }`}
                         >
@@ -242,12 +244,12 @@ function RoomDetailsModal({ show, onClose, room }) {
                       )}
                       <form onSubmit={handleInterest}>
                         <div className="mb-3">
-                          <label htmlFor="interestMessage" className="form-label">
+                          <label htmlFor="interestMessage" className="form-label fw-semibold" style={{ color: '#374151' }}>
                             Message to Owner:
                           </label>
                           <textarea
                             id="interestMessage"
-                            className="form-control"
+                            className="form-control rounded-3 shadow-sm"
                             rows="3"
                             value={interestMsg}
                             onChange={(e) => setInterestMsg(e.target.value)}
@@ -255,8 +257,8 @@ function RoomDetailsModal({ show, onClose, room }) {
                             required
                           ></textarea>
                         </div>
-                        <button type="submit" className="btn btn-primary">
-                          Send Interest
+                        <button type="submit" className="btn btn-primary rounded-3 px-4 shadow-sm" style={{ background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', border: 'none' }}>
+                          <i className="fas fa-paper-plane me-2"></i>Send Interest
                         </button>
                       </form>
                     </div>
@@ -264,9 +266,9 @@ function RoomDetailsModal({ show, onClose, room }) {
                 </div>
               ) : (
                 <div className="col-12">
-                  <div className="alert alert-info">
+                  <div className="alert alert-info rounded-4 shadow-sm">
                     <strong>💡 Tip:</strong> Please{' '}
-                    <a href="/login" className="alert-link">
+                    <a href="/login" className="alert-link text-primary fw-bold">
                       log in
                     </a>{' '}
                     to send interest to the owner.
@@ -275,9 +277,9 @@ function RoomDetailsModal({ show, onClose, room }) {
               )}
             </div>
           </div>
-          <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={handleClose}>
-              Close
+          <div className="modal-footer border-0" style={{ borderBottomLeftRadius: '1.5rem', borderBottomRightRadius: '1.5rem', background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)' }}>
+            <button type="button" className="btn btn-outline-primary rounded-3 px-4" onClick={handleClose}>
+              <i className="fas fa-times me-2"></i>Close
             </button>
           </div>
         </div>

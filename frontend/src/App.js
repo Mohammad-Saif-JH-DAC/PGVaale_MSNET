@@ -18,12 +18,13 @@ import UserDashboard from './pages/UserDashboard';
 import TiffinDashboard from './pages/TiffinDashboard';
 import MaidDashboard from './pages/MaidDashboard';
 import MaidHiring from './pages/MaidHiring';
+import AboutUs from './pages/AboutUs';
 import Footer from './Footer';
 import PrivacyPolicy from './components/PrivacyPolicy';
 
 // Helper to decode JWT and get user role
 function getUserRole() {
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   if (!token) return null;
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
@@ -35,8 +36,8 @@ function getUserRole() {
 
 // Logout function
 function handleLogout(navigate) {
-  localStorage.removeItem('token');
-  localStorage.removeItem('userRole');
+  sessionStorage.removeItem('token');
+  sessionStorage.removeItem('userRole');
   navigate('/');
 }
 
@@ -51,14 +52,19 @@ function PrivateRoute({ element, allowedRoles }) {
 // Navigation component with logout functionality
 function Navigation() {
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   const userRole = getUserRole();
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav className="navbar navbar-expand-lg" style={{ background: 'linear-gradient(90deg, #e0e7ff 0%, #f8fafc 100%)', boxShadow: '0 2px 12px rgba(44,62,80,0.07)', borderRadius: '0 0 1.5rem 1.5rem', marginBottom: 12 }}>
       <div className="container-fluid">
-        <Link className="navbar-brand" to="/">PGVaale</Link>
-        <div className="collapse navbar-collapse">
+        <Link className="navbar-brand fw-bold" to="/" style={{ color: '#4F46E5', fontSize: '2rem', letterSpacing: '1px' }}>
+          <i className="fas fa-home me-2" style={{ color: '#6366F1' }}></i>PGVaale
+        </Link>
+        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span className="navbar-toggler-icon"></span>
+        </button>
+        <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
             {userRole !== 'owner' && (
   <li className="nav-item">
@@ -77,6 +83,9 @@ function Navigation() {
             )}
             <li className="nav-item">
               <Link className="nav-link" to="/contact">ContactUs</Link>
+            </li>
+            <li className="nav-item">
+              <Link className="nav-link" to="/about">About Us</Link>
             </li>
             {token && userRole === 'admin' && (
               <li className="nav-item">
@@ -153,6 +162,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/contact" element={<ContactUs />} />
+            <Route path="/about" element={<AboutUs />} />
             <Route path="/register/*" element={<Register />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/admin" element={<Admin />} />

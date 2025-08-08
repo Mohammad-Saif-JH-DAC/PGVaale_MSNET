@@ -16,6 +16,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import com.pgvaale.backend.entity.Feedback_Tiffin;
+import com.pgvaale.backend.repository.Feedback_TiffinRepository;
+import com.pgvaale.backend.repository.MenuRepository;
+import com.pgvaale.backend.repository.UserTiffinRepository;
+import com.pgvaale.backend.entity.Menu;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -27,6 +32,15 @@ public class TiffinController {
     
     @Autowired
     private TiffinRepository tiffinRepository;
+    
+    @Autowired
+    private Feedback_TiffinRepository feedbackTiffinRepository;
+
+    @Autowired
+    private UserTiffinRepository userTiffinRepository;
+
+    @Autowired
+    private MenuRepository menuRepository;
     
     // Dashboard
     @GetMapping("/dashboard")
@@ -179,6 +193,42 @@ public class TiffinController {
             throw new RuntimeException("Tiffin not found for username: " + username);
         } catch (Exception e) {
             throw new RuntimeException("Error getting tiffin ID: " + e.getMessage());
+        }
+    }
+
+    // Delete tiffin account
+    @DeleteMapping("/profile")
+    public ResponseEntity<?> deleteAccount() {
+        try {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            String username = auth.getName();
+            
+            Optional<Tiffin> tiffinOptional = tiffinRepository.findByUsername(username);
+            if (!tiffinOptional.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Tiffin tiffin = tiffinOptional.get();
+            Long tiffinId = tiffin.getId();
+            
+            // Delete all feedback for this tiffin
+            List<Feedback_Tiffin> tiffinFeedback = feedbackTiffinRepository.findByTiffinId(tiffinId);
+            feedbackTiffinRepository.deleteAll(tiffinFeedback);
+            
+            // Delete all user-tiffin relationships for this tiffin
+            List<UserTiffin> userTiffinRelations = userTiffinRepository.findByTiffinId(tiffinId);
+            userTiffinRepository.deleteAll(userTiffinRelations);
+            
+            // Delete all menus for this tiffin
+            List<Menu> tiffinMenus = menuRepository.findByTiffinId(tiffinId);
+            menuRepository.deleteAll(tiffinMenus);
+            
+            // Delete the tiffin account
+            tiffinRepository.delete(tiffin);
+            
+            return ResponseEntity.ok("Account deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error deleting account: " + e.getMessage());
         }
     }
 } 

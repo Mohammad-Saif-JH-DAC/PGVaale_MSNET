@@ -7,6 +7,9 @@ import { Link } from 'react-router-dom';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
+import Toast from '../utils/Toast'; 
+
+
 
 // Fix for default marker icons in React-Leaflet
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -21,7 +24,7 @@ L.Icon.Default.mergeOptions({
 });
 
 function OwnerDashboard() {
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   let username = '';
   if (token) {
     try {
@@ -89,11 +92,11 @@ const handleSaveProfile = async () => {
     await api.put(`/api/owners/${ownerId}`, profileForm);
     setOwnerDetails(profileForm); // Update displayed data
     setIsEditingProfile(false);
-    setError('Profile updated successfully.');
+    Toast.success('Profile updated successfully.');
     setTimeout(() => setError(''), 3000);
   } catch (err) {
     console.error('Error updating profile:', err);
-    setError('Failed to update profile: ' + (err.response?.data || err.message));
+    Toast.error('Failed to update profile: ' + (err.response?.data || err.message));
   }
 };
 
@@ -105,7 +108,7 @@ const handleSaveProfile = async () => {
       if (!isMounted) return;
 
       if (!username) {
-        setError('User not authenticated. Please log in as an owner.');
+        Toast.error('User not authenticated. Please log in as an owner.');
         setLoading(false);
         return;
       }
@@ -123,7 +126,7 @@ const handleSaveProfile = async () => {
       }
 
       if (!hasOwnerRole) {
-        setError('You need to be logged in as an owner.');
+        Toast.error('You need to be logged in as an owner.');
         setLoading(false);
         return;
       }
@@ -142,7 +145,7 @@ const handleSaveProfile = async () => {
       } catch (err) {
         console.error('Error fetching data:', err);
         const message = err.response?.data?.message || err.response?.data || err.message;
-        if (isMounted) setError(message);
+        if (isMounted) Toast.error(message);
         if (isMounted) setRooms([]);
       } finally {
         if (isMounted) setLoading(false);
@@ -173,21 +176,21 @@ const handleSaveProfile = async () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!ownerId) {
-      setError('Owner ID missing.');
+      Toast.error('Owner ID missing.');
       return;
     }
 
     const validImages = form.imagePaths.filter((url) => url.trim() !== '');
     if (validImages.length === 0) {
-      setError('At least one image URL is required.');
+      Toast.warn('At least one image URL is required.');
       return;
     }
     if (validImages.length > 5) {
-      setError('Maximum of 5 image URLs allowed.');
+      Toast.info('Maximum of 5 image URLs allowed.');
       return;
     }
     if (!form.region) {
-      setError('Please select a region.');
+      Toast.warn('Please select a region.');
       return;
     }
 
@@ -207,10 +210,10 @@ const handleSaveProfile = async () => {
     try {
       if (editingId) {
         await api.put(`/api/pg/${editingId}`, dataToSend);
-        setError('PG updated successfully.');
+        Toast.success('PG updated successfully.');
       } else {
         await api.post('/api/pg/register', dataToSend);
-        setError('PG registered successfully.');
+        Toast.success('PG registered successfully.');
       }
 
       // Refetch updated list
@@ -234,8 +237,8 @@ const handleSaveProfile = async () => {
 
       setTimeout(() => setError(''), 3000);
     } catch (err) {
-      console.error('Error saving PG:', err);
-      setError(err.response?.data || err.message);
+      Toast.error('Error saving PG:', err);
+      Toast.error(err.response?.data || err.message);
     }
   };
 
@@ -262,11 +265,11 @@ const handleSaveProfile = async () => {
     try {
       await api.delete(`/api/pg/${id}`);
       setRooms(rooms.filter((r) => r.id !== id));
-      setError('PG deleted successfully.');
+      Toast.success('PG deleted successfully.');
       setTimeout(() => setError(''), 3000);
     } catch (err) {
-      console.error('Delete PG:', err);
-      setError(err.response?.data || err.message);
+     Toast.error('Delete PG:', err);
+      Toast.error(err.response?.data || err.message);
     }
   };
 
@@ -278,7 +281,7 @@ const handleDeleteAccount = async () => {
         try {
           await api.delete(`/api/pg/${pg.id}`);
         } catch (err) {
-          console.warn(`Failed to delete PG ${pg.id}`, err);
+          Toast.warn(`Failed to delete PG ${pg.id}`, err);
         }
       });
       await Promise.all(deletePgPromises);
@@ -293,13 +296,13 @@ const handleDeleteAccount = async () => {
     localStorage.removeItem('token');
 
     // Step 4: Show success and redirect
-    setError('Your account has been deleted successfully.');
+    Toast.success('Your account has been deleted successfully.');
     setTimeout(() => {
       window.location.href = '/'; // Redirect to home
     }, 2000);
   } catch (err) {
     console.error('Error deleting account:', err);
-    setError('Failed to delete account. Please try again.');
+    Toast.error('Failed to delete account. Please try again.');
     setShowDeleteModal(false);
   }
 };
@@ -412,40 +415,60 @@ const handleDeleteAccount = async () => {
 
   if (loading)
     return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%)',
+        paddingTop: '2rem',
+        paddingBottom: '2rem'
+      }}>
       <div className="d-flex justify-content-center align-items-center" style={{ height: '80vh' }}>
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
+          </div>
         </div>
       </div>
     );
 
   return (
-    <div className="container py-4">
-      <div className="dashboard-header mb-4">
-        <h2 className="text-primary">PGVaale Owner Dashboard</h2>
-        <p className="text-muted">Manage your PG listings efficiently</p>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%)',
+      paddingTop: '2rem',
+      paddingBottom: '2rem'
+    }}>
+      <div className="container">
+        {/* Header Section */}
+        <div className="text-center mb-5">
+          <h1 className="display-5 fw-bold mb-3" style={{ color: '#2C3E50' }}>
+            <i className="fas fa-building text-primary me-3"></i>PGVaale Owner Dashboard
+          </h1>
+          <p className="lead text-muted mb-4">
+            Manage your PG listings efficiently and connect with potential tenants
+          </p>
       </div>
 
 {/* Owner Profile Card */}
 {ownerDetails && (
-  <div className="card mb-4 shadow-sm border-light">
-    <div className="card-body">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h5 className="card-title mb-0">
-          <i className="bi bi-person-badge me-2 text-primary"></i>
-          Owner Profile
+          <div className="card border-0 shadow-lg rounded-4 mb-5" style={{ 
+            background: 'rgba(255, 255, 255, 0.9)', 
+            backdropFilter: 'blur(10px)' 
+          }}>
+            <div className="card-body p-4">
+              <div className="d-flex justify-content-between align-items-center mb-4">
+                <h5 className="fw-bold mb-0" style={{ color: '#2C3E50' }}>
+                  <i className="fas fa-user-circle text-primary me-2"></i>Owner Profile
         </h5>
         {!isEditingProfile ? (
           <button
-            className="btn btn-sm btn-outline-primary"
+                    className="btn btn-outline-primary rounded-3 shadow-sm"
             onClick={() => setIsEditingProfile(true)}
           >
-            <i className="bi bi-pencil"></i> Edit
+                    <i className="fas fa-edit me-2"></i>Edit
           </button>
         ) : (
           <div className="d-flex gap-2">
             <button
-              className="btn btn-sm btn-outline-secondary"
+                      className="btn btn-outline-secondary rounded-3 shadow-sm"
               onClick={() => {
                 setIsEditingProfile(false);
                 // Reset form to original data
@@ -462,71 +485,75 @@ const handleDeleteAccount = async () => {
               Cancel
             </button>
             <button
-              className="btn btn-sm btn-success"
+                      className="btn btn-success rounded-3 shadow-sm"
               onClick={handleSaveProfile}
             >
-              <i className="bi bi-save"></i> Save
+                      <i className="fas fa-save me-2"></i>Save
             </button>
           </div>
         )}
       </div>
 
       {/* Delete Account Button */}
-<div className="mt-3">
+              <div className="mb-4">
   <button
-    className="btn btn-sm btn-outline-danger"
+                  className="btn btn-outline-danger rounded-3 shadow-sm"
     onClick={() => setShowDeleteModal(true)}
     title="Delete your account permanently"
   >
-    <i className="bi bi-trash"></i> Delete Account
+                  <i className="fas fa-trash me-2"></i>Delete Account
   </button>
 </div>
 
       {isEditingProfile ? (
         <div className="row g-3">
           <div className="col-md-6">
-            <label className="form-label">Name *</label>
+                    <label className="form-label fw-semibold" style={{ color: '#374151' }}>Name *</label>
             <input
               type="text"
-              className="form-control"
+                      className="form-control border-0 shadow-sm rounded-3"
               name="name"
               value={profileForm.name}
               onChange={handleProfileChange}
               required
+                      style={{ background: '#f8fafc' }}
             />
           </div>
           <div className="col-md-6">
-            <label className="form-label">Email *</label>
+                    <label className="form-label fw-semibold" style={{ color: '#374151' }}>Email *</label>
             <input
               type="email"
-              className="form-control"
+                      className="form-control border-0 shadow-sm rounded-3"
               name="email"
               value={profileForm.email}
               onChange={handleProfileChange}
               required
+                      style={{ background: '#f8fafc' }}
             />
           </div>
           <div className="col-md-6">
-            <label className="form-label">Mobile Number *</label>
+                    <label className="form-label fw-semibold" style={{ color: '#374151' }}>Mobile Number *</label>
             <input
               type="text"
-              className="form-control"
+                      className="form-control border-0 shadow-sm rounded-3"
               name="mobileNumber"
               value={profileForm.mobileNumber}
               onChange={handleProfileChange}
               pattern="[0-9]{10}"
               title="10-digit mobile number"
               required
+                      style={{ background: '#f8fafc' }}
             />
           </div>
           <div className="col-md-6">
-            <label className="form-label">Region *</label>
+                    <label className="form-label fw-semibold" style={{ color: '#374151' }}>Region *</label>
             <select
-              className="form-select"
+                      className="form-select border-0 shadow-sm rounded-3"
               name="region"
               value={profileForm.region}
               onChange={handleProfileChange}
               required
+                      style={{ background: '#f8fafc' }}
             >
               <option value="">Select Region</option>
               {regionOptions.map((region) => (
@@ -537,50 +564,52 @@ const handleDeleteAccount = async () => {
             </select>
           </div>
           <div className="col-md-6">
-            <label className="form-label">Age</label>
+                    <label className="form-label fw-semibold" style={{ color: '#374151' }}>Age</label>
             <input
               type="number"
-              className="form-control"
+                      className="form-control border-0 shadow-sm rounded-3"
               name="age"
               value={profileForm.age}
               onChange={handleProfileChange}
               min="18"
               max="120"
+                      style={{ background: '#f8fafc' }}
             />
           </div>
           <div className="col-md-6">
-            <label className="form-label">Aadhaar Number</label>
+                    <label className="form-label fw-semibold" style={{ color: '#374151' }}>Aadhaar Number</label>
             <input
               type="text"
-              className="form-control"
+                      className="form-control border-0 shadow-sm rounded-3"
               name="aadhaar"
               value={profileForm.aadhaar}
               onChange={handleProfileChange}
               pattern="[0-9]{12}"
               title="12-digit Aadhaar number"
               placeholder="123412341234"
+                      style={{ background: '#f8fafc' }}
             />
           </div>
         </div>
       ) : (
         <div className="row g-3">
           <div className="col-md-6">
-            <strong>Name:</strong> {ownerDetails.name || 'Not provided'}
+                    <strong style={{ color: '#374151' }}>Name:</strong> {ownerDetails.name || 'Not provided'}
           </div>
           <div className="col-md-6">
-            <strong>Email:</strong> {ownerDetails.email || 'Not provided'}
+                    <strong style={{ color: '#374151' }}>Email:</strong> {ownerDetails.email || 'Not provided'}
           </div>
           <div className="col-md-6">
-            <strong>Mobile:</strong> {ownerDetails.mobileNumber || 'Not provided'}
+                    <strong style={{ color: '#374151' }}>Mobile:</strong> {ownerDetails.mobileNumber || 'Not provided'}
           </div>
           <div className="col-md-6">
-            <strong>Region:</strong> {ownerDetails.region || 'Not provided'}
+                    <strong style={{ color: '#374151' }}>Region:</strong> {ownerDetails.region || 'Not provided'}
           </div>
           <div className="col-md-6">
-            <strong>Age:</strong> {ownerDetails.age || 'Not provided'}
+                    <strong style={{ color: '#374151' }}>Age:</strong> {ownerDetails.age || 'Not provided'}
           </div>
           <div className="col-md-6">
-            <strong>Aadhaar:</strong>{' '}
+                    <strong style={{ color: '#374151' }}>Aadhaar:</strong>{' '}
             {ownerDetails.aadhaar ? 'XXXX-XXXX-' + ownerDetails.aadhaar.slice(-4) : 'Not provided'}
           </div>
         </div>
@@ -589,57 +618,18 @@ const handleDeleteAccount = async () => {
   </div>
 )}
 
-{/* Delete Account Confirmation Modal */}
-{showDeleteModal && (
-  <div className="modal fade show" style={{ display: 'block' }} tabIndex="-1">
-    <div className="modal-dialog modal-dialog-centered">
-      <div className="modal-content">
-        <div className="modal-header">
-          <h5 className="modal-title text-danger">Confirm Account Deletion</h5>
-          <button
-            type="button"
-            className="btn-close"
-            onClick={() => setShowDeleteModal(false)}
-          ></button>
-        </div>
-        <div className="modal-body">
-          <p>Are you sure you want to delete your account?</p>
-          <p className="text-danger">
-            <strong>This will permanently delete:</strong>
-          </p>
-          <ul>
-            <li>Your owner profile</li>
-            <li>All your PG listings</li>
-            <li>Your contact information</li>
-          </ul>
-          <p>This action cannot be undone.</p>
-        </div>
-        <div className="modal-footer">
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => setShowDeleteModal(false)}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="btn btn-danger"
-            onClick={handleDeleteAccount}
-          >
-            Yes, Delete My Account
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-
+        {/* Error Message */}
       {error && (
         <div
-          className={`alert alert-${
-            error.includes('successfully') ? 'success' : 'danger'
-          } alert-dismissible fade show`}
+            className={`alert border-0 rounded-4 shadow-sm mb-4 ${
+              error.includes('successfully') ? 'alert-success' : 'alert-danger'
+            }`}
+            style={{ 
+              background: error.includes('successfully') 
+                ? 'linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)'
+                : 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)',
+              border: error.includes('successfully') ? '1px solid #10B981' : '1px solid #EF4444'
+            }}
         >
           <div className="d-flex justify-content-between align-items-center">
             <div>
@@ -648,7 +638,7 @@ const handleDeleteAccount = async () => {
                 error.includes('Authentication') ||
                 error.includes('Access denied')) && (
                 <div className="mt-2">
-                  <Link to="/login" className="btn btn-primary btn-sm">
+                    <Link to="/login" className="btn btn-primary btn-sm rounded-3">
                     Login as Owner
                   </Link>
                 </div>
@@ -659,82 +649,111 @@ const handleDeleteAccount = async () => {
         </div>
       )}
 
-      <ul className="nav nav-tabs mb-4">
+        {/* Navigation Tabs */}
+        <div className="card border-0 shadow-lg rounded-4 mb-4" style={{ 
+          background: 'rgba(255, 255, 255, 0.9)', 
+          backdropFilter: 'blur(10px)' 
+        }}>
+          <div className="card-body p-0">
+            <ul className="nav nav-tabs border-0" style={{ background: 'transparent' }}>
         <li className="nav-item">
           <button
-            className={`nav-link ${activeTab === 'list' ? 'active' : ''}`}
+                  className={`nav-link border-0 rounded-0 ${activeTab === 'list' ? 'active' : ''}`}
             onClick={() => setActiveTab('list')}
+                  style={{ 
+                    color: activeTab === 'list' ? '#6366F1' : '#6B7280',
+                    background: activeTab === 'list' ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
+                    borderBottom: activeTab === 'list' ? '3px solid #6366F1' : 'none'
+                  }}
           >
-            My PGs
+                  <i className="fas fa-list me-2"></i>My PGs
           </button>
         </li>
         <li className="nav-item">
           <button
-            className={`nav-link ${activeTab === 'form' ? 'active' : ''}`}
+                  className={`nav-link border-0 rounded-0 ${activeTab === 'form' ? 'active' : ''}`}
             onClick={() => setActiveTab('form')}
+                  style={{ 
+                    color: activeTab === 'form' ? '#6366F1' : '#6B7280',
+                    background: activeTab === 'form' ? 'rgba(99, 102, 241, 0.1)' : 'transparent',
+                    borderBottom: activeTab === 'form' ? '3px solid #6366F1' : 'none'
+                  }}
           >
-            {editingId ? 'Edit PG' : 'Add New PG'}
+                  <i className="fas fa-plus me-2"></i>{editingId ? 'Edit PG' : 'Add New PG'}
           </button>
         </li>
       </ul>
+          </div>
+        </div>
 
+        {/* Form Tab */}
       {activeTab === 'form' && (
-        <div className="card shadow-sm mb-5">
-          <div className="card-body">
-            <h5 className="card-title mb-4">{editingId ? 'Edit PG Details' : 'Register New PG'}</h5>
+          <div className="card border-0 shadow-lg rounded-4 mb-5" style={{ 
+            background: 'rgba(255, 255, 255, 0.9)', 
+            backdropFilter: 'blur(10px)' 
+          }}>
+            <div className="card-body p-4">
+              <h5 className="fw-bold mb-4" style={{ color: '#2C3E50' }}>
+                <i className="fas fa-edit text-primary me-2"></i>
+                {editingId ? 'Edit PG Details' : 'Register New PG'}
+              </h5>
             <form onSubmit={handleSubmit}>
               <div className="row g-3">
                 {[1, 2, 3, 4, 5].map((n) => (
                   <div className="col-md-6" key={n}>
-                    <label htmlFor={`imagePath${n}`} className="form-label">
+                      <label htmlFor={`imagePath${n}`} className="form-label fw-semibold" style={{ color: '#374151' }}>
                       Image URL {n}
                       {n === 1 && ' *'}
                     </label>
                     <input
                       type="text"
-                      className="form-control"
+                        className="form-control border-0 shadow-sm rounded-3"
                       id={`imagePath${n}`}
                       name={`imagePath${n}`}
                       placeholder="https://..."
                       value={form.imagePaths[n - 1]}
                       onChange={handleChange}
                       required={n === 1}
+                        style={{ background: '#f8fafc' }}
                     />
                   </div>
                 ))}
 
                 <div className="col-md-3">
-                  <label className="form-label">Latitude *</label>
+                    <label className="form-label fw-semibold" style={{ color: '#374151' }}>Latitude *</label>
                   <input
                     type="number"
                     step="any"
-                    className="form-control"
+                      className="form-control border-0 shadow-sm rounded-3"
                     name="latitude"
                     value={form.latitude}
                     onChange={handleChange}
                     required
+                      style={{ background: '#f8fafc' }}
                   />
                 </div>
                 <div className="col-md-3">
-                  <label className="form-label">Longitude *</label>
+                    <label className="form-label fw-semibold" style={{ color: '#374151' }}>Longitude *</label>
                   <input
                     type="number"
                     step="any"
-                    className="form-control"
+                      className="form-control border-0 shadow-sm rounded-3"
                     name="longitude"
                     value={form.longitude}
                     onChange={handleChange}
                     required
+                      style={{ background: '#f8fafc' }}
                   />
                 </div>
                 <div className="col-md-3">
-                  <label className="form-label">Region *</label>
+                    <label className="form-label fw-semibold" style={{ color: '#374151' }}>Region *</label>
                   <select
-                    className="form-select"
+                      className="form-select border-0 shadow-sm rounded-3"
                     name="region"
                     value={form.region}
                     onChange={handleChange}
                     required
+                      style={{ background: '#f8fafc' }}
                   >
                     <option value="">Select Region</option>
                     {regionOptions.map((region) => (
@@ -749,7 +768,7 @@ const handleDeleteAccount = async () => {
                   <div className="col-12">
                     <div
                       className="map-container mb-3"
-                      style={{ height: '200px', borderRadius: '8px', overflow: 'hidden' }}
+                        style={{ height: '200px', borderRadius: '1rem', overflow: 'hidden' }}
                     >
                       <MapComponent lat={form.latitude} lng={form.longitude} />
                     </div>
@@ -757,49 +776,53 @@ const handleDeleteAccount = async () => {
                 )}
 
                 <div className="col-md-6">
-                  <label className="form-label">Amenities</label>
+                    <label className="form-label fw-semibold" style={{ color: '#374151' }}>Amenities</label>
                   <textarea
-                    className="form-control"
+                      className="form-control border-0 shadow-sm rounded-3"
                     name="amenities"
                     value={form.amenities}
                     onChange={handleChange}
                     rows="2"
                     placeholder="WiFi, AC, Food, etc."
+                      style={{ background: '#f8fafc' }}
                   />
                 </div>
                 <div className="col-md-6">
-                  <label className="form-label">Nearby Resources</label>
+                    <label className="form-label fw-semibold" style={{ color: '#374151' }}>Nearby Resources</label>
                   <textarea
-                    className="form-control"
+                      className="form-control border-0 shadow-sm rounded-3"
                     name="nearbyResources"
                     value={form.nearbyResources}
                     onChange={handleChange}
                     rows="2"
                     placeholder="Metro, Market, College, etc."
+                      style={{ background: '#f8fafc' }}
                   />
                 </div>
                 <div className="col-md-4">
-                  <label className="form-label">Monthly Rent (₹) *</label>
+                    <label className="form-label fw-semibold" style={{ color: '#374151' }}>Monthly Rent (₹) *</label>
                   <div className="input-group">
-                    <span className="input-group-text">₹</span>
+                      <span className="input-group-text border-0" style={{ background: '#f8fafc' }}>₹</span>
                     <input
                       type="number"
-                      className="form-control"
+                        className="form-control border-0 shadow-sm rounded-3"
                       name="rent"
                       value={form.rent}
                       onChange={handleChange}
                       required
+                        style={{ background: '#f8fafc' }}
                     />
                   </div>
                 </div>
                 <div className="col-md-4">
-                  <label className="form-label">General Preference *</label>
+                    <label className="form-label fw-semibold" style={{ color: '#374151' }}>General Preference *</label>
                   <select
-                    className="form-select"
+                      className="form-select border-0 shadow-sm rounded-3"
                     name="generalPreference"
                     value={form.generalPreference}
                     onChange={handleChange}
                     required
+                      style={{ background: '#f8fafc' }}
                   >
                     <option value="">Select Preference</option>
                     {preferenceOptions.map((opt) => (
@@ -810,24 +833,25 @@ const handleDeleteAccount = async () => {
                   </select>
                 </div>
                 <div className="col-md-4">
-                  <label className="form-label">Availability *</label>
+                    <label className="form-label fw-semibold" style={{ color: '#374151' }}>Availability *</label>
                   <select
-                    className="form-select"
+                      className="form-select border-0 shadow-sm rounded-3"
                     name="availability"
                     value={form.availability}
                     onChange={handleChange}
                     required
+                      style={{ background: '#f8fafc' }}
                   >
                     <option value="Available">Available</option>
                     <option value="Not Available">Not Available</option>
                   </select>
                 </div>
 
-                <div className="col-12 mt-3">
-                  <div className="d-flex justify-content-end gap-2">
+                  <div className="col-12 mt-4">
+                    <div className="d-flex justify-content-end gap-3">
                     <button
                       type="button"
-                      className="btn btn-outline-secondary"
+                        className="btn btn-outline-secondary rounded-3 shadow-sm"
                       onClick={() => {
                         setEditingId(null);
                         setActiveTab('list');
@@ -844,9 +868,13 @@ const handleDeleteAccount = async () => {
                         });
                       }}
                     >
-                      Cancel
+                        <i className="fas fa-times me-2"></i>Cancel
                     </button>
-                    <button className="btn btn-primary" type="submit">
+                      <button className="btn btn-primary rounded-3 shadow-sm" type="submit" style={{ 
+                        background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', 
+                        border: 'none' 
+                      }}>
+                        <i className="fas fa-save me-2"></i>
                       {editingId ? 'Update PG' : 'Register PG'}
                     </button>
                   </div>
@@ -857,28 +885,38 @@ const handleDeleteAccount = async () => {
         </div>
       )}
 
+        {/* List Tab */}
       {activeTab === 'list' && (
-        <div className="card shadow-sm">
-          <div className="card-body">
+          <div className="card border-0 shadow-lg rounded-4" style={{ 
+            background: 'rgba(255, 255, 255, 0.9)', 
+            backdropFilter: 'blur(10px)' 
+          }}>
+            <div className="card-body p-4">
             <div className="d-flex justify-content-between align-items-center mb-4">
-              <h5 className="card-title mb-0">Your Registered PGs</h5>
+                <h5 className="fw-bold mb-0" style={{ color: '#2C3E50' }}>
+                  <i className="fas fa-list text-primary me-2"></i>Your Registered PGs
+                </h5>
               <button
-                className="btn btn-sm btn-primary"
+                  className="btn btn-primary rounded-3 shadow-sm"
                 onClick={() => {
                   setEditingId(null);
                   setActiveTab('form');
                 }}
+                  style={{ 
+                    background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', 
+                    border: 'none' 
+                  }}
               >
-                <i className="bi bi-plus-lg me-1"></i> Add New
+                  <i className="fas fa-plus me-2"></i>Add New
               </button>
             </div>
 
             {rooms.length ? (
               <div className="table-responsive">
-                <table className="table table-striped table-hover align-middle">
-                  <thead className="table-dark">
+                  <table className="table table-hover align-middle">
+                    <thead style={{ background: 'linear-gradient(135deg, #2C3E50 0%, #1ABC9C 100%)' }}>
                     <tr>
-                      <th scope="col" style={{ width: '5%' , color: 'white'}}>ID</th>
+                        <th scope="col" style={{ width: '5%', color: 'white' }}>ID</th>
                       <th scope="col" style={{ width: '15%', color: 'white' }}>Images</th>
                       <th scope="col" style={{ width: '10%', color: 'white' }}>Region</th>
                       <th scope="col" style={{ width: '20%', color: 'white' }}>Location</th>
@@ -907,7 +945,7 @@ const handleDeleteAccount = async () => {
                         <td>₹{pg.rent}/month</td>
                         <td>
                           <span
-                            className={`badge ${
+                              className={`badge rounded-pill ${
                               pg.generalPreference === 'Male'
                                 ? 'bg-primary'
                                 : pg.generalPreference === 'Female'
@@ -920,7 +958,7 @@ const handleDeleteAccount = async () => {
                         </td>
                         <td>
                           <span
-                            className={`badge ${
+                              className={`badge rounded-pill ${
                               pg.availability == 'Available' ? 'bg-success' : 'bg-danger'
                             }`}
                           >
@@ -930,24 +968,24 @@ const handleDeleteAccount = async () => {
                         <td>
                           <div className="d-flex gap-2">
                             <button
-                              className="btn btn-sm btn-outline-primary"
+                                className="btn btn-outline-primary btn-sm rounded-3"
                               onClick={() => handleEditRoom(pg)}
                               title="Edit"
                             >
-                              <i className="bi bi-pencil"></i>
+                                <i className="fas fa-edit"></i>
                             </button>
                             <button
-                              className="btn btn-sm btn-outline-danger"
+                                className="btn btn-outline-danger btn-sm rounded-3"
                               onClick={() => handleDelete(pg.id)}
                               title="Delete"
                             >
-                              <i className="bi bi-trash"></i>
+                                <i className="fas fa-trash"></i>
                             </button>
                           </div>
                         </td>
                         <td>
                           <span
-                            className={`badge ${
+                              className={`badge rounded-pill ${
                               pg.registeredUser?.name == null ? 'bg-danger' : 'bg-success'
                             }`}
                           >
@@ -962,12 +1000,15 @@ const handleDeleteAccount = async () => {
             ) : (
               <div className="text-center py-5">
                 <div className="mb-3">
-                  <i className="bi bi-house-door text-muted" style={{ fontSize: '3rem' }}></i>
+                    <i className="fas fa-house text-muted" style={{ fontSize: '3rem' }}></i>
                 </div>
                 <h5 className="text-muted">No PGs registered yet</h5>
                 <p className="text-muted">Start by adding your first PG property</p>
-                <button className="btn btn-primary mt-2" onClick={() => setActiveTab('form')}>
-                  Add Your First PG
+                  <button className="btn btn-primary rounded-3 shadow-sm mt-2" onClick={() => setActiveTab('form')} style={{ 
+                    background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', 
+                    border: 'none' 
+                  }}>
+                    <i className="fas fa-plus me-2"></i>Add Your First PG
                 </button>
               </div>
             )}
@@ -975,6 +1016,72 @@ const handleDeleteAccount = async () => {
         </div>
       )}
 
+        {/* Delete Account Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="modal fade show" style={{ display: 'block' }} tabIndex="-1">
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content border-0 rounded-4 shadow-lg" style={{ 
+                background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%)' 
+              }}>
+                <div className="modal-header border-0" style={{ 
+                  background: 'rgba(255,255,255,0.7)', 
+                  backdropFilter: 'blur(8px)',
+                  borderTopLeftRadius: '1.5rem',
+                  borderTopRightRadius: '1.5rem'
+                }}>
+                  <h5 className="modal-title text-danger fw-bold">
+                    <i className="fas fa-exclamation-triangle me-2"></i>Confirm Account Deletion
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setShowDeleteModal(false)}
+                  ></button>
+                </div>
+                <div className="modal-body p-4">
+                  <p>Are you sure you want to delete your account?</p>
+                  <p className="text-danger">
+                    <strong>This will permanently delete:</strong>
+                  </p>
+                  <ul>
+                    <li>Your owner profile</li>
+                    <li>All your PG listings</li>
+                    <li>Your contact information</li>
+                  </ul>
+                  <p>This action cannot be undone.</p>
+                </div>
+                <div className="modal-footer border-0" style={{ 
+                  background: 'rgba(255,255,255,0.7)', 
+                  backdropFilter: 'blur(8px)',
+                  borderBottomLeftRadius: '1.5rem',
+                  borderBottomRightRadius: '1.5rem'
+                }}>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary rounded-3"
+                    onClick={() => setShowDeleteModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger rounded-3"
+                    onClick={handleDeleteAccount}
+                  >
+                    <i className="fas fa-trash me-2"></i>Yes, Delete My Account
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal Backdrop */}
+        {showDeleteModal && (
+          <div className="modal-backdrop fade show"></div>
+        )}
+
+        {/* Lightbox */}
       {lightbox.isOpen && (
         <div className="custom-lightbox">
           <div className="lightbox-content">
@@ -1019,7 +1126,7 @@ const handleDeleteAccount = async () => {
         </div>
       )}
     </div>
-    
+    </div>
   );
   
 }

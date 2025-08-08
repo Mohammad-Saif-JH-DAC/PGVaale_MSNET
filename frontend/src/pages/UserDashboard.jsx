@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import api from '../api';
 import './UserDashboard.css';
+import Toast from '../utils/Toast';
+
+
+
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -25,7 +29,7 @@ const DashboardHome = () => {
   const fetchDashboardData = async () => {
     try {
       // Debug: Check if token exists
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token');
       console.log('Token exists:', !!token);
       
       // Fetch user profile to get real name
@@ -61,10 +65,12 @@ const DashboardHome = () => {
       });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      Toast.error('Error loading dashboard data: ' + (error.response?.data || error.message));
       
       // Handle 403 specifically
       if (error.response?.status === 403) {
         console.error('403 Forbidden - User not authorized or token invalid');
+        Toast.error('You are not authorized to view this data. Please log in.');
         // Set fallback data for logged-in users
         setDashboardData({
           userName: 'User',
@@ -78,10 +84,17 @@ const DashboardHome = () => {
 
   if (loading) {
     return (
-      <div className="container mt-5">
-        <div className="text-center">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Loading...</span>
+      <div style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%)',
+        paddingTop: '2rem',
+        paddingBottom: '2rem'
+      }}>
+        <div className="container">
+          <div className="text-center">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
           </div>
         </div>
       </div>
@@ -89,57 +102,151 @@ const DashboardHome = () => {
   }
 
   return (
-    <div className="container mt-4">
-      <div className="row">
-        <div className="col-12">
-          <h2 className="mb-4">
-            👋 Welcome, {dashboardData?.userName || 'User'}!
-          </h2>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%)',
+      paddingTop: '2rem',
+      paddingBottom: '2rem'
+    }}>
+      <div className="container">
+        {/* Header Section */}
+        <div className="text-center mb-5">
+          <h1 className="display-5 fw-bold mb-3" style={{ color: '#2C3E50' }}>
+            👋 Welcome, <span className="text-primary">{dashboardData?.userName || 'User'}</span>!
+          </h1>
+          <p className="lead text-muted mb-4">
+            Your personal dashboard for managing PG rooms, tiffin services, and maid bookings
+          </p>
         </div>
-      </div>
 
-
-      <div className="row">
-        <div className="col-12">
-          <div className="card">
-            <div className="card-header">
-              <h5>🚀 Quick Actions</h5>
-            </div>
-            <div className="card-body">
-              <div className="row">
-                <div className="col-md-3 mb-3">
-                  <a href="/pgrooms" className="btn btn-outline-primary w-100">
-                    🏠 Browse PG Rooms
-                  </a>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <a href="/user-dashboard/tiffins" className="btn btn-outline-warning w-100">
-                    🍱 Order Tiffin
-                  </a>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <a href="/maid-hiring" className="btn btn-outline-success w-100">
-                    🧹 Hire Maid Service
-                  </a>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <a href="/user-dashboard/bookings" className="btn btn-outline-info w-100">
-                    📋 My Bookings
-                  </a>
-                </div>
+        {/* Quick Actions Card */}
+        <div className="card border-0 shadow-lg rounded-4 mb-5" style={{ 
+          background: 'rgba(255, 255, 255, 0.9)', 
+          backdropFilter: 'blur(10px)' 
+        }}>
+          <div className="card-header border-0 bg-transparent">
+            <h5 className="fw-bold mb-0" style={{ color: '#2C3E50' }}>
+              <i className="fas fa-rocket text-primary me-2"></i>Quick Actions
+            </h5>
+          </div>
+          <div className="card-body p-4">
+            <div className="row g-3">
+              <div className="col-md-3 mb-3">
+                <a href="/pgrooms" className="btn btn-outline-primary w-100 rounded-3 shadow-sm" style={{ 
+                  borderColor: '#6366F1', 
+                  color: '#6366F1',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)';
+                  e.target.style.color = 'white';
+                  e.target.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'transparent';
+                  e.target.style.color = '#6366F1';
+                  e.target.style.transform = 'translateY(0)';
+                }}>
+                  <i className="fas fa-home me-2"></i>Browse PG Rooms
+                </a>
               </div>
-              
-              <div className="row mt-3">
-                <div className="col-md-6 mb-3">
-                  <a href="/user-dashboard/profile" className="btn btn-outline-secondary w-100">
-                    👤 Manage Profile
-                  </a>
-                </div>
-                <div className="col-md-6 mb-3">
-                  <a href="/user-dashboard/feedback" className="btn btn-outline-info w-100">
-                    ⭐ Give Feedback
-                  </a>
-                </div>
+              <div className="col-md-3 mb-3">
+                <a href="/user-dashboard/tiffins" className="btn btn-outline-warning w-100 rounded-3 shadow-sm" style={{ 
+                  borderColor: '#F59E0B', 
+                  color: '#F59E0B',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)';
+                  e.target.style.color = 'white';
+                  e.target.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'transparent';
+                  e.target.style.color = '#F59E0B';
+                  e.target.style.transform = 'translateY(0)';
+                }}>
+                  <i className="fas fa-utensils me-2"></i>Order Tiffin
+                </a>
+              </div>
+              <div className="col-md-3 mb-3">
+                <a href="/maid-hiring" className="btn btn-outline-success w-100 rounded-3 shadow-sm" style={{ 
+                  borderColor: '#10B981', 
+                  color: '#10B981',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'linear-gradient(135deg, #10B981 0%, #059669 100%)';
+                  e.target.style.color = 'white';
+                  e.target.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'transparent';
+                  e.target.style.color = '#10B981';
+                  e.target.style.transform = 'translateY(0)';
+                }}>
+                  <i className="fas fa-broom me-2"></i>Hire Maid Service
+                </a>
+              </div>
+              <div className="col-md-3 mb-3">
+                <a href="/user-dashboard/bookings" className="btn btn-outline-info w-100 rounded-3 shadow-sm" style={{ 
+                  borderColor: '#06B6D4', 
+                  color: '#06B6D4',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)';
+                  e.target.style.color = 'white';
+                  e.target.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'transparent';
+                  e.target.style.color = '#06B6D4';
+                  e.target.style.transform = 'translateY(0)';
+                }}>
+                  <i className="fas fa-clipboard-list me-2"></i>My Bookings
+                </a>
+              </div>
+            </div>
+            
+            <div className="row g-3 mt-2">
+              <div className="col-md-6 mb-3">
+                <a href="/user-dashboard/profile" className="btn btn-outline-secondary w-100 rounded-3 shadow-sm" style={{ 
+                  borderColor: '#6B7280', 
+                  color: '#6B7280',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'linear-gradient(135deg, #6B7280 0%, #4B5563 100%)';
+                  e.target.style.color = 'white';
+                  e.target.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'transparent';
+                  e.target.style.color = '#6B7280';
+                  e.target.style.transform = 'translateY(0)';
+                }}>
+                  <i className="fas fa-user me-2"></i>Manage Profile
+                </a>
+              </div>
+              <div className="col-md-6 mb-3">
+                <a href="/user-dashboard/feedback" className="btn btn-outline-info w-100 rounded-3 shadow-sm" style={{ 
+                  borderColor: '#06B6D4', 
+                  color: '#06B6D4',
+                  transition: 'all 0.3s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)';
+                  e.target.style.color = 'white';
+                  e.target.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'transparent';
+                  e.target.style.color = '#06B6D4';
+                  e.target.style.transform = 'translateY(0)';
+                }}>
+                  <i className="fas fa-star me-2"></i>Give Feedback
+                </a>
               </div>
             </div>
           </div>
@@ -165,9 +272,11 @@ const PGInterests = () => {
       const response = await api.get('/api/pg/user/booked');
       setBookedPGs(response.data);
     } catch (error) {
+      //console.error('Error fetching PG interests:', error);
+      Toast.error('Error loading PG interests: ' + (error.response?.data || error.message));
       console.error('Error fetching booked PGs:', error);
       if (error.response?.status === 401) {
-        localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
         window.location.href = '/login';
       } else {
         setBookedPGs([]);
@@ -331,6 +440,7 @@ const TiffinServices = () => {
       setTiffins(response.data);
     } catch (error) {
       console.error('Error fetching tiffin services:', error);
+      Toast.error('Error loading tiffin services: ' + (error.response?.data || error.message));
     } finally {
       setLoading(false);
     }
@@ -345,13 +455,13 @@ const TiffinServices = () => {
     e.preventDefault();
     try {
       await api.post(`/api/user/tiffins/${selectedTiffin.id}/request`);
-      setMessage(`Request sent to ${selectedTiffin.name}!`);
+      Toast.info(`Request sent to ${selectedTiffin.name}!`);
       setShowTiffinModal(false);
       setSelectedTiffin(null);
-      
+      Toast.success('Request sent successfully!');
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
-      setMessage('Error sending request: ' + error.response?.data);
+      Toast.error('Error sending request: ' + error.response?.data);
     }
   };
 
@@ -473,7 +583,8 @@ const TiffinRequests = () => {
       }
       setRequests(response.data);
     } catch (error) {
-      console.error('Error fetching requests:', error);
+      //console.error('Error fetching requests:', error);
+      Toast.error('Error loading tiffin requests: ' + (error.response?.data || error.message));
     } finally {
       setLoading(false);
     }
@@ -484,9 +595,9 @@ const TiffinRequests = () => {
       try {
         await api.delete(`/api/user/requests/${requestId}`);
         fetchRequests(); // Refresh the list
-        alert('Request cancelled successfully');
+       Toast.info('Request cancelled successfully');
       } catch (error) {
-        alert('Error cancelling request: ' + error.response?.data);
+        Toast.error('Error cancelling request: ' + error.response?.data);
       }
     }
   };
@@ -638,7 +749,8 @@ const MaidServices = () => {
       const response = await api.get('/api/maid/available');
       setMaids(response.data);
     } catch (error) {
-      console.error('Error fetching maids:', error);
+      //console.error('Error fetching maids:', error);
+      Toast.error('Error loading maid services: ' + (error.response?.data || error.message));
     } finally {
       setLoading(false);
     }
@@ -653,7 +765,7 @@ const MaidServices = () => {
     e.preventDefault();
     try {
              // Get user ID from token
-       const token = localStorage.getItem('token');
+       const token = sessionStorage.getItem('token');
        if (!token) {
          setMessage('Please log in to hire a maid');
          return;
@@ -683,9 +795,10 @@ const MaidServices = () => {
       
       // Show success message
       setTimeout(() => setMessage(''), 3000);
+      Toast.success('Maid hired successfully!');
     } catch (error) {
-      setMessage('Error hiring maid: ' + (error.response?.data || error.message));
-    }
+      Toast.error('Error hiring maid');
+      setMessage('Error hiring maid: ' + (error.response?.data || error.message));}
   };
 
   if (loading) {
@@ -866,7 +979,8 @@ const MyBookings = () => {
               const response = await api.get('/api/user/bookings');
       setBookings(response.data);
     } catch (error) {
-      console.error('Error fetching bookings:', error);
+      //console.error('Error fetching bookings:', error);
+      Toast.error('Error loading bookings: ' + (error.response?.data || error.message));
     } finally {
       setLoading(false);
     }
@@ -881,9 +995,9 @@ const MyBookings = () => {
           await api.delete(`/api/user/requests/${requestId}`);
         }
         fetchBookings(); // Refresh the list
-        alert('Request cancelled successfully');
+        Toast.success('Request cancelled successfully');
       } catch (error) {
-        alert('Error cancelling request: ' + error.response?.data);
+        Toast.error('Error cancelling request: ' + error.response?.data);
       }
     }
   };
@@ -1144,8 +1258,10 @@ const ActiveMaidServices = () => {
     try {
       const response = await api.get('/api/user/maids/active');
       setActiveServices(response.data);
+      //Toast.success('Active maid services loaded successfully!');
     } catch (error) {
-      console.error('Error fetching active services:', error);
+      //console.error('Error fetching active services:', error);
+      Toast.error('Error loading active maid services: ' + (error.response?.data || error.message));
     } finally {
       setLoading(false);
     }
@@ -1208,14 +1324,17 @@ const ActiveMaidServices = () => {
   );
 };
 
-// Feedback Component
+// Feedback Component for Maid 
 const Feedback = () => {
   const [feedback, setFeedback] = useState([]);
   const [maids, setMaids] = useState([]);
+  const [tiffins, setTiffins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [feedbackType, setFeedbackType] = useState('maid'); // 'maid' or 'tiffin'
   const [formData, setFormData] = useState({
     maidId: '',
+    tiffinId: '',
     rating: 5,
     feedback: ''
   });
@@ -1227,15 +1346,22 @@ const Feedback = () => {
 
   const fetchData = async () => {
     try {
-      const [feedbackResponse, maidsResponse] = await Promise.all([
+      const [maidFeedbackRes, maidsRes, tiffinFeedbackRes, tiffinsRes] = await Promise.all([
         api.get('/api/user/feedback'),
-        api.get('/api/maid/available') // Use the available maids endpoint instead
+        api.get('/api/maid/available'),
+        api.get('/api/user/tiffin-feedback'),
+        api.get('/api/user/tiffins')
       ]);
-      setFeedback(feedbackResponse.data);
-      setMaids(maidsResponse.data);
-      console.log('Fetched maids for feedback:', maidsResponse.data); // Debug log
+      // Combine feedbacks with a type property
+      const maidFeedback = (maidFeedbackRes.data || []).map(f => ({...f, type: 'maid'}));
+      const tiffinFeedback = (tiffinFeedbackRes.data || []).map(f => ({...f, type: 'tiffin'}));
+      setFeedback([...maidFeedback, ...tiffinFeedback].sort((a, b) => b.id - a.id));
+      setMaids(maidsRes.data);
+      setTiffins(tiffinsRes.data);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      //console.error('Error fetching data:', error);
+     Toast.error('Error loading feedback and maids: ');
+      console.error('Error fetching feedback data:', error);
     } finally {
       setLoading(false);
     }
@@ -1245,12 +1371,26 @@ const Feedback = () => {
     e.preventDefault();
     try {
               await api.post('/api/user/feedback', formData);
+      Toast.success('Feedback submitted successfully!');
+      if (feedbackType === 'maid') {
+        await api.post('/api/user/feedback', {
+          maidId: formData.maidId,
+          rating: formData.rating,
+          feedback: formData.feedback
+        });
+      } else {
+        await api.post('/api/user/tiffin-feedback', {
+          tiffinId: formData.tiffinId,
+          rating: formData.rating,
+          feedback: formData.feedback
+        });
+      }
       setMessage('Feedback submitted successfully!');
       setShowForm(false);
-      setFormData({ maidId: '', rating: 5, feedback: '' });
-      fetchData(); // Refresh the list
+      setFormData({ maidId: '', tiffinId: '', rating: 5, feedback: '' });
+      fetchData();
     } catch (error) {
-      setMessage('Error submitting feedback: ' + error.response?.data);
+      Toast.error('Error submitting feedback: ' + error.response?.data);
     }
   };
 
@@ -1278,18 +1418,13 @@ const Feedback = () => {
           )}
         </div>
       </div>
-
       <div className="row mb-4">
         <div className="col-12">
-          <button 
-            className="btn btn-primary"
-            onClick={() => setShowForm(true)}
-          >
+          <button className="btn btn-primary" onClick={() => setShowForm(true)}>
             + Give New Feedback
           </button>
         </div>
       </div>
-
       {/* Feedback Form Modal */}
       {showForm && (
         <div className="card mb-4">
@@ -1299,27 +1434,58 @@ const Feedback = () => {
           <div className="card-body">
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label className="form-label">Select Maid</label>
+                <label className="form-label">Feedback For</label>
                 <select
                   className="form-control"
-                  value={formData.maidId}
-                  onChange={(e) => setFormData({...formData, maidId: e.target.value})}
+                  value={feedbackType}
+                  onChange={e => setFeedbackType(e.target.value)}
                   required
                 >
-                  <option value="">Choose a maid...</option>
-                  {maids.map((maid) => (
-                    <option key={maid.id} value={maid.id}>
-                      {maid.name || `Maid ${maid.id}`} - {maid.services || 'Services not specified'} ({maid.region || 'Region not specified'})
-                    </option>
-                  ))}
+                  <option value="maid">Maid</option>
+                  <option value="tiffin">Tiffin</option>
                 </select>
               </div>
+              {feedbackType === 'maid' ? (
+                <div className="mb-3">
+                  <label className="form-label">Select Maid</label>
+                  <select
+                    className="form-control"
+                    value={formData.maidId}
+                    onChange={e => setFormData({ ...formData, maidId: e.target.value })}
+                    required
+                  >
+                    <option value="">Choose a maid...</option>
+                    {maids.map(maid => (
+                      <option key={maid.id} value={maid.id}>
+                        {maid.name || `Maid ${maid.id}`} - {maid.services || 'Services not specified'} ({maid.region || 'Region not specified'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : (
+                <div className="mb-3">
+                  <label className="form-label">Select Tiffin Provider</label>
+                  <select
+                    className="form-control"
+                    value={formData.tiffinId}
+                    onChange={e => setFormData({ ...formData, tiffinId: e.target.value })}
+                    required
+                  >
+                    <option value="">Choose a tiffin provider...</option>
+                    {tiffins.map(tiffin => (
+                      <option key={tiffin.id} value={tiffin.id}>
+                        {tiffin.name || `Tiffin ${tiffin.id}`} - {tiffin.foodCategory || 'Category not specified'} ({tiffin.region || 'Region not specified'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="mb-3">
                 <label className="form-label">Rating</label>
                 <select
                   className="form-control"
                   value={formData.rating}
-                  onChange={(e) => setFormData({...formData, rating: parseInt(e.target.value)})}
+                  onChange={e => setFormData({ ...formData, rating: parseInt(e.target.value) })}
                   required
                 >
                   <option value={5}>⭐⭐⭐⭐⭐ (5 stars)</option>
@@ -1335,7 +1501,7 @@ const Feedback = () => {
                   className="form-control"
                   rows="3"
                   value={formData.feedback}
-                  onChange={(e) => setFormData({...formData, feedback: e.target.value})}
+                  onChange={e => setFormData({ ...formData, feedback: e.target.value })}
                   required
                 ></textarea>
               </div>
@@ -1343,8 +1509,8 @@ const Feedback = () => {
                 <button type="submit" className="btn btn-success">
                   Submit Feedback
                 </button>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="btn btn-secondary"
                   onClick={() => setShowForm(false)}
                 >
@@ -1355,7 +1521,6 @@ const Feedback = () => {
           </div>
         </div>
       )}
-
       {/* Feedback List */}
       <div className="row">
         <div className="col-12">
@@ -1363,15 +1528,18 @@ const Feedback = () => {
           {feedback.length > 0 ? (
             <div className="card">
               <div className="card-body">
-                {feedback.map((item) => (
-                  <div key={item.id} className="border-bottom pb-3 mb-3">
+                {feedback.map(item => (
+                  <div key={item.id + '-' + item.type} className="border-bottom pb-3 mb-3">
                     <div className="d-flex justify-content-between align-items-start">
                       <div>
-                        <h6>{item.maid?.name || 'Unknown Maid'}</h6>
-                        <div className="text-warning">
-                          {'⭐'.repeat(item.rating)}
-                        </div>
+                        <h6>
+                          {item.type === 'maid'
+                            ? (item.maid?.name || 'Unknown Maid')
+                            : (item.tiffin?.name || 'Unknown Tiffin')}
+                        </h6>
+                        <div className="text-warning">{'⭐'.repeat(item.rating)}</div>
                         <p className="mt-2">{item.feedback}</p>
+                        <span className="badge bg-info text-dark">{item.type === 'maid' ? 'Maid' : 'Tiffin'}</span>
                       </div>
                       <small className="text-muted">
                         {new Date(item.id).toLocaleDateString()}
@@ -1394,6 +1562,10 @@ const Feedback = () => {
     </div>
   );
 };
+
+
+
+
 
 
 

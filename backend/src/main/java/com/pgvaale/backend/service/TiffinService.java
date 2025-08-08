@@ -7,10 +7,12 @@ import com.pgvaale.backend.entity.Menu;
 import com.pgvaale.backend.entity.Tiffin;
 import com.pgvaale.backend.entity.User;
 import com.pgvaale.backend.entity.UserTiffin;
+import com.pgvaale.backend.entity.Feedback_Tiffin;
 import com.pgvaale.backend.repository.MenuRepository;
 import com.pgvaale.backend.repository.TiffinRepository;
 import com.pgvaale.backend.repository.UserRepository;
 import com.pgvaale.backend.repository.UserTiffinRepository;
+import com.pgvaale.backend.repository.Feedback_TiffinRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.math.BigDecimal;
 
 @Service
 public class TiffinService {
@@ -33,6 +36,9 @@ public class TiffinService {
     
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private Feedback_TiffinRepository feedbackTiffinRepository;
 
     public List<Tiffin> getAllTiffins() {
         return tiffinRepository.findAll();
@@ -173,25 +179,51 @@ public class TiffinService {
     public TiffinDashboardDTO getTiffinDashboard(Long tiffinId) {
         Tiffin tiffin = tiffinRepository.findById(tiffinId)
                 .orElseThrow(() -> new RuntimeException("Tiffin not found"));
-        
         Long pendingRequests = userTiffinRepository.countByTiffinIdAndStatus(tiffinId, UserTiffin.RequestStatus.PENDING);
         Long acceptedRequests = userTiffinRepository.countByTiffinIdAndStatus(tiffinId, UserTiffin.RequestStatus.ACCEPTED);
         Long rejectedRequests = userTiffinRepository.countByTiffinIdAndStatus(tiffinId, UserTiffin.RequestStatus.REJECTED);
-        
         List<UserTiffinDTO> recentRequests = userTiffinRepository.findByTiffinId(tiffinId)
                 .stream()
                 .limit(5)
                 .map(UserTiffinDTO::fromEntity)
                 .collect(Collectors.toList());
-        
+        // Calculate average rating for this tiffin
+        Double avg = feedbackTiffinRepository.findByTiffinId(tiffinId)
+            .stream()
+            .mapToInt(f -> f.getRating() != null ? f.getRating() : 0)
+            .average()
+            .orElse(0.0);
+        BigDecimal averageRating = BigDecimal.valueOf(avg).setScale(1, java.math.RoundingMode.HALF_UP);
         return TiffinDashboardDTO.builder()
                 .tiffinName(tiffin.getName())
                 .pendingRequests(pendingRequests)
                 .acceptedRequests(acceptedRequests)
                 .rejectedRequests(rejectedRequests)
-                .averageRating(0.0) // TODO: Implement rating system
+                .averageRating(averageRating.doubleValue())
                 .recentRequests(recentRequests)
                 .build();
+    }
+    
+    // --- Tiffin Feedback ---
+    public Feedback_Tiffin submitTiffinFeedback(Long userId, Long tiffinId, Integer rating, String feedback) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Tiffin tiffin = tiffinRepository.findById(tiffinId)
+                .orElseThrow(() -> new RuntimeException("Tiffin not found"));
+        Feedback_Tiffin feedbackTiffin = new Feedback_Tiffin();
+        feedbackTiffin.setUser(user);
+        feedbackTiffin.setTiffin(tiffin);
+        feedbackTiffin.setRating(rating);
+        feedbackTiffin.setFeedback(feedback);
+        return feedbackTiffinRepository.save(feedbackTiffin);
+    }
+
+    public List<Feedback_Tiffin> getTiffinFeedbackByUser(Long userId) {
+        return feedbackTiffinRepository.findByUserId(userId);
+    }
+
+    public List<Feedback_Tiffin> getTiffinFeedbackByTiffin(Long tiffinId) {
+        return feedbackTiffinRepository.findByTiffinId(tiffinId);
     }
     
     private MenuDTO convertToDTO(Menu menu) {

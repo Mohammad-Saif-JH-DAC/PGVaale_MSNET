@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PGVaaleDotNetBackend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3fcbe27da57ce1b53990484bb77bc4c74fec7d56")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+304e02f43d57a0ff489fe069415816be01953f90")]
 [assembly: System.Reflection.AssemblyProductAttribute("PGVaaleDotNetBackend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PGVaaleDotNetBackend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Toast from '../utils/Toast'; 
+
+
 
 const allowedRegions = ['Mumbai', 'Delhi', 'Pune', 'Bangalore', 'Hyderabad'];
 
 function Chat() {
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   let username = '';
   let userRole = '';
 
@@ -52,13 +55,15 @@ function Chat() {
       console.log("📥 Messages fetched:", res.data);
     } catch (err) {
       console.error("❌ Error fetching messages:", err);
+      Toast.error("Failed to load messages.");
+
     }
   };
 
   const handleSend = async (e) => {
     e.preventDefault();
     if (!username || !input.trim() || !selectedRegion) {
-      alert("Please fill in all fields before sending.");
+      Toast.warn("Please fill in all fields before sending.");
       return;
     }
 
@@ -76,13 +81,17 @@ function Chat() {
       });
       setInput('');
       fetchMessages(selectedRegion);
+      Toast.success("Message sent!");
     } catch (err) {
       console.error("❌ Error sending message:", err);
+      Toast.error("Failed to send message.");
+
     }
   };
 
   if (!username) {
-    return <div className="container mt-5">Please log in to access chat.</div>;
+      Toast.warn("Please log in to access chat.");
+    return <div className="container mt-5"></div>;//Please log in to access chat.
   }
 
   return (

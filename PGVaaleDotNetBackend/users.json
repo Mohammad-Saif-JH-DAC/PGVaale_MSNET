@@ -1,0 +1,26 @@
+[
+  {
+    "Id": 1,
+    "Aadhaar": "982323895574",
+    "MobileNumber": "7854786244",
+    "Age": 30,
+    "Gender": "Female",
+    "UniqueId": "USER_1754594771104",
+    "Username": "Shital@20",
+    "Password": "0/cZqBYbpavRsNsdM/Pk0Rur7DWBkey49c6HvjjmiFM=",
+    "Email": "shitalkawthe02@gmail.com",
+    "Name": "Shital "
+  },
+  {
+    "Id": 2,
+    "Aadhaar": "857964455689",
+    "MobileNumber": "9595875486",
+    "Age": 30,
+    "Gender": "Female",
+    "UniqueId": "USER_1754595956143",
+    "Username": "Shilpa@20",
+    "Password": "$2a$11$HqSfVB.rTP.CVrkrx2eYjOhnYD7DFlMSiNuKxrNGeyh6.xVzN0TB2",
+    "Email": "shilpa27@gmail.com",
+    "Name": "Shilpa"
+  }
+]

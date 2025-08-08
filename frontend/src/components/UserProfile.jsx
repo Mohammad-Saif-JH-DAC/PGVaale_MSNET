@@ -65,8 +65,8 @@ const UserProfile = () => {
       await api.delete('/api/user/profile');
       
       // Clear local storage and redirect to login
-      localStorage.removeItem('token');
-      localStorage.removeItem('userRole');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('userRole');
       window.location.href = '/login';
     } catch (error) {
       console.error('Error deleting account:', error);

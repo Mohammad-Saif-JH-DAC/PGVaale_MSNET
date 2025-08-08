@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import DashboardStats from '../components/DashboardStats';
 import api from '../api';
+import Toast from '../utils/Toast';
+
 
 function Admin() {
   const [pendingMaid, setPendingMaid] = useState([]);
@@ -11,18 +13,18 @@ function Admin() {
   const [showContactMessages, setShowContactMessages] = useState(false);
 
   useEffect(() => {
+    // Load pending maids and tiffin providers
     Promise.all([
       api.get('/api/admin/maids/pending'),
       api.get('/api/admin/tiffins/pending'),
       api.get('/api/contactUs/all')
     ])
-      .then(([maidRes, tiffinRes, contactRes]) => {
-        setPendingMaid(maidRes.data || []);
-        setPendingTiffin(tiffinRes.data || []);
-        setContactMessages(contactRes.data || []);
-      })
-      .catch(() => setError('Failed to load data'))
-      .finally(() => setLoading(false));
+    .then(([maidRes, tiffinRes]) => {
+      setPendingMaid(maidRes.data || []);
+      setPendingTiffin(tiffinRes.data || []);
+    })
+    .catch(() => setError('Failed to load service providers'))
+    .finally(() => setLoading(false));
   }, []);
 
   const handleApproveMaid = async (id) => {
@@ -30,17 +32,19 @@ function Admin() {
       await api.post(`/api/admin/maids/${id}/approve`);
       const res = await api.get('/api/admin/maids/pending');
       setPendingMaid(res.data || []);
+      Toast.success('Maid approved successfully!');
     } catch {
-      setError('Failed to approve maid');
+      Toast.error('Failed to approve maid');
     }
   };
 
   const handleRejectMaid = async (id) => {
     try {
       await api.post(`/api/admin/maids/${id}/reject`);
-      const res = await api.get('/api/admin/maids/pending');
-      setPendingMaid(res.data || []);
-    } catch {
+      // Refresh the list
+      const response = await api.get('/api/admin/maids/pending');
+      setPendingMaid(response.data || []);
+    } catch (error) {
       setError('Failed to reject maid');
     }
   };
@@ -50,8 +54,9 @@ function Admin() {
       await api.post(`/api/admin/tiffins/${id}/approve`);
       const res = await api.get('/api/admin/tiffins/pending');
       setPendingTiffin(res.data || []);
+      Toast.success('Tiffin provider approved!');
     } catch {
-      setError('Failed to approve tiffin');
+      Toast.error('Failed to approve tiffin provider');
     }
   };
 
@@ -60,8 +65,9 @@ function Admin() {
       await api.post(`/api/admin/tiffins/${id}/reject`);
       const res = await api.get('/api/admin/tiffins/pending');
       setPendingTiffin(res.data || []);
+      Toast.success('Tiffin provider rejected!');
     } catch {
-      setError('Failed to reject tiffin');
+      Toast.error('Failed to reject tiffin provider');
     }
   };
 

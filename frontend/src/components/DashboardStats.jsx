@@ -169,7 +169,36 @@ const DashboardStats = () => {
         </div>
 
         {/* Bar Chart */}
-        
+        <div className="col">
+    <div className="card">
+      <div className="card-header">
+        <h5 className="card-title mb-0">User & Service Statistics</h5>
+      </div>
+      <div className="card-body">
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={barData} barSize={40} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <XAxis dataKey="name" axisLine={false} tickLine={false} />
+            <YAxis allowDecimals={false} axisLine={false} tickLine={false} />
+            <Tooltip
+              contentStyle={{ borderRadius: '8px', border: 'none', backgroundColor: '#000', color: '#fff' }}
+              labelStyle={{ fontWeight: 'bold' }}
+            />
+            <Legend
+              wrapperStyle={{
+                padding: '10px 0',
+                textAlign: 'center',
+              }}
+            />
+            <Bar dataKey="count" radius={[8, 8, 0, 0]}>
+              {barData.map((entry, index) => (
+                <Cell key={`cell-bar-${index}`} fill={entry.color} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  </div>
       </div>
 
       {/* Additional Statistics */}

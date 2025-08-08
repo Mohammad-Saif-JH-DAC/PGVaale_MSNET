@@ -1,14 +1,16 @@
 using PGVaaleDotNetBackend.Entities;
-using System.Collections.Generic;
 
 namespace PGVaaleDotNetBackend.Repositories
 {
     public interface IMaidRepository
     {
-        IEnumerable<Maid> GetAll();
-        Maid GetById(int id);
-        void Add(Maid maid);
-        void Update(Maid maid);
-        void Delete(int id);
+        Task<List<Maid>> GetAllMaidsAsync();
+        Task<Maid?> GetMaidByIdAsync(long id);
+        Task<Maid?> GetMaidByUsernameAsync(string username);
+        Task<Maid?> GetMaidByEmailAsync(string email);
+        Task<List<Maid>> GetMaidsByApprovedStatusAsync(bool approved);
+        Task<List<Maid>> GetMaidsByRegionAndApprovedAsync(string region, bool approved);
+        Task<Maid> SaveMaidAsync(Maid maid);
+        Task DeleteMaidAsync(long id);
     }
 }

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import './ContactUs.css';
+import Toast from '../utils/Toast'; 
+
 const bannerImage = process.env.PUBLIC_URL + '/image/ContactUsBG.png';
 
 
@@ -59,14 +61,14 @@ function ContactUs() {
       });
 
       if (response.ok) {
-        setSuccess('✅ Thank you! Your message has been submitted.');
+        Toast.success('✅ Thank you! Your message has been submitted.');
         setForm({ name: '', email: '', phone: '', message: '' });
       } else {
-        setSuccess('❌ Failed to submit. Please try again.');
+        Toast.error('❌ Failed to submit. Please try again.');
       }
     } catch (error) {
       console.error('Error submitting contactUs:', error);
-      setSuccess('❌ Server error occurred. Try again later.');
+      Toast.error('❌ Server error occurred. Try again later.');
     }
   };
 
@@ -139,12 +141,12 @@ function ContactUs() {
             {errors.message && <div className="invalid-contactUs">{errors.message}</div>}
           </div>
 
-          {success && (
+          {/*{success && (
             <div className={`alert mt-2 ${success.startsWith('✅') ? 'alert-success' : 'alert-danger'}`} role="alert">
               {success}
             </div>
           )}
-
+          */}
           <button type="submit" className="btn btn-danger w-100">Submit Contact Us Form</button>
         </form>
       </div>

@@ -269,7 +269,7 @@ function RegisterForm() {
     // --- End Timing Validation Logic ---
 
     // Clear any existing token before registration
-    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
 
     // Prepare data for submission, including combined timing for maid
     let dataToSubmit;
@@ -856,7 +856,7 @@ function RegisterForm() {
 
                       <div className="mb-3">
                         <label className="form-label d-flex align-items-center">
-                          <FaHome className="me-2 text-primary" /> Maid's Address
+                          <FaHome className="me-2 text-primary" /> Tiffin's Address
                         </label>
                         <input
                           type="text"
@@ -921,7 +921,7 @@ function RegisterForm() {
       </div>
 
       {/* Inline Styles for Focus and Active States */}
-      <style jsx>{`
+      <style>{`
         .bg-gradient {
           background: linear-gradient(135deg, #2C3E50 0%, #1ABC9C 100%);
         }
