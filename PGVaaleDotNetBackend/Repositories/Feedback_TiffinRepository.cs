@@ -84,5 +84,17 @@ namespace PGVaaleDotNetBackend.Repositories
                 .Where(f => f.TiffinId == tiffinId)
                 .ToListAsync();
         }
+
+        public async Task<double?> AverageFeedbackRatingAsync()
+        {
+            return await _context.Feedback_Tiffins
+                .AverageAsync(f => f.Rating);
+        }
+
+        public async Task<long> CountFeedbackAsync()
+        {
+            return await _context.Feedback_Tiffins
+                .CountAsync();
+        }
     }
 }

@@ -4,6 +4,9 @@ namespace PGVaaleDotNetBackend.Entities
 {
     public class User : BaseEntity
     {
+        [Key]
+        public long Id { get; set; }
+
         [Required]
         [StringLength(12, MinimumLength = 12)]
         public string Aadhaar { get; set; } = string.Empty;
@@ -17,5 +20,8 @@ namespace PGVaaleDotNetBackend.Entities
 
         [Required]
         public string Gender { get; set; } = string.Empty;
+
+        [Required]
+        public string UniqueId { get; set; } = string.Empty;
     }
 }

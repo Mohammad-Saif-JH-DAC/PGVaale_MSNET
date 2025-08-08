@@ -4,13 +4,14 @@ namespace PGVaaleDotNetBackend.Repositories
 {
     public interface IMaidRepository
     {
-        Task<List<Maid>> GetAllMaidsAsync();
-        Task<Maid?> GetMaidByIdAsync(long id);
-        Task<Maid?> GetMaidByUsernameAsync(string username);
-        Task<Maid?> GetMaidByEmailAsync(string email);
-        Task<List<Maid>> GetMaidsByApprovedStatusAsync(bool approved);
-        Task<List<Maid>> GetMaidsByRegionAndApprovedAsync(string region, bool approved);
-        Task<Maid> SaveMaidAsync(Maid maid);
-        Task DeleteMaidAsync(long id);
+        Task<List<Maid>> GetAllAsync();
+        Task<Maid?> GetByIdAsync(long id);
+        Task<Maid?> FindByUsernameAsync(string username);
+        Task<Maid?> FindByEmailAsync(string email);
+        Task<List<Maid>> FindByApprovedFalseAsync();
+        Task<List<Maid>> FindByApprovedTrueAsync();
+        Task<List<Maid>> FindByRegionAndApprovedTrueAsync(string region);
+        Task<Maid> SaveAsync(Maid maid);
+        Task DeleteAsync(long id);
     }
 }

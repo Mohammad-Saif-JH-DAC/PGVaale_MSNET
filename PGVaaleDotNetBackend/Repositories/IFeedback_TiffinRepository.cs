@@ -13,5 +13,7 @@ namespace PGVaaleDotNetBackend.Repositories
         Task<Feedback_Tiffin?> GetByIdAsync(long id);
         Task<IEnumerable<Feedback_Tiffin>> GetByUserIdAsync(long userId);
         Task<IEnumerable<Feedback_Tiffin>> GetByTiffinIdAsync(long tiffinId);
+        Task<double?> AverageFeedbackRatingAsync();
+        Task<long> CountFeedbackAsync();
     }
 }

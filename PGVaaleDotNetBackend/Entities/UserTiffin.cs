@@ -2,8 +2,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace PGVaaleDotNetBackend.Entities
 {
-    public class UserTiffin
+    public class UserTiffin : BaseEntity
     {
+        [Key]
         public long Id { get; set; }
 
         [Required]
@@ -13,12 +14,12 @@ namespace PGVaaleDotNetBackend.Entities
         public long TiffinId { get; set; }
 
         [Required]
-        public DateTime AssignedDateTime { get; set; }
+        public DateTime AssignedDateTime { get; set; } // When request was made
 
-        public DateTime? DeletionDateTime { get; set; }
+        public DateTime? DeletionDateTime { get; set; } // When service ends
 
         [Required]
-        public RequestStatus Status { get; set; } = RequestStatus.PENDING;
+        public RequestStatus Status { get; set; } = RequestStatus.PENDING; // PENDING, ACCEPTED, REJECTED
 
         // Navigation properties
         public User User { get; set; } = null!;

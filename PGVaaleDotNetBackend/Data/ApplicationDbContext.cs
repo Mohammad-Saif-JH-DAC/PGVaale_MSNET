@@ -25,6 +25,7 @@ namespace PGVaaleDotNetBackend.Data
         public DbSet<Feedback> Feedback { get; set; }
         public DbSet<Owner> Owners { get; set; }
         public DbSet<PG> PGs { get; set; }
+        public DbSet<ServiceProvider> ServiceProviders { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,13 +36,12 @@ namespace PGVaaleDotNetBackend.Data
             {
                 entity.ToTable("users");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedNever(); // Since DB doesn't have AUTO_INCREMENT
+                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
                 entity.Property(e => e.Username).HasColumnName("username");
                 entity.Property(e => e.Password).HasColumnName("password");
                 entity.Property(e => e.Email).HasColumnName("email");
                 entity.Property(e => e.Name).HasColumnName("name");
                 entity.Property(e => e.UniqueId).HasColumnName("unique_id");
-                // Remove CreatedAt and UpdatedAt as they don't exist in the database
                 entity.Property(e => e.Aadhaar).HasColumnName("aadhaar");
                 entity.Property(e => e.MobileNumber).HasColumnName("mobile_number");
                 entity.Property(e => e.Age).HasColumnName("age");
@@ -116,18 +116,19 @@ namespace PGVaaleDotNetBackend.Data
             {
                 entity.ToTable("tiffins");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedNever(); // Since DB doesn't have AUTO_INCREMENT
+                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
                 entity.Property(e => e.Username).HasColumnName("username");
                 entity.Property(e => e.Password).HasColumnName("password");
                 entity.Property(e => e.Email).HasColumnName("email");
                 entity.Property(e => e.Name).HasColumnName("name");
+                entity.Property(e => e.UniqueId).HasColumnName("unique_id");
                 entity.Property(e => e.PhoneNumber).HasColumnName("phone_number");
                 entity.Property(e => e.Aadhaar).HasColumnName("aadhaar");
-                entity.Property(e => e.Approved).HasColumnName("approved");
-                entity.Property(e => e.FoodCategory).HasColumnName("food_category");
-                entity.Property(e => e.MaidAddress).HasColumnName("maid_address");
                 entity.Property(e => e.Price).HasColumnName("price");
+                entity.Property(e => e.FoodCategory).HasColumnName("food_category");
                 entity.Property(e => e.Region).HasColumnName("region");
+                entity.Property(e => e.MaidAddress).HasColumnName("maid_address");
+                entity.Property(e => e.Approved).HasColumnName("approved");
             });
 
             // Configure UserTiffin entity
@@ -135,7 +136,12 @@ namespace PGVaaleDotNetBackend.Data
             {
                 entity.ToTable("user_tiffins");
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd(); // user_tiffins table has AUTO_INCREMENT
+                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+                entity.Property(e => e.Username).HasColumnName("username");
+                entity.Property(e => e.Password).HasColumnName("password");
+                entity.Property(e => e.Email).HasColumnName("email");
+                entity.Property(e => e.Name).HasColumnName("name");
+                entity.Property(e => e.UniqueId).HasColumnName("unique_id");
                 entity.Property(e => e.UserId).HasColumnName("user_id");
                 entity.Property(e => e.TiffinId).HasColumnName("tiffin_id");
                 entity.Property(e => e.AssignedDateTime).HasColumnName("assigned_date_time");
@@ -209,26 +215,11 @@ namespace PGVaaleDotNetBackend.Data
             modelBuilder.Entity<PgDetails>(entity =>
             {
                 entity.ToTable("pg_details");
-                entity.HasKey(e => e.Id);
-                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
-                entity.Property(e => e.Username).HasColumnName("username");
-                entity.Property(e => e.Password).HasColumnName("password");
-                entity.Property(e => e.Email).HasColumnName("email");
-                entity.Property(e => e.Name).HasColumnName("name");
-                entity.Property(e => e.UniqueId).HasColumnName("unique_id");
-                entity.Property(e => e.Address).HasColumnName("address");
-                entity.Property(e => e.City).HasColumnName("city");
-                entity.Property(e => e.State).HasColumnName("state");
-                entity.Property(e => e.Pincode).HasColumnName("pincode");
-                entity.Property(e => e.Description).HasColumnName("description");
-                entity.Property(e => e.MonthlyRent).HasColumnName("monthly_rent");
-                entity.Property(e => e.TotalRooms).HasColumnName("total_rooms");
-                entity.Property(e => e.AvailableRooms).HasColumnName("available_rooms");
-                entity.Property(e => e.Amenities).HasColumnName("amenities");
-                entity.Property(e => e.Rules).HasColumnName("rules");
-                entity.Property(e => e.IsActive).HasColumnName("is_active");
-                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
-                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+                entity.HasKey(e => e.PgId);
+                entity.Property(e => e.PgId).HasColumnName("pg_id").ValueGeneratedOnAdd();
+                entity.Property(e => e.PgName).HasColumnName("pg_name");
+                entity.Property(e => e.PgAddress).HasColumnName("pg_address");
+                entity.Property(e => e.PgRent).HasColumnName("pg_rent");
             });
 
             // Configure Booking entity
@@ -369,6 +360,18 @@ namespace PGVaaleDotNetBackend.Data
                     .WithMany()
                     .HasForeignKey(pg => pg.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure ServiceProvider entity
+            modelBuilder.Entity<ServiceProvider>(entity =>
+            {
+                entity.ToTable("service_providers");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+                entity.Property(e => e.Name).HasColumnName("name");
+                entity.Property(e => e.Type).HasColumnName("type");
+                entity.Property(e => e.Region).HasColumnName("region");
+                entity.Property(e => e.Approved).HasColumnName("approved");
             });
         }
     }

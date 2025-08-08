@@ -14,43 +14,45 @@ namespace PGVaaleDotNetBackend.Repositories
             _context = context;
         }
 
-        public async Task<List<Maid>> GetAllMaidsAsync()
+        public async Task<List<Maid>> GetAllAsync()
         {
             return await _context.Maids.ToListAsync();
         }
 
-        public async Task<Maid?> GetMaidByIdAsync(long id)
+        public async Task<Maid?> GetByIdAsync(long id)
         {
             return await _context.Maids.FindAsync(id);
         }
 
-        public async Task<Maid?> GetMaidByUsernameAsync(string username)
+        public async Task<Maid?> FindByUsernameAsync(string username)
         {
             return await _context.Maids.FirstOrDefaultAsync(m => m.Username == username);
         }
 
-        public async Task<Maid?> GetMaidByEmailAsync(string email)
+        public async Task<Maid?> FindByEmailAsync(string email)
         {
             return await _context.Maids.FirstOrDefaultAsync(m => m.Email == email);
         }
 
-        public async Task<List<Maid>> GetMaidsByApprovedStatusAsync(bool approved)
+        public async Task<List<Maid>> FindByApprovedFalseAsync()
         {
-            return await _context.Maids.Where(m => m.Approved == approved).ToListAsync();
+            return await _context.Maids.Where(m => m.Approved == false).ToListAsync();
         }
 
-        public async Task<List<Maid>> GetMaidsByRegionAndApprovedAsync(string region, bool approved)
+        public async Task<List<Maid>> FindByApprovedTrueAsync()
         {
-            return await _context.Maids.Where(m => m.Region == region && m.Approved == approved).ToListAsync();
+            return await _context.Maids.Where(m => m.Approved == true).ToListAsync();
         }
 
-        public async Task<Maid> SaveMaidAsync(Maid maid)
+        public async Task<List<Maid>> FindByRegionAndApprovedTrueAsync(string region)
+        {
+            return await _context.Maids.Where(m => m.Region == region && m.Approved == true).ToListAsync();
+        }
+
+        public async Task<Maid> SaveAsync(Maid maid)
         {
             if (maid.Id == 0)
             {
-                // Generate a new ID since the database doesn't have auto-increment
-                var maxId = await _context.Maids.MaxAsync(m => (long?)m.Id) ?? 0;
-                maid.Id = maxId + 1;
                 _context.Maids.Add(maid);
             }
             else
@@ -62,7 +64,7 @@ namespace PGVaaleDotNetBackend.Repositories
             return maid;
         }
 
-        public async Task DeleteMaidAsync(long id)
+        public async Task DeleteAsync(long id)
         {
             var maid = await _context.Maids.FindAsync(id);
             if (maid != null)
