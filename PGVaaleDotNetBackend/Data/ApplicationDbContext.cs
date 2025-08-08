@@ -17,6 +17,8 @@ namespace PGVaaleDotNetBackend.Data
         public DbSet<UserTiffin> UserTiffins { get; set; }
         public DbSet<Menu> Menus { get; set; }
         public DbSet<Feedback_Tiffin> Feedback_Tiffins { get; set; }
+        public DbSet<PgDetails> PgDetails { get; set; }
+        public DbSet<Booking> Bookings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -190,6 +192,55 @@ namespace PGVaaleDotNetBackend.Data
                 entity.HasOne(f => f.Tiffin)
                     .WithMany()
                     .HasForeignKey(f => f.TiffinId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure PgDetails entity
+            modelBuilder.Entity<PgDetails>(entity =>
+            {
+                entity.ToTable("pg_details");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).HasColumnName("id").ValueGeneratedOnAdd();
+                entity.Property(e => e.Username).HasColumnName("username");
+                entity.Property(e => e.Password).HasColumnName("password");
+                entity.Property(e => e.Email).HasColumnName("email");
+                entity.Property(e => e.Name).HasColumnName("name");
+                entity.Property(e => e.UniqueId).HasColumnName("unique_id");
+                entity.Property(e => e.Address).HasColumnName("address");
+                entity.Property(e => e.City).HasColumnName("city");
+                entity.Property(e => e.State).HasColumnName("state");
+                entity.Property(e => e.Pincode).HasColumnName("pincode");
+                entity.Property(e => e.Description).HasColumnName("description");
+                entity.Property(e => e.MonthlyRent).HasColumnName("monthly_rent");
+                entity.Property(e => e.TotalRooms).HasColumnName("total_rooms");
+                entity.Property(e => e.AvailableRooms).HasColumnName("available_rooms");
+                entity.Property(e => e.Amenities).HasColumnName("amenities");
+                entity.Property(e => e.Rules).HasColumnName("rules");
+                entity.Property(e => e.IsActive).HasColumnName("is_active");
+                entity.Property(e => e.CreatedAt).HasColumnName("created_at");
+                entity.Property(e => e.UpdatedAt).HasColumnName("updated_at");
+            });
+
+            // Configure Booking entity
+            modelBuilder.Entity<Booking>(entity =>
+            {
+                entity.ToTable("bookings");
+                entity.HasKey(e => e.BookingId);
+                entity.Property(e => e.BookingId).HasColumnName("booking_id").ValueGeneratedOnAdd();
+                entity.Property(e => e.UserId).HasColumnName("user_id");
+                entity.Property(e => e.PgId).HasColumnName("pg_id");
+                entity.Property(e => e.StartDate).HasColumnName("start_date");
+                entity.Property(e => e.EndDate).HasColumnName("end_date");
+
+                // Configure relationships
+                entity.HasOne(b => b.User)
+                    .WithMany()
+                    .HasForeignKey(b => b.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(b => b.Pg)
+                    .WithMany(pg => pg.Bookings)
+                    .HasForeignKey(b => b.PgId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }

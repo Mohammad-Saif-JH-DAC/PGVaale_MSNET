@@ -3,7 +3,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Identity;
 using System.Text;
+using PGVaaleDotNetBackend.Entities;
+using PGVaaleDotNetBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,8 +15,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactDev",
         policy => policy.WithOrigins("http://localhost:3000")
+                        .WithMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .AllowAnyHeader()
-                        .AllowAnyMethod()
                         .AllowCredentials());
 });
 
@@ -58,6 +61,12 @@ builder.Services.AddScoped<PGVaaleDotNetBackend.Repositories.IMaidRepository, PG
 builder.Services.AddScoped<PGVaaleDotNetBackend.Repositories.IUserMaidRepository, PGVaaleDotNetBackend.Repositories.UserMaidRepository>();
 builder.Services.AddScoped<PGVaaleDotNetBackend.Repositories.IAdminRepository, PGVaaleDotNetBackend.Repositories.AdminRepository>();
 builder.Services.AddScoped<PGVaaleDotNetBackend.Repositories.ITiffinRepository, PGVaaleDotNetBackend.Repositories.TiffinRepository>();
+
+// Add Password Hasher for Admin entity
+builder.Services.AddScoped<IPasswordHasher<Admin>, PasswordHasher<Admin>>();
+
+// Add Data Seeder Service
+builder.Services.AddHostedService<DataSeederService>();
 builder.Services.AddScoped<PGVaaleDotNetBackend.Repositories.IUserTiffinRepository, PGVaaleDotNetBackend.Repositories.UserTiffinRepository>();
 builder.Services.AddScoped<PGVaaleDotNetBackend.Repositories.IMenuRepository, PGVaaleDotNetBackend.Repositories.MenuRepository>();
 builder.Services.AddScoped<PGVaaleDotNetBackend.Repositories.IFeedback_TiffinRepository, PGVaaleDotNetBackend.Repositories.Feedback_TiffinRepository>();

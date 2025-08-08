@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\pgvaale .net\\PGVaale\\PGVaaleDotNetBackend\\PGVaaleDotNetBackend.csproj": {}
+    "C:\\Users\\LENOVO\\Desktop\\PGVaale MSNET\\PGVaaleDotNetBackend\\PGVaaleDotNetBackend.csproj": {}
   },
   "projects": {
-    "D:\\pgvaale .net\\PGVaale\\PGVaaleDotNetBackend\\PGVaaleDotNetBackend.csproj": {
+    "C:\\Users\\LENOVO\\Desktop\\PGVaale MSNET\\PGVaaleDotNetBackend\\PGVaaleDotNetBackend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\pgvaale .net\\PGVaale\\PGVaaleDotNetBackend\\PGVaaleDotNetBackend.csproj",
+        "projectUniqueName": "C:\\Users\\LENOVO\\Desktop\\PGVaale MSNET\\PGVaaleDotNetBackend\\PGVaaleDotNetBackend.csproj",
         "projectName": "PGVaaleDotNetBackend",
-        "projectPath": "D:\\pgvaale .net\\PGVaale\\PGVaaleDotNetBackend\\PGVaaleDotNetBackend.csproj",
-        "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "D:\\pgvaale .net\\PGVaale\\PGVaaleDotNetBackend\\obj\\",
+        "projectPath": "C:\\Users\\LENOVO\\Desktop\\PGVaale MSNET\\PGVaaleDotNetBackend\\PGVaaleDotNetBackend.csproj",
+        "packagesPath": "C:\\Users\\LENOVO\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\LENOVO\\Desktop\\PGVaale MSNET\\PGVaaleDotNetBackend\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\LENOVO\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
