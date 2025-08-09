@@ -33,14 +33,16 @@ builder.Services.AddControllers();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        var secretKey = builder.Configuration["Jwt:SecretKey"] ?? "your-super-secret-key-with-at-least-32-characters";
+        var key = Encoding.ASCII.GetBytes(secretKey);
+        
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = false,
             ValidateAudience = false,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Convert.FromBase64String("Wv3mRZ+bc5P69ZUI/epDWrKhfNRti/fvEbhN0v2NMWs=")),
+            IssuerSigningKey = new SymmetricSecurityKey(key),
             ClockSkew = TimeSpan.Zero
         };
     });
@@ -117,7 +119,7 @@ var app = builder.Build();
 // Use CORS
 app.UseCors("AllowReactDev");
 
-// Use JWT Request Filter (Custom Middleware)
+// Use JWT Request Filter (Custom Middleware) - Apply before authentication
 app.UseMiddleware<JwtRequestFilter>();
 
 // Use Authentication and Authorization

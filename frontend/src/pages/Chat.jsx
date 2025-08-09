@@ -14,11 +14,51 @@ function Chat() {
   if (token) {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      username = payload.sub || payload.username || payload.name || '';
+      
+      // Extract username from the correct claim types based on the actual JWT structure
+      username = payload.unique_name || 
+                 payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || 
+                 payload.name || 
+                 payload.sub || 
+                 payload.username || 
+                 payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ||
+                 '';
+      
+      // Extract role from the correct claim
       userRole = (payload.role || payload.roles || payload.authorities?.[0] || '').toLowerCase();
+      
+      console.log("🔍 Token payload:", payload);
+      console.log("👤 Extracted username:", username);
+      console.log("🎭 Extracted role:", userRole);
       
     } catch (e) {
       console.error("❌ Failed to decode token", e);
+    }
+  }
+
+  // If username is still empty, try to extract it from the token using a different approach
+  if (!username && token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      // Try to find the username in all possible claim types
+      const possibleUsernameKeys = [
+        'unique_name',  // ✅ Added this as the primary key
+        'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name',
+        'name',
+        'sub',
+        'username',
+        'http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'
+      ];
+      
+      for (const key of possibleUsernameKeys) {
+        if (payload[key]) {
+          username = payload[key];
+          console.log(`✅ Found username in key: ${key} = ${username}`);
+          break;
+        }
+      }
+    } catch (e) {
+      console.error("❌ Failed to extract username from token", e);
     }
   }
 
@@ -47,7 +87,7 @@ function Chat() {
 
   const fetchMessages = async (region) => {
     try {
-      const res = await axios.get(`http://localhost:8081/api/chat/messages`, {
+      const res = await axios.get(`http://localhost:5000/api/chat/messages`, {
         headers: { Authorization: `Bearer ${token}` },
         params: { region: region }
       });
@@ -56,7 +96,6 @@ function Chat() {
     } catch (err) {
       console.error("❌ Error fetching messages:", err);
       Toast.error("Failed to load messages.");
-
     }
   };
 
@@ -76,7 +115,7 @@ function Chat() {
     console.log("📨 Sending message:", newMessage);
 
     try {
-      await axios.post('http://localhost:8081/api/chat/message', newMessage, {
+      await axios.post('http://localhost:5000/api/chat/message', newMessage, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setInput('');
@@ -85,7 +124,6 @@ function Chat() {
     } catch (err) {
       console.error("❌ Error sending message:", err);
       Toast.error("Failed to send message.");
-
     }
   };
 

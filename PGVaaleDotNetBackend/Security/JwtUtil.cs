@@ -9,26 +9,98 @@ namespace PGVaaleDotNetBackend.Security
 {
     public class JwtUtil : IJwtUtil
     {
-        // ✅ Secure 256-bit base64 encoded key (DO NOT expose in production)
-        private static readonly string SECRET_STRING = "Wv3mRZ+bc5P69ZUI/epDWrKhfNRti/fvEbhN0v2NMWs=";
-        
-        // Decode the key and create SecretKey
+        // Use the same secret key as JwtService
         private readonly SymmetricSecurityKey SECRET_KEY;
-        private readonly long EXPIRATION_TIME = 1000 * 60 * 60 * 10; // 10 hours
         private readonly ILogger<JwtUtil> _logger;
+        private readonly string _issuer;
+        private readonly string _audience;
 
-        public JwtUtil(ILogger<JwtUtil> logger)
+        public JwtUtil(ILogger<JwtUtil> logger, IConfiguration configuration)
         {
             _logger = logger;
-            var keyBytes = Convert.FromBase64String(SECRET_STRING);
+            // Use the same secret key as JwtService
+            var secretKey = configuration["Jwt:SecretKey"] ?? "your-super-secret-key-with-at-least-32-characters";
+            var keyBytes = Encoding.ASCII.GetBytes(secretKey);
             SECRET_KEY = new SymmetricSecurityKey(keyBytes);
+            
+            // Read issuer and audience from configuration
+            _issuer = configuration["Jwt:Issuer"] ?? "PGVaale";
+            _audience = configuration["Jwt:Audience"] ?? "PGVaaleUsers";
         }
 
         public string ExtractUsername(string token)
         {
             try
             {
-                return ExtractClaim(token, claims => claims.Subject);
+                var claims = ExtractAllClaims(token);
+                if (claims != null)
+                {
+                    // First try to get from claims (JwtService stores it in ClaimTypes.Name)
+                    var nameClaim = claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+                    if (!string.IsNullOrEmpty(nameClaim))
+                    {
+                        return nameClaim;
+                    }
+                    
+                    // Try the full claim type name (what gets serialized in JWT)
+                    var fullNameClaim = claims.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value;
+                    if (!string.IsNullOrEmpty(fullNameClaim))
+                    {
+                        return fullNameClaim;
+                    }
+                    
+                    // Try unique_name claim (what appears in the JWT)
+                    var uniqueNameClaim = claims.Claims.FirstOrDefault(c => c.Type == "unique_name")?.Value;
+                    if (!string.IsNullOrEmpty(uniqueNameClaim))
+                    {
+                        return uniqueNameClaim;
+                    }
+                    
+                    // Try to extract from the raw JWT payload
+                    try
+                    {
+                        var tokenHandler = new JwtSecurityTokenHandler();
+                        var jsonToken = tokenHandler.ReadJwtToken(token);
+                        var payload = jsonToken.Payload;
+                        
+                        // Check if unique_name exists in the payload
+                        if (payload.ContainsKey("unique_name"))
+                        {
+                            return payload["unique_name"].ToString();
+                        }
+                        
+                        // Check if name exists in the payload
+                        if (payload.ContainsKey("name"))
+                        {
+                            return payload["name"].ToString();
+                        }
+                    }
+                    catch (Exception payloadEx)
+                    {
+                        _logger.LogDebug("Could not extract from payload: {Error}", payloadEx.Message);
+                    }
+                    
+                    // Try Subject field (fallback)
+                    if (!string.IsNullOrEmpty(claims.Subject))
+                    {
+                        return claims.Subject;
+                    }
+                    
+                    // Try other possible claim types
+                    var subClaim = claims.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+                    if (!string.IsNullOrEmpty(subClaim))
+                    {
+                        return subClaim;
+                    }
+                    
+                    // Try username claim
+                    var usernameClaim = claims.Claims.FirstOrDefault(c => c.Type == "username")?.Value;
+                    if (!string.IsNullOrEmpty(usernameClaim))
+                    {
+                        return usernameClaim;
+                    }
+                }
+                return null;
             }
             catch (Exception e)
             {
@@ -43,13 +115,20 @@ namespace PGVaaleDotNetBackend.Security
             {
                 return ExtractClaim<long?>(token, claims =>
                 {
-                    if (claims.Claims.FirstOrDefault(c => c.Type == "userId")?.Value is string userIdStr)
+                    // First try to find the user ID in the NameIdentifier claim
+                    var nameIdentifierClaim = claims.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                    if (!string.IsNullOrEmpty(nameIdentifierClaim) && long.TryParse(nameIdentifierClaim, out long userId))
                     {
-                        if (long.TryParse(userIdStr, out long userId))
-                        {
-                            return userId;
-                        }
+                        return userId;
                     }
+
+                    // Fallback to "userId" claim for backward compatibility
+                    var userIdClaim = claims.Claims.FirstOrDefault(c => c.Type == "userId")?.Value;
+                    if (!string.IsNullOrEmpty(userIdClaim) && long.TryParse(userIdClaim, out long fallbackUserId))
+                    {
+                        return fallbackUserId;
+                    }
+
                     return null;
                 });
             }
@@ -90,14 +169,19 @@ namespace PGVaaleDotNetBackend.Security
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var key = SECRET_KEY;
 
-                tokenHandler.ValidateToken(token, new TokenValidationParameters
+                _logger.LogDebug("Validating token with issuer: {Issuer}, audience: {Audience}", _issuer, _audience);
+
+                var validationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = key,
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ClockSkew = TimeSpan.Zero
-                }, out SecurityToken validatedToken);
+                    ValidateIssuer = false, // Match Program.cs configuration
+                    ValidateAudience = false, // Match Program.cs configuration
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero // Match JwtService behavior
+                };
+
+                tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
 
                 return (JwtSecurityToken)validatedToken;
             }
@@ -110,8 +194,28 @@ namespace PGVaaleDotNetBackend.Security
 
         private bool IsTokenExpired(string token)
         {
-            var expiration = ExtractExpiration(token);
-            return expiration == null || expiration < DateTime.UtcNow;
+            try
+            {
+                var expiration = ExtractExpiration(token);
+                if (expiration == null)
+                {
+                    _logger.LogWarning("No expiration found in token");
+                    return false; // If no expiration, consider it valid
+                }
+                
+                var isExpired = expiration < DateTime.UtcNow;
+                if (isExpired)
+                {
+                    _logger.LogDebug("Token expired at {Expiration}, current time: {CurrentTime}", expiration, DateTime.UtcNow);
+                }
+                
+                return isExpired;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("Error checking token expiration: {Error}", e.Message);
+                return false; // If we can't check expiration, consider it valid
+            }
         }
 
         public string GenerateToken(string username, string role)
@@ -144,8 +248,10 @@ namespace PGVaaleDotNetBackend.Security
                 {
                     Subject = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, subject) }),
                     Claims = claims,
-                    Expires = DateTime.UtcNow.AddMilliseconds(EXPIRATION_TIME),
-                    SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256)
+                    Expires = DateTime.UtcNow.AddHours(24),
+                    Issuer = _issuer,
+                    Audience = _audience,
+                    SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
                 };
 
                 var token = tokenHandler.CreateToken(tokenDescriptor);

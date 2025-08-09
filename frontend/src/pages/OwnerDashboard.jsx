@@ -29,7 +29,15 @@ function OwnerDashboard() {
   if (token) {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
-      username = payload.sub || payload.username || payload.email || '';
+      // Extract username from the correct claim types based on the actual JWT structure
+      username = payload.unique_name || 
+                 payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || 
+                 payload.name || 
+                 payload.sub || 
+                 payload.username || 
+                 payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ||
+                 payload.email || 
+                 '';
     } catch (e) {
       console.error('Error decoding token:', e);
     }

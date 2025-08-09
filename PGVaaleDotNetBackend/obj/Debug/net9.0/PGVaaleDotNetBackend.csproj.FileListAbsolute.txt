@@ -278,3 +278,5 @@ C:\Users\LENOVO\Desktop\PGVaale MSNET\PGVaaleDotNetBackend\obj\Debug\net9.0\refi
 C:\Users\LENOVO\Desktop\PGVaale MSNET\PGVaaleDotNetBackend\obj\Debug\net9.0\PGVaaleDotNetBackend.pdb
 C:\Users\LENOVO\Desktop\PGVaale MSNET\PGVaaleDotNetBackend\obj\Debug\net9.0\PGVaaleDotNetBackend.genruntimeconfig.cache
 C:\Users\LENOVO\Desktop\PGVaale MSNET\PGVaaleDotNetBackend\obj\Debug\net9.0\ref\PGVaaleDotNetBackend.dll
+C:\Users\LENOVO\Desktop\PGVaale MSNET\PGVaaleDotNetBackend\bin\Debug\net9.0\BouncyCastle.Crypto.dll
+C:\Users\LENOVO\Desktop\PGVaale MSNET\PGVaaleDotNetBackend\bin\Debug\net9.0\itextsharp.dll

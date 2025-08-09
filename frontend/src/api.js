@@ -56,9 +56,13 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      sessionStorage.removeItem('token');
-      if (window.location.pathname !== '/login' && !window.location.pathname.includes('/register')) {
-        window.location.href = '/login';
+      // Only logout if it's not a login request
+      if (!error.config.url.includes('/login')) {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('userRole');
+        if (window.location.pathname !== '/login' && !window.location.pathname.includes('/register')) {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

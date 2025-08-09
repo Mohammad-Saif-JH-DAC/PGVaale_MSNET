@@ -48,6 +48,23 @@ namespace PGVaaleDotNetBackend.Controllers
             }
         }
 
+        // Get all tiffins (for frontend)
+        [HttpGet("all")]
+        public async Task<IActionResult> GetAllTiffins()
+        {
+            try
+            {
+                var tiffins = await _tiffinService.GetAllTiffinsAsync();
+                // Only return approved tiffins for public access
+                var approvedTiffins = tiffins.Where(t => t.Approved).ToList();
+                return Ok(approvedTiffins);
+            }
+            catch (Exception e)
+            {
+                return BadRequest($"Error fetching tiffins: {e.Message}");
+            }
+        }
+
         // Menu Management
         [HttpPost("menu")]
         public async Task<IActionResult> CreateMenu([FromBody] MenuDTO menuDTO)

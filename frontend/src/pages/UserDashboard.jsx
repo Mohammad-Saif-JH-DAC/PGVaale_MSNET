@@ -41,6 +41,14 @@ const DashboardHome = () => {
           userName = profileResponse.data.name || 'User';
         } catch (profileError) {
           console.warn('Could not fetch user profile, using default name');
+          if (profileError.response?.status === 401) {
+            // Token is invalid or expired, redirect to login
+            console.log('Token invalid, redirecting to login');
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('userRole');
+            window.location.href = '/login';
+            return;
+          }
           userName = 'User';
         }
       }
@@ -50,7 +58,14 @@ const DashboardHome = () => {
       try {
         response = await api.get('/api/user/pgs');
       } catch (userError) {
-        if (userError.response?.status === 403) {
+        if (userError.response?.status === 401) {
+          // Token is invalid or expired, redirect to login
+          console.log('Token invalid, redirecting to login');
+          sessionStorage.removeItem('token');
+          sessionStorage.removeItem('userRole');
+          window.location.href = '/login';
+          return;
+        } else if (userError.response?.status === 403) {
           console.warn('User-specific endpoint not accessible, using general endpoint');
           // Fallback to general PG data that works
           response = await api.get('/api/pg/all');
@@ -65,6 +80,16 @@ const DashboardHome = () => {
       });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      
+      // Handle 401 errors specifically
+      if (error.response?.status === 401) {
+        console.log('Token invalid, redirecting to login');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('userRole');
+        window.location.href = '/login';
+        return;
+      }
+      
       Toast.error('Error loading dashboard data: ' + (error.response?.data || error.message));
       
       // Handle 403 specifically

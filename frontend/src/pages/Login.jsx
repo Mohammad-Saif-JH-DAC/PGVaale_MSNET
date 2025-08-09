@@ -22,7 +22,18 @@ function Login() {
     const token = sessionStorage.getItem('token');
     if (token) {
       try {
+        // Check if token is expired
         const payload = JSON.parse(atob(token.split('.')[1]));
+        const currentTime = Math.floor(Date.now() / 1000);
+        
+        if (payload.exp && payload.exp < currentTime) {
+          // Token is expired, clear it
+          console.log('Token expired');
+          sessionStorage.removeItem('token');
+          sessionStorage.removeItem('userRole');
+          return;
+        }
+
         let userRole = '';
         if (payload.role) {
           userRole = payload.role.replace('ROLE_', '').toLowerCase();
@@ -38,7 +49,7 @@ function Login() {
         else if (userRole === 'maid') navigate('/maid-dashboard');
         else navigate('/');
       } catch (e) {
-        console.error('Invalid token');
+        console.error('Invalid token:', e);
         sessionStorage.removeItem('token');
         sessionStorage.removeItem('userRole');
       }
@@ -70,11 +81,12 @@ function Login() {
         // ✅ Toast on success
         toast.success('Login successful!');
 
-        setTimeout(() => {
-          sessionStorage.removeItem('token');
-          sessionStorage.removeItem('userRole');
-          console.log('Token cleared after 1 hour');
-        }, 60 * 60 * 1000);
+        // Remove the automatic token clearing - let JWT handle expiration
+        // setTimeout(() => {
+        //   sessionStorage.removeItem('token');
+        //   sessionStorage.removeItem('userRole');
+        //   console.log('Token cleared after 1 hour');
+        // }, 60 * 60 * 1000);
 
         const payload = JSON.parse(atob(token.split('.')[1]));
 
